@@ -144,6 +144,8 @@ void drawStuff(void)
 	{
 		ballVelX *= -1;
 		ballX += ballVelX;
+		ballVelX += (ballVelX < 0 ? -0.05f : 0.05f);
+		ballVelY += (ballVelY < 0 ? -0.05f : 0.05f);
 	}
 	else if(ballX < 3)
 	{
