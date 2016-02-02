@@ -2,6 +2,8 @@
 
 static const unsigned char output[36][36] = { { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 2, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 12, 13, 12, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 2, 5, 12, 5, 2, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 2, 5, 12, 5, 2, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 2, 5, 3, 11, 3, 5, 2, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 2, 5, 6, 11, 6, 5, 2, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 2, 5, 6, 11, 6, 5, 2, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 4, 3, 8, 11, 8, 3, 4, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 4, 3, 6, 12, 6, 3, 4, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 2, 5, 6, 12, 4, 12, 6, 5, 2, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 2, 3, 6, 12, 3, 12, 6, 3, 2, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 12, 12, 12, 14, 14, 2, 5, 3, 12, 5, 7, 5, 12, 3, 5, 2, 14, 14, 12, 12, 12, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 12, 11, 11, 10, 12, 14, 2, 5, 3, 12, 5, 7, 5, 12, 3, 5, 2, 14, 12, 10, 11, 11, 12, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 12, 10, 9, 12, 11, 13, 13, 2, 13, 12, 4, 6, 4, 12, 13, 2, 13, 13, 11, 12, 9, 10, 12, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 12, 11, 10, 12, 11, 13, 14, 14, 2, 13, 2, 3, 2, 13, 2, 14, 14, 13, 11, 12, 10, 11, 12, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 12, 12, 13, 12, 14, 14, 12, 11, 2, 12, 2, 12, 2, 11, 12, 14, 14, 12, 13, 12, 12, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 12, 9, 7, 9, 11, 14, 12, 13, 10, 5, 6, 7, 6, 5, 10, 13, 12, 14, 11, 9, 7, 9, 12, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 12, 11, 9, 10, 11, 12, 13, 13, 10, 5, 8, 7, 8, 5, 10, 13, 13, 12, 11, 10, 9, 11, 12, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 12, 11, 10, 11, 2, 11, 10, 9, 9, 5, 3, 7, 3, 5, 9, 9, 10, 11, 2, 11, 10, 11, 12, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 12, 11, 2, 3, 12, 11, 10, 10, 5, 6, 7, 6, 5, 10, 10, 11, 12, 5, 2, 11, 12, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 12, 2, 5, 3, 12, 11, 10, 9, 10, 5, 6, 5, 10, 9, 10, 11, 12, 3, 5, 2, 12, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 2, 2, 5, 3, 6, 12, 11, 9, 7, 9, 5, 3, 5, 9, 7, 9, 11, 12, 6, 3, 5, 2, 2, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 2, 5, 3, 4, 4, 2, 12, 11, 10, 7, 9, 11, 5, 11, 9, 7, 10, 11, 12, 2, 4, 4, 3, 5, 2, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 2, 3, 4, 8, 8, 2, 2, 12, 11, 10, 11, 11, 14, 11, 11, 10, 11, 12, 2, 2, 8, 8, 4, 3, 2, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 2, 2, 2, 2, 2, 14, 14, 12, 12, 11, 11, 12, 14, 12, 11, 11, 12, 12, 14, 14, 2, 2, 2, 2, 2, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 13, 4, 5, 2, 14, 14, 14, 2, 5, 4, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 2, 2, 4, 2, 14, 14, 14, 2, 4, 2, 2, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 }, { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 } };
 
+static unsigned char rotated_ship[36][36];
+
 static const unsigned char ship_palette[15][4] = { {0xFF, 0xFF, 0xFF, 0x00 }, { 0x89, 0x01, 0x1D, 0x00 }, { 0xFF, 0x94, 0x6A, 0x00 }, { 0xCC, 0x3E, 0x00, 0x00 }, { 0xD9, 0x67, 0x00, 0x00 }, { 0xFD, 0xCA, 0x31, 0x00 }, { 0xFF, 0xFA, 0xEA, 0x00 }, { 0x1C, 0x5B, 0xF0, 0x00 }, { 0xBE, 0xBE, 0xBE, 0x00 }, { 0x94, 0x94, 0x94, 0x00 }, { 0x6B, 0x6B, 0x6B, 0x00 }, { 0x40, 0x40, 0x40, 0x00 }, { 0x1F, 0x1F, 0x1F, 0x00 }, { 0xFF, 0xFF, 0xFF, 0xFF } };
 
 
@@ -30,7 +32,7 @@ int collisionBox(int box1x, int box1y, int width1, int height1, int box2x, int b
 //Updates player1 location
 void p1Move(struct pongGlobals *myPongGlobals) {
 	
-	if ((myPongGlobals->button & BUTTON_LEFT) && myPongGlobals->p1X > myPongGlobals->xMinBoundry) {
+	if ((myPongGlobals->button & BUTTON_LEFT) /**&& myPongGlobals->p1X > myPongGlobals->xMinBoundry**/) {
 
 		//Trigger render flag
 		myPongGlobals->renderP1Flag = 1;
@@ -40,14 +42,14 @@ void p1Move(struct pongGlobals *myPongGlobals) {
 
 	}
 		
-	if ((myPongGlobals->button & BUTTON_RIGHT) && myPongGlobals->p1X+myPongGlobals->p1X_size < myPongGlobals->xMaxBoundry/4) {
+	if ((myPongGlobals->button & BUTTON_RIGHT) /**&& myPongGlobals->p1X+myPongGlobals->p1X_size < myPongGlobals->xMaxBoundry/4**/) {
 
 		myPongGlobals->p1X++;
 		//Trigger render flag
 		myPongGlobals->renderP1Flag = 1;
 	}
 	
-	if ((myPongGlobals->button & BUTTON_UP) && myPongGlobals->p1Y-myPongGlobals->p1Y_size > myPongGlobals->yMinBoundry) {
+	if ((myPongGlobals->button & BUTTON_UP) /**&& myPongGlobals->p1Y-myPongGlobals->p1Y_size > myPongGlobals->yMinBoundry**/) {
 
 		//Trigger render flag
 		myPongGlobals->renderP1Flag = 1;
@@ -56,7 +58,7 @@ void p1Move(struct pongGlobals *myPongGlobals) {
 		myPongGlobals->p1Y--;
 
 	}
-	if ((myPongGlobals->button & BUTTON_DOWN) && myPongGlobals->p1Y < myPongGlobals->yMaxBoundry) {
+	if ((myPongGlobals->button & BUTTON_DOWN) /**&& myPongGlobals->p1Y < myPongGlobals->yMaxBoundry**/) {
 
 		myPongGlobals->p1Y++;
 		//Trigger render flag
@@ -211,14 +213,14 @@ void checkWin(struct pongGlobals *myPongGlobals) {
 		myPongGlobals->renderWinFlag = 1;
 		myPongGlobals->winningPlayer = 2;
 	}
-	reset(myPongGlobals);
+//	reset(myPongGlobals);
 
 };
 
 //Render function for ball and updates player and balls new locations.
 void renderBall(struct pongGlobals *myPongGlobals) {
-	drawFillRect(myPongGlobals->ballX_old, myPongGlobals->ballY_old - myPongGlobals->ballY_size, myPongGlobals->ballX_old + myPongGlobals->ballX_size, myPongGlobals->ballY_old, myPongGlobals->ballTrailColorR,myPongGlobals->ballTrailColorG,myPongGlobals->ballTrailColorB, 0);
-	drawFillRect(myPongGlobals->ballX, myPongGlobals->ballY - myPongGlobals->ballY_size, myPongGlobals->ballX + myPongGlobals->ballX_size, myPongGlobals->ballY, myPongGlobals->ballColorR, myPongGlobals->ballColorG, myPongGlobals->ballColorB, 0);
+//	drawFillRect(myPongGlobals->ballX_old, myPongGlobals->ballY_old - myPongGlobals->ballY_size, myPongGlobals->ballX_old + myPongGlobals->ballX_size, myPongGlobals->ballY_old, myPongGlobals->ballTrailColorR,myPongGlobals->ballTrailColorG,myPongGlobals->ballTrailColorB, 0);
+//	drawFillRect(myPongGlobals->ballX, myPongGlobals->ballY - myPongGlobals->ballY_size, myPongGlobals->ballX + myPongGlobals->ballX_size, myPongGlobals->ballY, myPongGlobals->ballColorR, myPongGlobals->ballColorG, myPongGlobals->ballColorB, 0);
 };
 
 void render(struct pongGlobals *myPongGlobals)
@@ -232,7 +234,7 @@ void render(struct pongGlobals *myPongGlobals)
 		}
 		if (myPongGlobals->renderScoreFlag)
 		{
-			renderScore(myPongGlobals);
+//			renderScore(myPongGlobals);
 		}
 
 		if (myPongGlobals->renderBallFlag)
@@ -247,15 +249,14 @@ void render(struct pongGlobals *myPongGlobals)
 
 		if (myPongGlobals->renderP1Flag)
 		{
-			renderP1(myPongGlobals);
-			renderShip();
+			renderShip(myPongGlobals);
 		}
 		
 		
 		
 		if (myPongGlobals->renderP2Flag)
 		{
-			renderP2(myPongGlobals);
+//			renderP2(myPongGlobals);
 		}
 		flipBuffers();
 	}
@@ -276,21 +277,9 @@ void resetRenderFlags(struct pongGlobals *myPongGlobals)
 
 }
 
-void renderShip() 
+void renderShip(struct pongGlobals *myPongGlobals) 
 {
-	drawBitmap(0, 0, 36, 36, output, ship_palette);
-//	int x;
-//	for (x=0; x<36; x++) 
-//	{
-//		int y;
-//		for (y=0; y<36; y++)
-//		{
-//			const unsigned char cp = output[y][x];
-//			const unsigned char* colors = ship_palette[cp];
-//			
-//			drawPixel(x, y, colors[2], colors[1], colors[0], colors[3]);
-//		}
-//	}
+	drawBitmap(myPongGlobals->p1X, myPongGlobals->p1Y, 36, 36, output, ship_palette);
 }
 
 void updatePosition(struct pongGlobals *myPongGlobals)
@@ -361,89 +350,37 @@ void wait(int t) {
 
 //Draws the win screen.
 void renderWin(struct pongGlobals *myPongGlobals) {
-	if (myPongGlobals->winningPlayer == 1) {
-		char p1win[255];
-		__os_snprintf(p1win, 255, "Player 1 Wins!");
-		drawString(myPongGlobals->winX, myPongGlobals->winY, p1win);
-	}
-	if (myPongGlobals->winningPlayer == 2) {
-		char p2win[255];
-		__os_snprintf(p2win, 255, "Player 2 Wins!");
-		drawString(myPongGlobals->winX, myPongGlobals->winY, p2win);
-	}
+//	if (myPongGlobals->winningPlayer == 1) {
+//		char p1win[255];
+//		__os_snprintf(p1win, 255, "Player 1 Wins!");
+//		drawString(myPongGlobals->winX, myPongGlobals->winY, p1win);
+//	}
+//	if (myPongGlobals->winningPlayer == 2) {
+//		char p2win[255];
+//		__os_snprintf(p2win, 255, "Player 2 Wins!");
+//		drawString(myPongGlobals->winX, myPongGlobals->winY, p2win);
+//	}
 };
 
 //Draws the inital player paddles and ball.
 void renderInitialPlayers(struct pongGlobals *myPongGlobals) {
-	drawFillRect(myPongGlobals->p1X_old, myPongGlobals->p1Y_old - myPongGlobals->p1Y_size, myPongGlobals->p1X_old + myPongGlobals->p1X_size, myPongGlobals->p1Y_old, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-	
-	drawFillRect(myPongGlobals->p2X_old, myPongGlobals->p2Y_old - myPongGlobals->p2Y_size, myPongGlobals->p2X_old + myPongGlobals->p2X_size, myPongGlobals->p2Y_old, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-	drawFillRect(myPongGlobals->ballX_old, myPongGlobals->ballY_old - myPongGlobals->ballY_size, myPongGlobals->ballX_old + myPongGlobals->ballX_size, myPongGlobals->ballY_old, myPongGlobals->ballColorR, myPongGlobals->ballColorG, myPongGlobals->ballColorB, 0);
-	
-	char credits[255];
-	__os_snprintf(credits, 255, "Pong by Relys!");
-	drawString(myPongGlobals->winX, myPongGlobals->winY+1, credits);
+				renderShip(myPongGlobals);
+
+//	drawFillRect(myPongGlobals->p1X_old, myPongGlobals->p1Y_old - myPongGlobals->p1Y_size, myPongGlobals->p1X_old + myPongGlobals->p1X_size, myPongGlobals->p1Y_old, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
+//	
+//	drawFillRect(myPongGlobals->p2X_old, myPongGlobals->p2Y_old - myPongGlobals->p2Y_size, myPongGlobals->p2X_old + myPongGlobals->p2X_size, myPongGlobals->p2Y_old, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
+//	drawFillRect(myPongGlobals->ballX_old, myPongGlobals->ballY_old - myPongGlobals->ballY_size, myPongGlobals->ballX_old + myPongGlobals->ballX_size, myPongGlobals->ballY_old, myPongGlobals->ballColorR, myPongGlobals->ballColorG, myPongGlobals->ballColorB, 0);
+//	
+//	char credits[255];
+//	__os_snprintf(credits, 255, "Pong by Relys!");
+//	drawString(myPongGlobals->winX, myPongGlobals->winY+1, credits);
 };
 
 //Draws player1's paddle
 void renderP1(struct pongGlobals *myPongGlobals) {
-	//move up
-	if (myPongGlobals->p1Y_old>myPongGlobals->p1Y)
-	{
-		drawLine(myPongGlobals->p1X_old, myPongGlobals->p1Y_old, myPongGlobals->p1X_old + myPongGlobals->p1X_size, myPongGlobals->p1Y_old, myPongGlobals->backgroundColorR, myPongGlobals->backgroundColorG, myPongGlobals->backgroundColorB, 0);
-		
-		drawLine(myPongGlobals->p1X, myPongGlobals->p1Y - myPongGlobals->p1Y_size, myPongGlobals->p1X + myPongGlobals->p1X_size, myPongGlobals->p1Y - myPongGlobals->p1Y_size, myPongGlobals->paddleColorR,myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-	}
-	//Move down
-	if(myPongGlobals->p1Y_old<myPongGlobals->p1Y)
-	{
-		drawLine(myPongGlobals->p1X, myPongGlobals->p1Y, myPongGlobals->p1X + myPongGlobals->p1X_size, myPongGlobals->p1Y, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-		drawLine(myPongGlobals->p1X_old, myPongGlobals->p1Y_old - myPongGlobals->p1Y_size, myPongGlobals->p1X_old + myPongGlobals->p1X_size, myPongGlobals->p1Y_old - myPongGlobals->p1Y_size, myPongGlobals->backgroundColorR, myPongGlobals->backgroundColorG, myPongGlobals->backgroundColorB, 0);
-	}
-	
-	//Move right
-	if(myPongGlobals->p1X_old<myPongGlobals->p1X)
-	{
-		drawLine(myPongGlobals->p1X_old, myPongGlobals->p1Y_old-myPongGlobals->p1Y_size, myPongGlobals->p1X_old , myPongGlobals->p1Y_old, myPongGlobals->backgroundColorR, myPongGlobals->backgroundColorG, myPongGlobals->backgroundColorB, 0);
-		drawLine(myPongGlobals->p1X+myPongGlobals->p1X_size, myPongGlobals->p1Y-myPongGlobals->p1Y_size, myPongGlobals->p1X+myPongGlobals->p1X_size, myPongGlobals->p1Y, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-	}
-	
-	//Move left
-	if(myPongGlobals->p1X_old>myPongGlobals->p1X)
-	{
-		drawLine(myPongGlobals->p1X, myPongGlobals->p1Y-myPongGlobals->p1Y_size, myPongGlobals->p1X , myPongGlobals->p1Y, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-		drawLine(myPongGlobals->p1X_old+myPongGlobals->p1X_size, myPongGlobals->p1Y_old-myPongGlobals->p1Y_size, myPongGlobals->p1X_old+myPongGlobals->p1X_size, myPongGlobals->p1Y_old, myPongGlobals->backgroundColorR, myPongGlobals->backgroundColorG, myPongGlobals->backgroundColorB, 0);
-	}
 }
 
 //Draws player2's paddle
 void renderP2(struct pongGlobals *myPongGlobals) {
-	//move up
-	if (myPongGlobals->p2Y_old>myPongGlobals->p2Y)
-	{
-		drawLine(myPongGlobals->p2X_old, myPongGlobals->p2Y_old, myPongGlobals->p2X_old + myPongGlobals->p2X_size, myPongGlobals->p2Y_old, myPongGlobals->backgroundColorR, myPongGlobals->backgroundColorG, myPongGlobals->backgroundColorB, 0);
-		
-		drawLine(myPongGlobals->p2X, myPongGlobals->p2Y - myPongGlobals->p2Y_size, myPongGlobals->p2X + myPongGlobals->p2X_size, myPongGlobals->p2Y - myPongGlobals->p2Y_size, myPongGlobals->paddleColorR,myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-	}
-	//Move down
-	if(myPongGlobals->p2Y_old<myPongGlobals->p2Y)
-	{
-		drawLine(myPongGlobals->p2X, myPongGlobals->p2Y, myPongGlobals->p2X + myPongGlobals->p2X_size, myPongGlobals->p2Y, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-		drawLine(myPongGlobals->p2X_old, myPongGlobals->p2Y_old - myPongGlobals->p2Y_size, myPongGlobals->p2X_old + myPongGlobals->p2X_size, myPongGlobals->p2Y_old - myPongGlobals->p2Y_size, myPongGlobals->backgroundColorR, myPongGlobals->backgroundColorG, myPongGlobals->backgroundColorB, 0);
-	}
-	
-	//Move right
-	if(myPongGlobals->p2X_old<myPongGlobals->p2X)
-	{
-		drawLine(myPongGlobals->p2X_old, myPongGlobals->p2Y_old-myPongGlobals->p2Y_size, myPongGlobals->p2X_old , myPongGlobals->p2Y_old, myPongGlobals->backgroundColorR, myPongGlobals->backgroundColorG, myPongGlobals->backgroundColorB, 0);
-		drawLine(myPongGlobals->p2X+myPongGlobals->p2X_size, myPongGlobals->p2Y-myPongGlobals->p2Y_size, myPongGlobals->p2X+myPongGlobals->p2X_size, myPongGlobals->p2Y, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-	}
-	
-	//Move left
-	if(myPongGlobals->p2X_old>myPongGlobals->p2X)
-	{
-		drawLine(myPongGlobals->p2X, myPongGlobals->p2Y-myPongGlobals->p2Y_size, myPongGlobals->p2X , myPongGlobals->p2Y, myPongGlobals->paddleColorR, myPongGlobals->paddleColorG, myPongGlobals->paddleColorB, 0);
-		drawLine(myPongGlobals->p2X_old+myPongGlobals->p2X_size, myPongGlobals->p2Y_old-myPongGlobals->p2Y_size, myPongGlobals->p2X_old+myPongGlobals->p2X_size, myPongGlobals->p2Y_old, myPongGlobals->backgroundColorR, myPongGlobals->backgroundColorG, myPongGlobals->backgroundColorB, 0);
-	}
 
 }
