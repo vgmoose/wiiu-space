@@ -4,12 +4,15 @@
 #include "../../../libwiiu/src/vpad.h"
 #include "../../../libwiiu/src/types.h"
 //Using modified version of draw to render at twice the scale to improve framerate
-#include "draw.h"
+#include "../../../libwiiu/src/draw.h"
 #include "../../../libwiiu/src/math.h"
 //Struct for global variables for pong
 struct pongGlobals{
 	//Flag for restarting the entire game.
 	int restart;
+	
+	unsigned char* arraything;
+	unsigned char (*shipBitmap)[36];
 	
 	//Gameplay boundry
 	int xMinBoundry;

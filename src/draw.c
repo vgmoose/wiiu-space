@@ -43,6 +43,47 @@ void fillScreen(char r,char g,char b,char a)
 	OSScreenClearBufferEx(1, num);
 }
 
+// draw bitmap
+void drawBitmap(int ox, int oy, int width, int height, unsigned char input[][36], unsigned char palette[][4])
+{
+	unsigned int coreinit_handle;
+	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
+	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
+	OSDynLoad_FindExport(coreinit_handle, 0, "OSScreenPutPixelEx", &OSScreenPutPixelEx);
+	
+	int rx;
+	for (rx=0; rx<width; rx++)
+	{
+		int ry;
+		for (ry=0; ry<height; ry++)
+		{
+			const unsigned char* color = palette[input[ry][rx]];
+			const char r = color[2];
+			const char g = color[1];
+			const char b = color[0];
+			const char a = color[3];
+			
+//			// transparent pixels
+//			if (a == 0xFF) continue;
+			
+			int x = ox + rx;
+			int y = oy + ry;
+			
+			// do actual pixel drawing logic
+			uint32_t num = (r << 24) | (g << 16) | (b << 8) | a;
+			OSScreenPutPixelEx(0,x*2,y*2,num);
+			OSScreenPutPixelEx(1,x*2,y*2,num);
+			OSScreenPutPixelEx(0,x*2+1,y*2,num);
+			OSScreenPutPixelEx(1,x*2+1,y*2,num);
+			OSScreenPutPixelEx(0,x*2,y*2+1,num);
+			OSScreenPutPixelEx(1,x*2,y*2+1,num);
+			OSScreenPutPixelEx(0,x*2+1,y*2+1,num);
+			OSScreenPutPixelEx(1,x*2+1,y*2+1,num);
+		}
+	}
+	
+}
+
 //Rendering in 
 void drawPixel(int x, int y, char r, char g, char b, char a)
 {
