@@ -23,12 +23,15 @@ struct SpaceGlobals{
 	int winX;
 	int winY;
 	int speed;
+	
+	unsigned char rotated_ship[36][36];
 
 	//Globals for player1 location and movement dx/dy
-	int p1X;
-	int p1Y;
+	float p1X;
+	float p1Y;
 	int p1X_size;
 	int p1Y_size;
+	float angle;
 
 	int p1X_default;
 	int p1Y_default;
@@ -56,4 +59,8 @@ void reset(struct SpaceGlobals *mySpaceGlobals);
 void resetRenderFlags(struct SpaceGlobals *mySpaceGlobals);
 void render(struct SpaceGlobals *mySpaceGlobals);
 void p1Move(struct SpaceGlobals *mySpaceGlobals);
+float atan2(float x, float y);
+float sin(float x);
+float cos(float x);
+
 #endif /* SPACE_H */

@@ -12,7 +12,7 @@ all: setup main550 main532 main500 main410 main400 main310 main300 main210 main2
 setup:
 	mkdir -p $(root)/bin/
 main550:
-	$(CC) $(CFLAGS) -DVER=550 $(project)/*.c
+	$(CC) $(CFLAGS) -DVER=550 $(project)/*.c 
 	#-Wa,-a,-ad
 	cp -r $(root)/*.o $(build)
 	rm $(root)/*.o

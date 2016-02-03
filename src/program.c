@@ -41,12 +41,13 @@ void _entryPoint()
 	mySpaceGlobals.direction = 1;
 	mySpaceGlobals.button = 0;
 
-	mySpaceGlobals.speed = 5;
+	mySpaceGlobals.speed = 1;
 	mySpaceGlobals.count = 0;
 
 	//Game engine globals
 	mySpaceGlobals.direction = 1;
 	mySpaceGlobals.button = 0;
+	mySpaceGlobals.angle = 0;
 
 	//Used for collision
 	mySpaceGlobals.flag = 0;
