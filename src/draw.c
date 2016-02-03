@@ -81,7 +81,6 @@ void drawBitmap(int ox, int oy, int width, int height, unsigned char input[][36]
 			OSScreenPutPixelEx(1,x*2+1,y*2+1,num);
 		}
 	}
-	
 }
 
 //Rendering in 

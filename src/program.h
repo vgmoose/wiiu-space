@@ -7,7 +7,7 @@
 //Using modified version of draw to render at twice the scale to improve framerate
 #include "../../../libwiiu/src/draw.h"
 
-#include "pong.h"
+#include "space.h"
 
 void _entryPoint();
 
