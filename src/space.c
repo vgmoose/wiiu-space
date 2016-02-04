@@ -18,7 +18,7 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	float xdif = left.x + right.x;
 	float ydif = left.y + right.y;
 	
-	// Handle D-pad movements as well
+//	// Handle D-pad movements as well
 	xdif += (mySpaceGlobals->button & BUTTON_RIGHT)? 1 : 0;
 	xdif -= (mySpaceGlobals->button &  BUTTON_LEFT)? 1 : 0;
 	ydif += (mySpaceGlobals->button &    BUTTON_UP)? 1 : 0;
@@ -31,76 +31,29 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	ydif = (ydif < -1)? -1 : ydif;
 	
 	// accept x and y movement from either stick
-	mySpaceGlobals->p1X += xdif * mySpaceGlobals->speed;
-	mySpaceGlobals->p1Y -= ydif * mySpaceGlobals->speed;
+	mySpaceGlobals->p1X += xdif/** * mySpaceGlobals->speed **/;
+	mySpaceGlobals->p1Y -= ydif/** * mySpaceGlobals->speed **/;
 	
 	// calculate angle to face
 	mySpaceGlobals->angle = atan2(ydif, xdif);
-
+//	mySpaceGlobals->angle += 0.01;
+//	if (mySpaceGlobals->angle > 3.14159265*2)
+//		mySpaceGlobals->angle = 0;
+	mySpaceGlobals->angle -= 3.14159265/2;
+	
+//	if (mySpaceGlobals->angle > 3.14159265*2) 
+//		mySpaceGlobals->angle -= 3.14159265*2;
+//	
+//	if (mySpaceGlobals->angle < 0) 
+//		mySpaceGlobals->angle += 3.14159265*2;
+	
+//	mySpaceGlobals->angle = round2decimals(mySpaceGlobals->angle);
 
 };
 
-float sin(float x)
-{
-	if (x < -3.14159265)
-    	x += 6.28318531;
-	else if (x >  3.14159265)
-		x -= 6.28318531;
-		
-	//compute sine
-	if (x < 0)
-		return 1.27323954 * x + .405284735 * x * x;
-	else
-		return 1.27323954 * x - 0.405284735 * x * x;
-}
-
-float cos(float x)
-{
-	x += 1.57079632;
-	if (x >  3.14159265)
-		x -= 6.28318531;
-
-	if (x < 0)
-		return 1.27323954 * x + 0.405284735 * x * x;
-	else
-		return 1.27323954 * x - 0.405284735 * x * x;
-}
-
-float fma(float x, float y, float z)
-{
-	return (x*y)+z;
-}
-
-float copysign(float x, float y)
-{
-	float sign = (y < 0)? -1 : 1;
-	
-	return sign * abs(x);
-}
-
-double your_tan (double x)
-{
-    return x - (x*x*x)/3 + (x*x*x*x*x)/5;
-}
-
-
-float atan2(float y, float x)
-{
-	if (x > 0)
-		return your_tan(y/x);
-	if (x < 0 && y >= 0)
-		return your_tan(y/x) + 3.14159265359;
-	if (x < 0 && y < 0)
-		return your_tan(y/x) - 3.14159265359;
-	if (x == 0 && y > 0)
-		return 1.570796325;
-	if (x == 0 && y < 0)
-		return -1.570796325;
-	return 0;
-}
-
 void makeRotationMatrix(struct SpaceGlobals *mySpaceGlobals, float angle, int width)
 {
+//	if (angle < 0 || angle > 2*3.14159265) return;
 	int x;
 	for (x=0; x<width; x++)
 	{
@@ -110,8 +63,9 @@ void makeRotationMatrix(struct SpaceGlobals *mySpaceGlobals, float angle, int wi
 			mySpaceGlobals->rotated_ship[x][y] = 14;
 		}
 	}
-	
-	angle -= 1.570796325;
+		
+	// use only the first 2 decimal places
+//	angle = round2decimals(angle);
 	
 	// go though every pixel in the original bitmap
 	for (x=0; x<width; x++)
@@ -137,6 +91,8 @@ void makeRotationMatrix(struct SpaceGlobals *mySpaceGlobals, float angle, int wi
 
 void render(struct SpaceGlobals *mySpaceGlobals)
 {
+	mySpaceGlobals->frame++;
+	
 	int ii = 0;
 	for (ii; ii < 2; ii++)
 	{
@@ -148,13 +104,27 @@ void render(struct SpaceGlobals *mySpaceGlobals)
 		if (mySpaceGlobals->renderP1Flag)
 		{
 			renderShip(mySpaceGlobals);
+			renderTexts(mySpaceGlobals);
 		}
-		
+			
 		flipBuffers();
 	}
 
 	resetRenderFlags(mySpaceGlobals);
 
+}
+
+void renderTexts(struct SpaceGlobals *mySpaceGlobals)
+{
+	// every 60th frame draw the status bar
+	if (mySpaceGlobals->frame % 60 == 0) {
+		fillRect(0, 0, 400, 20);
+
+		char credits[255];
+		__os_snprintf(credits, 255, "%f (%f, %f)", atan2(mySpaceGlobals->lstick.x, mySpaceGlobals->lstick.y), mySpaceGlobals->lstick.x, mySpaceGlobals->lstick.y);
+//				__os_snprintf(credits, 255, "%lf (%f, %f)", atan2(0.883202, -0.468992), 0.883202, -0.468992);
+		drawString(0, -1, credits);
+	}
 }
 
 void resetRenderFlags(struct SpaceGlobals *mySpaceGlobals)
@@ -169,9 +139,8 @@ void renderShip(struct SpaceGlobals *mySpaceGlobals)
 	const int posx = (int)mySpaceGlobals->p1X;
 	const int posy = (int)mySpaceGlobals->p1Y;
 	
-	if (mySpaceGlobals->angle > -6.28318530718 && mySpaceGlobals->angle < 6.28318530718)
-		makeRotationMatrix(mySpaceGlobals, mySpaceGlobals->angle, 36);
-	
+	makeRotationMatrix(mySpaceGlobals, mySpaceGlobals->angle, 36);
+
 	drawBitmap(posx, posy, 36, 36, mySpaceGlobals->rotated_ship, ship_palette);
 }
 

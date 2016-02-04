@@ -67,14 +67,15 @@ void _entryPoint()
 		mySpaceGlobals.button = vpad_data.btn_hold;
 		//If the game has been restarted, reset the game (we do this one time in the beginning to set everything up)
 		
-		mySpaceGlobals.rstick = vpad_data.lstick;
-		mySpaceGlobals.lstick = vpad_data.rstick;
+		mySpaceGlobals.rstick = vpad_data.rstick;
+		mySpaceGlobals.lstick = vpad_data.lstick;
 		
 		if (mySpaceGlobals.restart == 1)
 		{
 			reset(&mySpaceGlobals);
 			mySpaceGlobals.restart = 0;
 		}		
+		
 
 		//Update location of player1 and 2 paddles
 		p1Move(&mySpaceGlobals);

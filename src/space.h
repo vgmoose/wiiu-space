@@ -3,9 +3,16 @@
 #include "../../../libwiiu/src/coreinit.h"
 #include "../../../libwiiu/src/vpad.h"
 #include "../../../libwiiu/src/types.h"
-//Using modified version of draw to render at twice the scale to improve framerate
-#include "../../../libwiiu/src/draw.h"
-#include "../../../libwiiu/src/math.h"
+// This math has added trig function approximations
+#include "trigmath.h"
+
+struct Bullet {
+	int x;
+	int y;
+	float slope;
+	int active;
+};
+
 //Struct for global variables for pong
 struct SpaceGlobals{
 	//Flag for restarting the entire game.
@@ -23,6 +30,7 @@ struct SpaceGlobals{
 	int winX;
 	int winY;
 	int speed;
+	unsigned int frame;
 	
 	unsigned char rotated_ship[36][36];
 
@@ -45,6 +53,8 @@ struct SpaceGlobals{
 	int flag;
 	int count;
 
+	// only 20 bullets can be onscreen at a time
+	struct Bullet bullets[20];
 
 	int renderP1Flag;
 	int renderResetFlag;
@@ -59,6 +69,7 @@ void reset(struct SpaceGlobals *mySpaceGlobals);
 void resetRenderFlags(struct SpaceGlobals *mySpaceGlobals);
 void render(struct SpaceGlobals *mySpaceGlobals);
 void p1Move(struct SpaceGlobals *mySpaceGlobals);
+void renderTexts(struct SpaceGlobals *mySpaceGlobals);
 float atan2(float x, float y);
 float sin(float x);
 float cos(float x);
