@@ -13,6 +13,14 @@ struct Bullet {
 	int active;
 };
 
+struct Pixel {
+	int x;
+	int y;
+	int r;
+	int g;
+	int b;
+};
+
 //Struct for global variables for pong
 struct SpaceGlobals{
 	//Flag for restarting the entire game.
@@ -32,6 +40,8 @@ struct SpaceGlobals{
 	int speed;
 	unsigned int frame;
 	
+	long seed;
+	
 	unsigned char rotated_ship[36][36];
 
 	//Globals for player1 location and movement dx/dy
@@ -43,6 +53,10 @@ struct SpaceGlobals{
 
 	int p1X_default;
 	int p1Y_default;
+	
+	int touched;
+	int touchX;
+	int touchY;
 
 	//Game engine globals
 	int direction;
@@ -55,6 +69,7 @@ struct SpaceGlobals{
 
 	// only 20 bullets can be onscreen at a time
 	struct Bullet bullets[20];
+	struct Pixel stars[200];
 
 	int renderP1Flag;
 	int renderResetFlag;
@@ -70,8 +85,7 @@ void resetRenderFlags(struct SpaceGlobals *mySpaceGlobals);
 void render(struct SpaceGlobals *mySpaceGlobals);
 void p1Move(struct SpaceGlobals *mySpaceGlobals);
 void renderTexts(struct SpaceGlobals *mySpaceGlobals);
-float atan2(float x, float y);
-float sin(float x);
-float cos(float x);
+void initStars(struct SpaceGlobals *mySpaceGlobals);
 
+void renderStars(struct SpaceGlobals *mySpaceGlobals);
 #endif /* SPACE_H */

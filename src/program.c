@@ -1,4 +1,5 @@
 #include "program.h"
+#include "trigmath.h"
 
 void _entryPoint()
 {
@@ -56,19 +57,30 @@ void _entryPoint()
 	mySpaceGlobals.renderP1Flag = 0;
 	//Flags for render states
 	mySpaceGlobals.renderResetFlag = 0;
-
+	
+	// set the starting time
+	int64_t (*OSGetTime)();
+    OSDynLoad_FindExport(coreinit_handle, 0, "OSGetTime", &OSGetTime);
+	mySpaceGlobals.seed = OSGetTime();
+	
 	/****************************>            VPAD Loop            <****************************/
 	int error;
 	VPADData vpad_data;
+	VPADTPData vpadtp_data;
 	while (1)
 	{
 		VPADRead(0, &vpad_data, 1, &error);
+		
 		//Get the status of the gamepad
 		mySpaceGlobals.button = vpad_data.btn_hold;
 		//If the game has been restarted, reset the game (we do this one time in the beginning to set everything up)
 		
 		mySpaceGlobals.rstick = vpad_data.rstick;
 		mySpaceGlobals.lstick = vpad_data.lstick;
+		
+		mySpaceGlobals.touched = vpad_data.tpdata.touched;
+		mySpaceGlobals.touchX = vpad_data.tpdata.x;
+		mySpaceGlobals.touchY = vpad_data.tpdata.y;
 		
 		if (mySpaceGlobals.restart == 1)
 		{
@@ -79,6 +91,9 @@ void _entryPoint()
 
 		//Update location of player1 and 2 paddles
 		p1Move(&mySpaceGlobals);
+		
+		// perform any shooting
+		p1Shoot(&mySpaceGlobals);
 
 		//Render the scene
 		render(&mySpaceGlobals);

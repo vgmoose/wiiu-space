@@ -1,4 +1,5 @@
 #include "trigmath.h"
+#include "space.h"
 /** Modified Math.h to include sin, cos, and tan **/
 #define M_PI   3.141592654
 
@@ -78,6 +79,40 @@ float atan2(float y, float x)
         return ans;
 }
 
+#define M 2147483647
+#define A 16807
+#define Q ( M / A )
+#define R ( M % A )
+
+float sqrt(float z)
+{
+    union
+    {
+        int tmp;
+        float f;
+    } u;
+    u.f = z;
+    u.tmp -= 1 << 23; /* Subtract 2^m. */
+    u.tmp >>= 1; /* Divide by 2. */
+    u.tmp += 1 << 29; /* Add ((b + 1) / 2) * 2^m. */
+    return u.f;
+}
+
+
+float prand(struct SpaceGlobals * mySpaceGlobals)
+{
+	long seed = mySpaceGlobals->seed;
+	
+	seed = A * (seed % Q) - R * (seed / Q);
+
+    if (seed <= 0)
+    {
+        seed += M;
+    }
+
+	return seed/16807.0;
+}
+
 // turns 34.02834237 -> 34.02
 float round2decimals(float x)
 {
@@ -88,3 +123,5 @@ float round2decimals(float x)
 	
 	return (x / 100.0);
 }
+
+

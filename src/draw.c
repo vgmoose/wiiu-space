@@ -1,4 +1,5 @@
 #include "draw.h"
+#include "space.h"
 
 void flipBuffers()
 {
@@ -116,6 +117,31 @@ void drawBitmap(int ox, int oy, int width, int height, unsigned char input[][36]
 			OSScreenPutPixelEx(0,x*2+1,y*2+1,num);
 			OSScreenPutPixelEx(1,x*2+1,y*2+1,num);
 		}
+	}
+}
+
+void drawPixels(struct Pixel pixels[200])
+{
+	unsigned int coreinit_handle;
+	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
+	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
+	OSDynLoad_FindExport(coreinit_handle, 0, "OSScreenPutPixelEx", &OSScreenPutPixelEx);
+	
+	int rx;
+	for (rx=0; rx<200; rx++)
+	{
+		int x = pixels[rx].x;
+		int y = pixels[rx].y;
+		
+		uint32_t num = (pixels[rx].r << 24) | (pixels[rx].g << 16) | (pixels[rx].b << 8) | 0;
+		OSScreenPutPixelEx(0,x*2,y*2,num);
+		OSScreenPutPixelEx(1,x*2,y*2,num);
+		OSScreenPutPixelEx(0,x*2+1,y*2,num);
+		OSScreenPutPixelEx(1,x*2+1,y*2,num);
+		OSScreenPutPixelEx(0,x*2,y*2+1,num);
+		OSScreenPutPixelEx(1,x*2,y*2+1,num);
+		OSScreenPutPixelEx(0,x*2+1,y*2+1,num);
+		OSScreenPutPixelEx(1,x*2+1,y*2+1,num);
 	}
 }
 
