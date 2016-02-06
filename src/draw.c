@@ -1,5 +1,6 @@
 #include "draw.h"
 #include "space.h"
+#include "program.h"
 
 void flipBuffers()
 {
@@ -21,6 +22,25 @@ void flipBuffers()
 	//Flip the buffer
 	OSScreenFlipBuffersEx(0);
 	OSScreenFlipBuffersEx(1);
+}
+
+/**
+This is the main function that does the grunt work of drawing to both screens. It takes in the 
+Services structure that is constructed in program.c, which contains the pointer to the function
+that is responsible for putting a pixel on the screen. By doing it this way, the OSScreenPutPixelEx function pointer is only
+looked up once, at the program initialization, which makes successive calls to this pixel caller quicker.
+**/
+void putAPixel(struct Services *services, int x, int y, int r, int g, int b)
+{
+	uint32_t num = (r << 24) | (g << 16) | (b << 8) | 0;
+	x *= 2;
+	y *= 2;
+
+	int ax, ay, az;
+	for (ax=1; ax<2; ax++)
+		for (ay=0; ay<2; ay++)
+			for (az=0; az<2; az++)
+				services->OSScreenPutPixelEx(ax, x + ay, y + az, num);
 }
 
 void drawString(int x, int y, char * string)
@@ -45,13 +65,8 @@ void fillScreen(char r,char g,char b,char a)
 }
 
 // draw black rect all at once
-void fillRect(int ox, int oy, int width, int height)
-{
-	unsigned int coreinit_handle;
-	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
-	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
-	OSDynLoad_FindExport(coreinit_handle, 0, "OSScreenPutPixelEx", &OSScreenPutPixelEx);
-	
+void fillRect(struct Services *services, int ox, int oy, int width, int height)
+{	
 	const char r = 0;
 	const char g = 40;
 	const char b = 40;
@@ -67,27 +82,20 @@ void fillRect(int ox, int oy, int width, int height)
 			int y = oy + ry;
 			
 			// do actual pixel drawing logic
-			uint32_t num = (r << 24) | (g << 16) | (b << 8) | a;
-			OSScreenPutPixelEx(0,x*2,y*2,num);
-			OSScreenPutPixelEx(1,x*2,y*2,num);
-			OSScreenPutPixelEx(0,x*2+1,y*2,num);
-			OSScreenPutPixelEx(1,x*2+1,y*2,num);
-			OSScreenPutPixelEx(0,x*2,y*2+1,num);
-			OSScreenPutPixelEx(1,x*2,y*2+1,num);
-			OSScreenPutPixelEx(0,x*2+1,y*2+1,num);
-			OSScreenPutPixelEx(1,x*2+1,y*2+1,num);
+			putAPixel(services, x, y, r, g, b);
 		}
 	}
 }
 
-// draw bitmap
-void drawBitmap(int ox, int oy, int width, int height, unsigned char input[][36], unsigned char palette[][4])
-{
-	unsigned int coreinit_handle;
-	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
-	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
-	OSDynLoad_FindExport(coreinit_handle, 0, "OSScreenPutPixelEx", &OSScreenPutPixelEx);
-	
+/**
+This function draws a "bitmap" in a very particular fashion: it takes as input the matrix of chars to draw.
+In this matrix, each char represents the index to look it up in the palette variable which is also passed. 
+Alpha isn't used here, and instead allows the "magic color" of 0x272727 to be "skipped" when drawing.
+By looking up the color in the palette, the bitmap can be smaller. Before compression was implemented, this was
+more important. A potential speedup may be to integrate the three pixel colors into a matrix prior to this function.
+**/
+void drawBitmap(struct Services *services, int ox, int oy, int width, int height, unsigned char input[][width], unsigned char palette[][3])
+{	
 	int rx;
 	for (rx=0; rx<width; rx++)
 	{
@@ -95,205 +103,44 @@ void drawBitmap(int ox, int oy, int width, int height, unsigned char input[][36]
 		for (ry=0; ry<height; ry++)
 		{
 			const unsigned char* color = palette[input[ry][rx]];
-			const char r = color[2];
-			const char g = color[1];
-			const char b = color[0];
-			const char a = color[3];
+			char r = color[2];
+			char g = color[1];
+			char b = color[0];
 			
 //			// transparent pixels
-//			if (a == 0xFF) continue;
+			if (r == 0x27 && g == 0x27 && b == 0x27)
+			{
+				r = g = b = 0;
+			}
 			
 			int x = ox + rx;
 			int y = oy + ry;
 			
 			// do actual pixel drawing logic
-			uint32_t num = (r << 24) | (g << 16) | (b << 8) | a;
-			OSScreenPutPixelEx(0,x*2,y*2,num);
-			OSScreenPutPixelEx(1,x*2,y*2,num);
-			OSScreenPutPixelEx(0,x*2+1,y*2,num);
-			OSScreenPutPixelEx(1,x*2+1,y*2,num);
-			OSScreenPutPixelEx(0,x*2,y*2+1,num);
-			OSScreenPutPixelEx(1,x*2,y*2+1,num);
-			OSScreenPutPixelEx(0,x*2+1,y*2+1,num);
-			OSScreenPutPixelEx(1,x*2+1,y*2+1,num);
+			putAPixel(services, x, y, r, g, b);
 		}
 	}
 }
 
-void drawPixels(struct Pixel pixels[200])
-{
-	unsigned int coreinit_handle;
-	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
-	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
-	OSDynLoad_FindExport(coreinit_handle, 0, "OSScreenPutPixelEx", &OSScreenPutPixelEx);
-	
+/**
+This is primarly used for drawing the stars, and takes in a pixel map. It is similar to bitmap, but now
+it takes the whole pixel map as well as which portion of it to actually draw. At the beginning, all of the stars
+are drawn, but whenever the ship moves, only the stars underneath the ship need to be redrawn.
+**/
+void drawPixels(struct Services *services, struct Pixel pixels[200])
+{	
 	int rx;
 	for (rx=0; rx<200; rx++)
 	{
 		int x = pixels[rx].x;
 		int y = pixels[rx].y;
 		
-		uint32_t num = (pixels[rx].r << 24) | (pixels[rx].g << 16) | (pixels[rx].b << 8) | 0;
-		OSScreenPutPixelEx(0,x*2,y*2,num);
-		OSScreenPutPixelEx(1,x*2,y*2,num);
-		OSScreenPutPixelEx(0,x*2+1,y*2,num);
-		OSScreenPutPixelEx(1,x*2+1,y*2,num);
-		OSScreenPutPixelEx(0,x*2,y*2+1,num);
-		OSScreenPutPixelEx(1,x*2,y*2+1,num);
-		OSScreenPutPixelEx(0,x*2+1,y*2+1,num);
-		OSScreenPutPixelEx(1,x*2+1,y*2+1,num);
+		putAPixel(services, x, y, pixels[rx].r, pixels[rx].g, pixels[rx].b);
 	}
 }
 
-//Rendering in 
-void drawPixel(int x, int y, char r, char g, char b, char a)
-{
-	unsigned int coreinit_handle;
-	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
-	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
-	OSDynLoad_FindExport(coreinit_handle, 0, "OSScreenPutPixelEx", &OSScreenPutPixelEx);
-	uint32_t num = (r << 24) | (g << 16) | (b << 8) | a;
-	OSScreenPutPixelEx(0,x*2,y*2,num);
-	OSScreenPutPixelEx(1,x*2,y*2,num);
-	OSScreenPutPixelEx(0,x*2+1,y*2,num);
-	OSScreenPutPixelEx(1,x*2+1,y*2,num);
-	OSScreenPutPixelEx(0,x*2,y*2+1,num);
-	OSScreenPutPixelEx(1,x*2,y*2+1,num);
-	OSScreenPutPixelEx(0,x*2+1,y*2+1,num);
-	OSScreenPutPixelEx(1,x*2+1,y*2+1,num);
-	//Code to write to framebuffer directly. For some reason this is only writing to one of the framebuffers when calling flipBuffers. Should provide speedup but needs investigation.
-	/*
-	unsigned int coreinit_handle;
-	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
-	unsigned int(*OSScreenGetBufferSizeEx)(unsigned int bufferNum);
-	OSDynLoad_FindExport(coreinit_handle, 0, "OSScreenGetBufferSizeEx", &OSScreenGetBufferSizeEx);
+void drawPixel(struct Services *services, int x, int y, char r, char g, char b, char a)
+{		
+	putAPixel(services, x, y, r, g, b);
 
-	void(*memcpy)(void* dest, void* src, int length);
-	OSDynLoad_FindExport(coreinit_handle, 0, "memcpy", &memcpy);
-	int buf0_size = OSScreenGetBufferSizeEx(0);
-	int height = 1024;
-	int width = 1280;
-	char *screen = (void *)0xF4000000;
-	uint32_t v=(x + y*width)*4;
-	screen[v]=r;
-	screen[v+1]=g;
-	screen[v+2]=b;
-	screen[v+3]=a;
-
-	height = 480;
-	width = 896;
-	char *screen2 = (void *)0xF4000000 + buf0_size;
-	v=(x + y*width)*4;
-	screen2[v]=r;
-	screen2[v+1]=g;
-	screen2[v+2]=b;
-	screen2[v+3]=a;
-	*/
-}
-
-void drawLine(int x1, int y1, int x2, int y2, char r, char g, char b, char a)
-{
-
-	int x, y;
-	if (x1 == x2){
-		if (y1 < y2) for (y = y1; y <= y2; y++) drawPixel(x1, y, r, g, b, a);
-		else for (y = y2; y <= y1; y++) drawPixel(x1, y, r, g, b, a);
-	}
-	else {
-		if (x1 < x2) for (x = x1; x <= x2; x++) drawPixel(x, y1, r, g, b, a);
-		else for (x = x2; x <= x1; x++) drawPixel(x, y1, r, g, b, a);
-	}
-}
-
-void drawRect(int x1, int y1, int x2, int y2, char r, char g, char b, char a)
-{
-	drawLine(x1, y1, x2, y1, r, g, b, a);
-	drawLine(x2, y1, x2, y2, r, g, b, a);
-	drawLine(x1, y2, x2, y2, r, g, b, a);
-	drawLine(x1, y1, x1, y2, r, g, b, a);
-}
-
-void drawFillRect(int x1, int y1, int x2, int y2, char r, char g, char b, char a)
-{
-	int X1, X2, Y1, Y2, i, j;
-
-	if (x1 < x2){
-		X1 = x1;
-		X2 = x2;
-	}
-	else {
-		X1 = x2;
-		X2 = x1;
-	}
-
-	if (y1 < y2){
-		Y1 = y1;
-		Y2 = y2;
-	}
-	else {
-		Y1 = y2;
-		Y2 = y1;
-	}
-	for (i = X1; i <= X2; i++){
-		for (j = Y1; j <= Y2; j++){
-			drawPixel(i, j, r, g, b, a);
-		}
-	}
-}
-
-void drawCircle(int xCen, int yCen, int radius, char r, char g, char b, char a)
-{
-	int x = 0;
-	int y = radius;
-	int p = (5 - radius * 4) / 4;
-	drawCircleCircum(xCen, yCen, x, y, r, g, b, a);
-	while (x < y){
-		x++;
-		if (p < 0){
-			p += 2 * x + 1;
-		}
-		else{
-			y--;
-			p += 2 * (x - y) + 1;
-		}
-		drawCircleCircum(xCen, yCen, x, y, r, g, b, a);
-	}
-}
-
-void drawFillCircle(int xCen, int yCen, int radius, char r, char g, char b, char a)
-{
-	drawCircle(xCen, yCen, radius, r, g, b, a);
-	int x, y;
-	for (y = -radius; y <= radius; y++){
-		for (x = -radius; x <= radius; x++)
-			if (x*x + y*y <= radius*radius + radius * .8f)
-				drawPixel(xCen + x, yCen + y, r, g, b, a);
-	}
-}
-
-void drawCircleCircum(int cx, int cy, int x, int y, char r, char g, char b, char a)
-{
-
-	if (x == 0){
-		drawPixel(cx, cy + y, r, g, b, a);
-		drawPixel(cx, cy - y, r, g, b, a);
-		drawPixel(cx + y, cy, r, g, b, a);
-		drawPixel(cx - y, cy, r, g, b, a);
-	}
-	if (x == y){
-		drawPixel(cx + x, cy + y, r, g, b, a);
-		drawPixel(cx - x, cy + y, r, g, b, a);
-		drawPixel(cx + x, cy - y, r, g, b, a);
-		drawPixel(cx - x, cy - y, r, g, b, a);
-	}
-	if (x < y){
-		drawPixel(cx + x, cy + y, r, g, b, a);
-		drawPixel(cx - x, cy + y, r, g, b, a);
-		drawPixel(cx + x, cy - y, r, g, b, a);
-		drawPixel(cx - x, cy - y, r, g, b, a);
-		drawPixel(cx + y, cy + x, r, g, b, a);
-		drawPixel(cx - y, cy + x, r, g, b, a);
-		drawPixel(cx + y, cy - x, r, g, b, a);
-		drawPixel(cx - y, cy - x, r, g, b, a);
-	}
 }

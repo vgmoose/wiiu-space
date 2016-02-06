@@ -1,7 +1,7 @@
 CC=powerpc-eabi-gcc
 CFLAGS=-nostdinc -fno-builtin -c
 LD=powerpc-eabi-ld
-LDFLAGS=-Ttext 1800000 --oformat binary
+LDFLAGS=-Ttext 1800000 --oformat binary 
 project	:=	src
 root:=.
 build	:=	 $(root)/bin
@@ -12,11 +12,11 @@ all: setup main550 main532 main500 main410 main400 main310 main300 main210 main2
 setup:
 	mkdir -p $(root)/bin/
 main550:
-	$(CC) $(CFLAGS) -DVER=550 $(project)/*.c 
+	$(CC) $(CFLAGS) -DVER=550 $(project)/*.c
 	#-Wa,-a,-ad
 	cp -r $(root)/*.o $(build)
 	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code550.bin $(build)/loader.o `find $(libs)/550/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
+	$(LD) $(LDFLAGS) -o $(build)/code550.bin $(build)/loader.o `find $(libs)/550/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"` 
 main532:
 	$(CC) $(CFLAGS) -DVER=532 $(project)/*.c
 	#-Wa,-a,-ad

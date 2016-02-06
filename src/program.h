@@ -8,7 +8,11 @@
 #include "../../../libwiiu/src/draw.h"
 
 #include "space.h"
-
+struct Services
+{
+	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
+};
+extern unsigned int (*GlobalPutPixel)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
 void _entryPoint();
 
 #endif /* PROGRAM_H */

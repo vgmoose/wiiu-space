@@ -5,6 +5,7 @@
 #include "../../../libwiiu/src/types.h"
 // This math has added trig function approximations
 #include "trigmath.h"
+#include "program.h"
 
 struct Bullet {
 	int x;
@@ -43,6 +44,8 @@ struct SpaceGlobals{
 	long seed;
 	
 	unsigned char rotated_ship[36][36];
+	unsigned char orig_ship[36][36];
+	unsigned char title[100][200];
 
 	//Globals for player1 location and movement dx/dy
 	float p1X;
@@ -57,6 +60,7 @@ struct SpaceGlobals{
 	int touched;
 	int touchX;
 	int touchY;
+	int titleScreenRefresh;
 
 	//Game engine globals
 	int direction;
@@ -73,10 +77,17 @@ struct SpaceGlobals{
 
 	int renderP1Flag;
 	int renderResetFlag;
+	
+	struct Services* services;
+	
+	int state; // 1 is title screen, 2 is gameplay, 3 is password, 4 is about
+	int score;
+	int level;
+	int menuChoice;
 
 };
 
-//Function declarations for pong functions.
+//Function declarations for space functions.
 void renderShip(struct SpaceGlobals *mySpaceGlobals);
 void renderInitialPlayers(struct SpaceGlobals *mySpaceGlobals);
 void renderReset(struct SpaceGlobals *mySpaceGlobals);
@@ -86,6 +97,10 @@ void render(struct SpaceGlobals *mySpaceGlobals);
 void p1Move(struct SpaceGlobals *mySpaceGlobals);
 void renderTexts(struct SpaceGlobals *mySpaceGlobals);
 void initStars(struct SpaceGlobals *mySpaceGlobals);
+void handleCollisions(struct SpaceGlobals * mySpaceGlobals);
+void displayTitle(struct SpaceGlobals * mySpaceGlobals);
+void doMenuAction(struct SpaceGlobals *mySpaceGlobals);
+void drawMenuCursor(struct SpaceGlobals *mySpaceGlobals);
 
 void renderStars(struct SpaceGlobals *mySpaceGlobals);
 #endif /* SPACE_H */

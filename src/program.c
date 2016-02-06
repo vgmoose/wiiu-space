@@ -3,23 +3,30 @@
 
 void _entryPoint()
 {
+	struct Services services;
+	
 	/****************************>           Get Handles           <****************************/
 	//Get a handle to coreinit.rpl
-	unsigned int coreinit_handle;
-	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
+	unsigned int coreinit_handle2;
+	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle2);
 	//Get a handle to vpad.rpl */
 	unsigned int vpad_handle;
 	OSDynLoad_Acquire("vpad.rpl", &vpad_handle);
 	/****************************>       External Prototypes       <****************************/
 	//VPAD functions
 	int(*VPADRead)(int controller, VPADData *buffer, unsigned int num, int *error);
+	// Draw functions
+	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
 	//OS functions
 	void(*_Exit)();
 	/****************************>             Exports             <****************************/
 	//VPAD functions
 	OSDynLoad_FindExport(vpad_handle, 0, "VPADRead", &VPADRead);
+	// Draw functions
+	OSDynLoad_FindExport(coreinit_handle2, 0, "OSScreenPutPixelEx", &services.OSScreenPutPixelEx);
+	
 	//OS functions
-	OSDynLoad_FindExport(coreinit_handle, 0, "_Exit", &_Exit);
+	OSDynLoad_FindExport(coreinit_handle2, 0, "_Exit", &_Exit);
 	/****************************>             Globals             <****************************/
 	struct SpaceGlobals mySpaceGlobals;
 	//Flag for restarting the entire game.
@@ -34,9 +41,10 @@ void _entryPoint()
 	mySpaceGlobals.p1Y_size=60*mySpaceGlobals.scale;
 	//Boundry of play area (screen)
 	mySpaceGlobals.xMinBoundry=0*mySpaceGlobals.scale;
-	mySpaceGlobals.xMaxBoundry=400*mySpaceGlobals.scale;
+	mySpaceGlobals.xMaxBoundry=427*mySpaceGlobals.scale;
 	mySpaceGlobals.yMinBoundry=0*mySpaceGlobals.scale;
 	mySpaceGlobals.yMaxBoundry=240*mySpaceGlobals.scale;
+	mySpaceGlobals.services = &services;
 	
 	//Game engine globals
 	mySpaceGlobals.direction = 1;
@@ -52,21 +60,28 @@ void _entryPoint()
 
 	//Used for collision
 	mySpaceGlobals.flag = 0;
+	
+	// initial state is title screen
+	mySpaceGlobals.state = 1;
+	mySpaceGlobals.titleScreenRefresh = 1;
 
 	//Flag to determine if p1 should be rendered along with p1's movement direction
 	mySpaceGlobals.renderP1Flag = 0;
 	//Flags for render states
 	mySpaceGlobals.renderResetFlag = 0;
+	mySpaceGlobals.menuChoice = 0; // 0 is play, 1 is password
+	
 	
 	// set the starting time
 	int64_t (*OSGetTime)();
-    OSDynLoad_FindExport(coreinit_handle, 0, "OSGetTime", &OSGetTime);
+    OSDynLoad_FindExport(coreinit_handle2, 0, "OSGetTime", &OSGetTime);
 	mySpaceGlobals.seed = OSGetTime();
 	
 	/****************************>            VPAD Loop            <****************************/
 	int error;
 	VPADData vpad_data;
 	VPADTPData vpadtp_data;
+	
 	while (1)
 	{
 		VPADRead(0, &vpad_data, 1, &error);
@@ -86,21 +101,27 @@ void _entryPoint()
 		{
 			reset(&mySpaceGlobals);
 			mySpaceGlobals.restart = 0;
-		}		
+		}
 		
+		if (mySpaceGlobals.state == 1) // title screen
+		{
+			displayTitle(&mySpaceGlobals);
+			doMenuAction(&mySpaceGlobals);
+		}
+		else
+		{
+			//Update location of player1 and 2 paddles
+			p1Move(&mySpaceGlobals);
 
-		//Update location of player1 and 2 paddles
-		p1Move(&mySpaceGlobals);
-		
-		// perform any shooting
-		p1Shoot(&mySpaceGlobals);
+			// perform any shooting
+			p1Shoot(&mySpaceGlobals);
 
-		//Render the scene
-		render(&mySpaceGlobals);
+			//Render the scene
+			render(&mySpaceGlobals);
 
-		//Increment the counter (used for physicals calcuations)
-		mySpaceGlobals.count+=1;
-
+			//Increment the counter (used for physicals calcuations)
+			mySpaceGlobals.count+=1;
+		}
 		//To exit the game
 		if (mySpaceGlobals.button&BUTTON_HOME)
 		{

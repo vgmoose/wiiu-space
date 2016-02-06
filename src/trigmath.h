@@ -4,8 +4,6 @@ float sin(float x);
 
 float cos(float x);
 
-double atan(double x);
+float atan(float x);
 
 float atan2(float y, float x);
-
-float round2decimals(float x);
