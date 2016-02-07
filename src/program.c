@@ -1,65 +1,63 @@
 #include "program.h"
 #include "trigmath.h"
+#include "draw.h"
 
+void cleanSlate(struct Services *services)
+{
+	// clear both buffers
+	int ii=0;
+	for(ii;ii<2;ii++)
+	{
+		fillScreen(services, 0,0,0,0);
+		flipBuffers(services);
+	}
+}
 void _entryPoint()
 {
 	struct Services services;
 	
 	/****************************>           Get Handles           <****************************/
 	//Get a handle to coreinit.rpl
-	unsigned int coreinit_handle2;
-	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle2);
+	OSDynLoad_Acquire("coreinit.rpl", &services.coreinit_handle);
 	//Get a handle to vpad.rpl */
 	unsigned int vpad_handle;
 	OSDynLoad_Acquire("vpad.rpl", &vpad_handle);
 	/****************************>       External Prototypes       <****************************/
 	//VPAD functions
 	int(*VPADRead)(int controller, VPADData *buffer, unsigned int num, int *error);
-	// Draw functions
-	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
+
 	//OS functions
 	void(*_Exit)();
+	
 	/****************************>             Exports             <****************************/
 	//VPAD functions
 	OSDynLoad_FindExport(vpad_handle, 0, "VPADRead", &VPADRead);
 	// Draw functions
-	OSDynLoad_FindExport(coreinit_handle2, 0, "OSScreenPutPixelEx", &services.OSScreenPutPixelEx);
-	
+	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenPutPixelEx", &services.OSScreenPutPixelEx);
+	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenClearBufferEx", &services.OSScreenClearBufferEx);
+	OSDynLoad_FindExport(services.coreinit_handle, 0, "DCFlushRange", &services.DCFlushRange);
+	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenFlipBuffersEx", &services.OSScreenFlipBuffersEx);
+	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenGetBufferSizeEx", &services.OSScreenGetBufferSizeEx);
+	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenPutFontEx", &services.OSScreenPutFontEx);
 	//OS functions
-	OSDynLoad_FindExport(coreinit_handle2, 0, "_Exit", &_Exit);
+	OSDynLoad_FindExport(services.coreinit_handle, 0, "_Exit", &_Exit);
+	
+	cleanSlate(&services);
+	
 	/****************************>             Globals             <****************************/
 	struct SpaceGlobals mySpaceGlobals;
 	//Flag for restarting the entire game.
 	mySpaceGlobals.restart = 1;
-	//scale of game
-	mySpaceGlobals.scale=1;
-	//Default locations for paddles and ball location and movement dx/dy
-	mySpaceGlobals.p1X_default=40*mySpaceGlobals.scale;
-	mySpaceGlobals.p1Y_default=150*mySpaceGlobals.scale;
-	//Sizes of objects
-	mySpaceGlobals.p1X_size=20*mySpaceGlobals.scale;
-	mySpaceGlobals.p1Y_size=60*mySpaceGlobals.scale;
-	//Boundry of play area (screen)
-	mySpaceGlobals.xMinBoundry=0*mySpaceGlobals.scale;
-	mySpaceGlobals.xMaxBoundry=427*mySpaceGlobals.scale;
-	mySpaceGlobals.yMinBoundry=0*mySpaceGlobals.scale;
-	mySpaceGlobals.yMaxBoundry=240*mySpaceGlobals.scale;
 	mySpaceGlobals.services = &services;
 	
 	//Game engine globals
-	mySpaceGlobals.direction = 1;
 	mySpaceGlobals.button = 0;
-
-	mySpaceGlobals.speed = 1;
-	mySpaceGlobals.count = 0;
 
 	//Game engine globals
-	mySpaceGlobals.direction = 1;
 	mySpaceGlobals.button = 0;
 	mySpaceGlobals.angle = 0;
-
-	//Used for collision
-	mySpaceGlobals.flag = 0;
+	mySpaceGlobals.score = 0;
+	mySpaceGlobals.lives = 3;
 	
 	// initial state is title screen
 	mySpaceGlobals.state = 1;
@@ -74,13 +72,22 @@ void _entryPoint()
 	
 	// set the starting time
 	int64_t (*OSGetTime)();
-    OSDynLoad_FindExport(coreinit_handle2, 0, "OSGetTime", &OSGetTime);
+    OSDynLoad_FindExport(services.coreinit_handle, 0, "OSGetTime", &OSGetTime);
 	mySpaceGlobals.seed = OSGetTime();
 	
 	/****************************>            VPAD Loop            <****************************/
 	int error;
 	VPADData vpad_data;
 	VPADTPData vpadtp_data;
+	
+	// decompress compressed things into their arrays
+	decompress_sprite(4156, 200, 100, compressed_title, mySpaceGlobals.title);
+	decompress_sprite(840, 36, 36, compressed_ship, mySpaceGlobals.orig_ship);
+	
+	// initialize starfield for this game
+	initStars(&mySpaceGlobals);
+	
+	mySpaceGlobals.invalid = 1;
 	
 	while (1)
 	{
@@ -94,8 +101,11 @@ void _entryPoint()
 		mySpaceGlobals.lstick = vpad_data.lstick;
 		
 		mySpaceGlobals.touched = vpad_data.tpdata.touched;
-		mySpaceGlobals.touchX = vpad_data.tpdata.x;
-		mySpaceGlobals.touchY = vpad_data.tpdata.y;
+		if (mySpaceGlobals.touched == 1)
+		{
+			mySpaceGlobals.touchX = ((vpad_data.tpdata.x / 9) - 11);
+			mySpaceGlobals.touchY = ((3930 - vpad_data.tpdata.y) / 16);
+		}
 		
 		if (mySpaceGlobals.restart == 1)
 		{
@@ -119,8 +129,6 @@ void _entryPoint()
 			//Render the scene
 			render(&mySpaceGlobals);
 
-			//Increment the counter (used for physicals calcuations)
-			mySpaceGlobals.count+=1;
 		}
 		//To exit the game
 		if (mySpaceGlobals.button&BUTTON_HOME)
@@ -128,12 +136,6 @@ void _entryPoint()
 			break;
 		}
 	}
-	//WARNING: DO NOT CHANGE THIS. YOU MUST CLEAR THE FRAMEBUFFERS AND IMMEDIATELY CALL EXIT FROM THIS FUNCTION. RETURNING TO LOADER CAUSES FREEZE.
-	int ii=0;
-	for(ii;ii<2;ii++)
-	{
-		fillScreen(0,0,0,0);
-		flipBuffers();
-	}
+	cleanSlate(mySpaceGlobals.services);
 	_Exit();
 }

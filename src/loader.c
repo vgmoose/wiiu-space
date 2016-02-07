@@ -59,12 +59,13 @@ void _start()
 	OSScreenSetBufferEx(0, (void *)0xF4000000);
 	OSScreenSetBufferEx(1, (void *)0xF4000000 + buf0_size);
 	//Clear both framebuffers.
-	int ii = 0;
-	for (ii; ii < 2; ii++)
-	{
-		fillScreen(0,0,0,0);
-		flipBuffers();
-	}
+	// I don't do this here, and do it at the start of entry point to use my services struct
+//	int ii = 0;
+//	for (ii; ii < 2; ii++)
+//	{
+//		fillScreen(0,0,0,0);
+//		flipBuffers();
+//	}
 	//Jump to entry point.
 	_entryPoint();
 }

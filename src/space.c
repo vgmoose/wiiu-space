@@ -17,37 +17,47 @@ It relies heavily on a SpaceGlobals struct defined in space.h. This is a carry o
 pong example, but also I believe necesary since global variables don't seem to be able to be set(?)
 **/
 
-extern unsigned const char title_palette[41][3];
-extern unsigned const char compressed_title[4156];
-extern const unsigned char ship_palette[15][3];
-extern const unsigned char compressed_ship[840];
+#define xMinBoundry 0
+#define xMaxBoundry 427
+#define yMinBoundry 0
+#define yMaxBoundry 240
 
-void activateBullet(struct SpaceGlobals * mySpaceGlobals, float slope, int x, int y)
+void activateBullet(struct SpaceGlobals * mySpaceGlobals, float theta, int x, int y)
 {
 	// find an inactive bullet
 	int xx;
 	for (xx=0; xx<20; xx++)
 	{
-		if (mySpaceGlobals->bullets[x].active == 0)
+		if (mySpaceGlobals->bullets[xx].active != 1)
 		{
-			mySpaceGlobals->bullets[x].x = x;
-			mySpaceGlobals->bullets[x].y = y;
-			mySpaceGlobals->bullets[x].slope = slope;
-			mySpaceGlobals->bullets[x].active = 1;
+			mySpaceGlobals->bullets[xx].x = x + 18;
+			mySpaceGlobals->bullets[xx].y = y + 18;
+			mySpaceGlobals->bullets[xx].m_x = 2*cos(theta);
+			mySpaceGlobals->bullets[xx].m_y = 2*sin(theta);
+			mySpaceGlobals->bullets[xx].active = 1;
 			break;
 		}
 	}
+}
+
+void blackout(struct Services * services)
+{
+	fillScreen(services, 0,0,0,0);
 }
 
 void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 {
 	if (mySpaceGlobals->touched)
 	{
-//		mySpaceGlobals->angle = atan2(mySpaceGlobals->touchY - mySpaceGlobals->p1Y, mySpaceGlobals->touchX - mySpaceGlobals->p1X);
+		float xdif = mySpaceGlobals->p1X - mySpaceGlobals->touchX + 18;
+		float ydif = mySpaceGlobals->p1Y - mySpaceGlobals->touchY + 18;
+		mySpaceGlobals->angle = atan2(xdif, ydif) /*- 3.14159265/2*/;
+		
 		// shoot a bullet
-		float slope = (mySpaceGlobals->touchY - mySpaceGlobals->p1Y) / (mySpaceGlobals->touchX - mySpaceGlobals->p1X);
-		activateBullet(mySpaceGlobals, slope, mySpaceGlobals->touchX, mySpaceGlobals->touchY);
+		activateBullet(mySpaceGlobals, mySpaceGlobals->angle, mySpaceGlobals->p1X, mySpaceGlobals->p1Y);
 	}
+	
+	moveBullets(mySpaceGlobals);
 }
 
 //Updates player1 location
@@ -70,7 +80,7 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	ydif = (ydif >  1 || mySpaceGlobals->button &    BUTTON_UP)?  1 : ydif;
 	ydif = (ydif < -1 || mySpaceGlobals->button &  BUTTON_DOWN)? -1 : ydif;
 	
-	// don't update angle if both are 0
+	// don't update angle if both are within -.1 < x < .1
 	if (xdif == 0 && ydif == 0) return;
 	
 	// accept x and y movement from either stick
@@ -93,14 +103,14 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 	int playerDown = playerUp + 36;
 	
 	// don't let the player go offscreen
-	if (playerLeft < mySpaceGlobals->xMinBoundry)
-		mySpaceGlobals->p1X = mySpaceGlobals->xMinBoundry;
-	if (playerRight > mySpaceGlobals->xMaxBoundry)
-		mySpaceGlobals->p1X = mySpaceGlobals->xMaxBoundry - 36;
-	if (playerUp < mySpaceGlobals->yMinBoundry + 20)
-		mySpaceGlobals->p1Y = mySpaceGlobals->yMinBoundry + 20;
-	if (playerDown > mySpaceGlobals->yMaxBoundry)
-		mySpaceGlobals->p1Y = mySpaceGlobals->yMaxBoundry - 36;
+	if (playerLeft < xMinBoundry)
+		mySpaceGlobals->p1X = xMinBoundry;
+	if (playerRight > xMaxBoundry)
+		mySpaceGlobals->p1X = xMaxBoundry - 36;
+	if (playerUp < yMinBoundry + 20)
+		mySpaceGlobals->p1Y = yMinBoundry + 20;
+	if (playerDown > yMaxBoundry)
+		mySpaceGlobals->p1Y = yMaxBoundry - 36;
 	
 	
 }
@@ -143,29 +153,24 @@ void makeRotationMatrix(struct SpaceGlobals *mySpaceGlobals, float angle, int wi
 
 void render(struct SpaceGlobals *mySpaceGlobals)
 {
-	mySpaceGlobals->frame++;
-	
-	int ii = 0;
-	for (ii; ii < 2; ii++)
+	if (mySpaceGlobals->invalid == 1)
 	{
+		blackout(mySpaceGlobals->services);
+
+		mySpaceGlobals->frame++;
+
 		if (mySpaceGlobals->renderResetFlag)
 		{
 			renderReset(mySpaceGlobals);
 		}
 
-		if (mySpaceGlobals->renderP1Flag)
-		{
-			renderShip(mySpaceGlobals);
-			renderTexts(mySpaceGlobals);
-//			renderStars(mySpaceGlobals);
+		renderShip(mySpaceGlobals);
+		renderTexts(mySpaceGlobals);
+		renderBullets(mySpaceGlobals);
 
-		}
-			
-		flipBuffers();
+		flipBuffers(mySpaceGlobals->services);
+		mySpaceGlobals->invalid = 0;
 	}
-
-	resetRenderFlags(mySpaceGlobals);
-
 }
 
 void decompress_sprite(int arraysize, int width, int height, const unsigned char* input, unsigned char target[][width])
@@ -194,24 +199,60 @@ void decompress_sprite(int arraysize, int width, int height, const unsigned char
 	}
 }
 
-void renderTexts(struct SpaceGlobals *mySpaceGlobals)
+void moveBullets(struct SpaceGlobals *mySpaceGlobals)
 {
-	// every 60th frame draw the status bar
-	if (mySpaceGlobals->frame % 60 == 0) {
-		fillRect(mySpaceGlobals->services, 0, 0, mySpaceGlobals->xMaxBoundry, 20);
-
-		char credits[255];
-		__os_snprintf(credits, 255, "%f (%f, %f)", atan2(mySpaceGlobals->lstick.x, mySpaceGlobals->lstick.y), mySpaceGlobals->lstick.x, mySpaceGlobals->lstick.y);
-//				__os_snprintf(credits, 255, "%lf (%f, %f)", atan2(0.883202, -0.468992), 0.883202, -0.468992);
-		drawString(0, -1, credits);
+	// for all active bullets, advance them
+	int x=0;
+	for (x=0; x<20; x++)
+	{
+		if (mySpaceGlobals->bullets[x].active == 1)
+		{
+			mySpaceGlobals->bullets[x].x += mySpaceGlobals->bullets[x].m_x;
+			mySpaceGlobals->bullets[x].y += mySpaceGlobals->bullets[x].m_y;
+						
+			if (mySpaceGlobals->bullets[x].x > xMaxBoundry ||
+				mySpaceGlobals->bullets[x].x < xMinBoundry ||
+				mySpaceGlobals->bullets[x].y > yMaxBoundry ||
+				mySpaceGlobals->bullets[x].y < yMinBoundry + 20)
+				mySpaceGlobals->bullets[x].active = 0;
+			
+			mySpaceGlobals->invalid = 1;
+		}
+		
+	}
+}
+					  
+void renderBullets(struct SpaceGlobals *mySpaceGlobals)
+{
+	// for all active bullets, advance them
+	int x=0;
+	for (x=0; x<20; x++)
+	{
+		if (mySpaceGlobals->bullets[x].active == 1)
+		{
+			
+			drawPixel(mySpaceGlobals->services, mySpaceGlobals->bullets[x].x, mySpaceGlobals->bullets[x].y, 255, 0, 0);
+			// undraw the previous space
+			drawPixel(mySpaceGlobals->services, mySpaceGlobals->bullets[x].x - mySpaceGlobals->bullets[x].m_x, mySpaceGlobals->bullets[x].y - mySpaceGlobals->bullets[x].m_y, 255, 0, 0);
+		}
+		
 	}
 }
 
-void resetRenderFlags(struct SpaceGlobals *mySpaceGlobals)
+void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 {
-	mySpaceGlobals->renderResetFlag = 0;
-	mySpaceGlobals->renderP1Flag = 0;
+	// every 60th frame draw the status bar
+	if (mySpaceGlobals->frame == 60) {
+		fillRect(mySpaceGlobals->services, 0, 0, xMaxBoundry, 20, 0, 40, 40);
 
+		char score[255];
+		__os_snprintf(score, 255, "Score: %d", mySpaceGlobals->score);
+		drawString(mySpaceGlobals->services, 0, -1, score);
+
+		char lives[255];
+		__os_snprintf(lives, 255, "Lives: %d", mySpaceGlobals->lives);
+		drawString(mySpaceGlobals->services, 55, -1, lives);
+	}
 }
 
 void renderShip(struct SpaceGlobals *mySpaceGlobals) 
@@ -233,10 +274,9 @@ void renderStars(struct SpaceGlobals *mySpaceGlobals)
 //Reset the game
 void reset(struct SpaceGlobals *mySpaceGlobals) {
 	//Set global variables to default state
-	mySpaceGlobals->p1X = mySpaceGlobals->p1X_default;
-	mySpaceGlobals->p1Y = mySpaceGlobals->p1Y_default;
+	mySpaceGlobals->p1X =  40;
+	mySpaceGlobals->p1Y = 150;
 	
-	mySpaceGlobals->direction = (mySpaceGlobals->count & 3);
 	mySpaceGlobals->button = 0;
 
 	//Set flag to render reset screen;
@@ -253,86 +293,78 @@ void initStars(struct SpaceGlobals *mySpaceGlobals)
 	}
 	
 	// create the stars randomly
-//	for (x=0; x<200; x++)
-//	{
-//		mySpaceGlobals->stars[x].x = prand(mySpaceGlobals)*mySpaceGlobals->xMaxBoundry;
-//		mySpaceGlobals->stars[x].y = prand(mySpaceGlobals)*mySpaceGlobals->yMaxBoundry;
-//		int randomNum = prand(mySpaceGlobals)*4;
-//		int r,g,b;
-//		// half of the time make them white, 1/4 yellow, 1/4 blue
-//		if (randomNum < 2)
-//		{
-//			mySpaceGlobals->stars[x].r = 255;
-//			mySpaceGlobals->stars[x].g = 255;
-//			mySpaceGlobals->stars[x].b = 255;
-//		}
-//		else if (randomNum < 3)
-//		{
-//			mySpaceGlobals->stars[x].r = 255;
-//			mySpaceGlobals->stars[x].g = 255;
-//			mySpaceGlobals->stars[x].b = 0;
-//		}
-//		else
-//		{
-//			mySpaceGlobals->stars[x].r = 0;
-//			mySpaceGlobals->stars[x].g = 0;
-//			mySpaceGlobals->stars[x].b = 255;
-//		}
-//	}
+	for (x=0; x<200; x++)
+	{
+		mySpaceGlobals->stars[x].x = (int)(prand(&mySpaceGlobals->seed)*xMaxBoundry);
+		mySpaceGlobals->stars[x].y = (int)(prand(&mySpaceGlobals->seed)*yMaxBoundry);
+		int randomNum = (int)(prand(&mySpaceGlobals->seed)*4);
+		int r,g,b;
+		// half of the time make them white, 1/4 yellow, 1/4 blue
+		if (randomNum < 2)
+		{
+			mySpaceGlobals->stars[x].r = 255;
+			mySpaceGlobals->stars[x].g = 255;
+			mySpaceGlobals->stars[x].b = 255;
+		}
+		else if (randomNum < 3)
+		{
+			mySpaceGlobals->stars[x].r = 255;
+			mySpaceGlobals->stars[x].g = 255;
+			mySpaceGlobals->stars[x].b =   0;
+		}
+		else
+		{
+			mySpaceGlobals->stars[x].r =   0;
+			mySpaceGlobals->stars[x].g =   0;
+			mySpaceGlobals->stars[x].b = 255;
+		}
+	}
 }
 
 void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 {
-	if (mySpaceGlobals->titleScreenRefresh == 1)
+	if (mySpaceGlobals->invalid == 1)
 	{
-		// decompress our title image from the compressed array
-		decompress_sprite(4156, 200, 100, compressed_title, mySpaceGlobals->title);
+		blackout(mySpaceGlobals->services);
+		
+		// draw some stars
+		renderStars(mySpaceGlobals);
 
-		int ii;
-		for (ii=0; ii<2; ii++)
-		{
-			// display the bitmap in upper center screen
-			drawBitmap(mySpaceGlobals->services, 107, 30, 200, 100, mySpaceGlobals->title, title_palette);
-			
-			char credits[255];
-			__os_snprintf(credits, 255, "by vgmoose");
-			
-			char play[255];
-			__os_snprintf(play, 255, "Start Game");
-			char password[255];
-			__os_snprintf(password, 255, "Password");
-			
-			//display the menu under it
-			drawString(37, 9, credits);
-			drawString(25, 12, play);
-			drawString(25, 13, password);
-			
-			flipBuffers();
-		}
+		// display the bitmap in upper center screen
+		drawBitmap(mySpaceGlobals->services, 107, 30, 200, 100, mySpaceGlobals->title, title_palette);
+
+		char credits[255];
+		__os_snprintf(credits, 255, "by vgmoose");
+
+		char play[255];
+		__os_snprintf(play, 255, "Start Game");
+		char password[255];
+		__os_snprintf(password, 255, "Password");
+
+		//display the menu under it
+		drawString(mySpaceGlobals->services, 37, 9, credits);
+		drawString(mySpaceGlobals->services, 25, 12, play);
+		drawString(mySpaceGlobals->services, 25, 13, password);
 		
 		drawMenuCursor(mySpaceGlobals);
 		
-		mySpaceGlobals->titleScreenRefresh = 0;
+		flipBuffers(mySpaceGlobals->services);
+		mySpaceGlobals->invalid = 0;
 	}
+
 }
 
 void drawMenuCursor(struct SpaceGlobals *mySpaceGlobals)
 {
-	int ii;
-	for (ii=0; ii<2; ii++)
-	{
-		// cover up any old cursors
-//		fillRect(100, 100, 50, 50);
-//		fillRect(200, 100, 50, 50);
+	// cover up any old cursors
+	fillRect(mySpaceGlobals->services, 155, 155, 16, 30, 0, 0, 0);
+	fillRect(mySpaceGlobals->services, 240, 155, 16, 30, 0, 0, 0);
 
-		// display the cursor on the correct item
-		char cursor[255];
-		__os_snprintf(cursor, 255, ">>            <<");
-		drawString(22, 12 + mySpaceGlobals->menuChoice, cursor);
-		
-		flipBuffers();
-	}
-
+	// display the cursor on the correct item
+	char cursor[255];
+	__os_snprintf(cursor, 255, ">>            <<");
+	drawString(mySpaceGlobals->services, 22, 12 + mySpaceGlobals->menuChoice, cursor);
+	
 }
 
 void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
@@ -343,23 +375,21 @@ void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 		mySpaceGlobals->renderResetFlag = 1; // redraw screen
 	}
 	
-	if (mySpaceGlobals->button & BUTTON_DOWN || mySpaceGlobals->lstick.y > 0.03)
+	if (mySpaceGlobals->button & BUTTON_DOWN || mySpaceGlobals->lstick.y < -0.3)
 	{
 		mySpaceGlobals->menuChoice = 1;
-		drawMenuCursor(mySpaceGlobals);
+		mySpaceGlobals->invalid = 1;
 	}
 	
-	if (mySpaceGlobals->button & BUTTON_UP || mySpaceGlobals->lstick.y < 0.03)
+	if (mySpaceGlobals->button & BUTTON_UP || mySpaceGlobals->lstick.y > 0.3)
 	{
 		mySpaceGlobals->menuChoice = 0;
-		drawMenuCursor(mySpaceGlobals);
+		mySpaceGlobals->invalid = 1;
 	}
 }
 
 void renderReset(struct SpaceGlobals *mySpaceGlobals)
 {
-	fillScreen(0,0,0,0);
-	decompress_sprite(840, 36, 36, compressed_ship, mySpaceGlobals->orig_ship);
-
-	initStars(mySpaceGlobals);
+	blackout(mySpaceGlobals->services);
+	renderStars(mySpaceGlobals);
 }
