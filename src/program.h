@@ -91,6 +91,7 @@ struct SpaceGlobals{
 	int level;
 	
 	int menuChoice;
+	int passwordEntered;
 	int allowInput;
 
 };

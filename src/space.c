@@ -206,6 +206,7 @@ void render(struct SpaceGlobals *mySpaceGlobals)
 			renderReset(mySpaceGlobals);
 		}
 
+		renderStars(mySpaceGlobals);
 		renderBullets(mySpaceGlobals);
 		renderEnemies(mySpaceGlobals);
 		renderShip(mySpaceGlobals);
@@ -364,10 +365,6 @@ void renderStars(struct SpaceGlobals *mySpaceGlobals)
 
 //Reset the game
 void reset(struct SpaceGlobals *mySpaceGlobals) {
-	//Set global variables to default state
-	mySpaceGlobals->p1X =  40;
-	mySpaceGlobals->p1Y = 150;
-	
 	mySpaceGlobals->button = 0;
 
 	//Set flag to render reset screen;
@@ -375,15 +372,31 @@ void reset(struct SpaceGlobals *mySpaceGlobals) {
 
 };
 
-void initStars(struct SpaceGlobals *mySpaceGlobals) 
+void initGameState(struct SpaceGlobals *mySpaceGlobals)
 {
+	// init bullets
 	int x;
 	for (x=0; x<20; x++)
 	{
 		mySpaceGlobals->bullets[x].active = 0;
 	}
 	
+	// init x and y pos of player
+	mySpaceGlobals->p1X =  40;
+	mySpaceGlobals->p1Y = 150;
+	
+	// init enemies
+	for (x=0; x<100; x++)
+	{
+		mySpaceGlobals->enemies[x].position.active = 0;
+	}
+
+}
+
+void initStars(struct SpaceGlobals *mySpaceGlobals) 
+{
 	// create the stars randomly
+	int x;
 	for (x=0; x<200; x++)
 	{
 		mySpaceGlobals->stars[x].x = (int)(prand(&mySpaceGlobals->seed)*xMaxBoundry);
@@ -545,42 +558,114 @@ void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 	
 	if (mySpaceGlobals->allowInput)
 	{
-		if (mySpaceGlobals->button & BUTTON_A && mySpaceGlobals->allowInput)
+		if (mySpaceGlobals->button & BUTTON_B)
 		{
-			// try the password
-	//		tryPassword();
-
+			// go back to title screen
+			mySpaceGlobals->state = 1;
+			
+			// update the menu choice
+			mySpaceGlobals->menuChoice = 0;
+			
 			// disable menu input after selecting to prevent double selects
 			mySpaceGlobals->allowInput = 0;
 
 			// mark view invalid to redraw
 			mySpaceGlobals->invalid = 1;
 		}
+		if (mySpaceGlobals->button & BUTTON_A)
+		{
+			// try the password
+	//		tryPassword();
+
+			// disable menu input after selecting to prevent double selects
+			mySpaceGlobals->allowInput = 0;
+			
+			// update the menu choice
+			mySpaceGlobals->menuChoice = 0;
+
+			// mark view invalid to redraw
+			mySpaceGlobals->invalid = 1;
+		}
 		
 		float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
+		float stickX = mySpaceGlobals->lstick.x + mySpaceGlobals->rstick.x;
+		int down  = (mySpaceGlobals->button & BUTTON_DOWN  || stickY < -0.3);
+		int up    = (mySpaceGlobals->button & BUTTON_UP    || stickY >  0.3);
+		int left  = (mySpaceGlobals->button & BUTTON_LEFT  || stickX < -0.3);
+		int right = (mySpaceGlobals->button & BUTTON_RIGHT || stickX >  0.3);
 		
-		if (mySpaceGlobals->button & BUTTON_DOWN || stickY < -0.3)
+		if (up || down)
 		{
-			mySpaceGlobals->menuChoice = 1;
+			int offset = 1, x;
+			// keep going up in the 10s place to match current choice
+			for (x=0; x<(4 - mySpaceGlobals->menuChoice); x++)
+				offset *= 10;
+				
+			if (up)
+				mySpaceGlobals->passwordEntered += offset;
+			if (down)
+				mySpaceGlobals->passwordEntered -= offset;
+				
 			mySpaceGlobals->invalid = 1;
+			mySpaceGlobals->allowInput = 0;
 		}
 
-		if (mySpaceGlobals->button & BUTTON_UP || stickY > 0.3)
+		if (left || right)
 		{
-			mySpaceGlobals->menuChoice = 0;
+			if (right)
+				mySpaceGlobals->menuChoice ++;
+			if (left)
+				mySpaceGlobals->menuChoice --;;
+			
+			// bound the menu choices
+			if (mySpaceGlobals->menuChoice < 0)
+				mySpaceGlobals->menuChoice = 0;
+			if (mySpaceGlobals->menuChoice > 4)
+				mySpaceGlobals->menuChoice = 4;
+			
 			mySpaceGlobals->invalid = 1;
+			mySpaceGlobals->allowInput = 0;
 		}
+		
+		// bound the password
+		if (mySpaceGlobals->passwordEntered < 0)
+			mySpaceGlobals->passwordEntered = 0;
+		if (mySpaceGlobals->passwordEntered > 99999)
+			mySpaceGlobals->passwordEntered = 99999;
 	}
 }
 
 void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 {
-	
+	if (mySpaceGlobals->invalid == 1)
+	{
+		blackout(mySpaceGlobals->services);
+
+		
+//		drawPasswordMenuCursor(mySpaceGlobals);
+		char password[255];
+		__os_snprintf(password, 255, "Password:");
+		char up_cur[255];
+		__os_snprintf(up_cur, 255, "v");
+		char cur_pw[255];
+		__os_snprintf(cur_pw, 255, "%05d", mySpaceGlobals->passwordEntered);
+		char down_cur[255];
+		__os_snprintf(down_cur, 255, "^");
+		
+		drawString(mySpaceGlobals->services, 22, 8, password);
+		
+		drawString(mySpaceGlobals->services, 32 + mySpaceGlobals->menuChoice, 7, up_cur);
+		drawString(mySpaceGlobals->services, 32, 8, cur_pw);
+		drawString(mySpaceGlobals->services, 32 + mySpaceGlobals->menuChoice, 9, down_cur);
+		
+		flipBuffers(mySpaceGlobals->services);
+		mySpaceGlobals->invalid = 0;
+	}
 }
 
 void renderReset(struct SpaceGlobals *mySpaceGlobals)
 {
-	blackout(mySpaceGlobals->services);
-	renderStars(mySpaceGlobals);
+	initGameState(mySpaceGlobals);
+	mySpaceGlobals->renderResetFlag = 0;
 	mySpaceGlobals->invalid = 1;
 }
