@@ -7,9 +7,11 @@ void flipBuffers(struct Services *services)
 	//Grab the buffer size for each screen (TV and gamepad)
 	int buf0_size = services->OSScreenGetBufferSizeEx(0);
 	int buf1_size = services->OSScreenGetBufferSizeEx(1);
+	
 	//Flush the cache
 	services->DCFlushRange((void *)0xF4000000 + buf0_size, buf1_size);
 	services->DCFlushRange((void *)0xF4000000, buf0_size);
+	
 	//Flip the buffer
 	services->OSScreenFlipBuffersEx(0);
 	services->OSScreenFlipBuffersEx(1);
@@ -28,6 +30,7 @@ void putAPixel(struct Services *services, int x, int y, int r, int g, int b)
 	y *= 2;
 
 	int ax, ay, az;
+	int height, width, v;
 	for (ax=1; ax<2; ax++)
 		for (ay=0; ay<2; ay++)
 			for (az=0; az<2; az++)
