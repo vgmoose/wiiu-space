@@ -74,7 +74,7 @@ Alpha isn't used here, and instead allows the "magic color" of 0x272727 to be "s
 By looking up the color in the palette, the bitmap can be smaller. Before compression was implemented, this was
 more important. A potential speedup may be to integrate the three pixel colors into a matrix prior to this function.
 **/
-void drawBitmap(struct Services *services, int ox, int oy, int width, int height, unsigned char input[][width], unsigned char palette[][3])
+void drawBitmap(struct Services *services, int ox, int oy, int width, int height, unsigned char input[][width], unsigned const char palette[][3])
 {	
 	int rx;
 	for (rx=0; rx<width; rx++)

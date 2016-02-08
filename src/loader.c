@@ -54,7 +54,7 @@ void _start()
 	OSScreenInit();
 	//Grab the buffer size for each screen (TV and gamepad)
 	int buf0_size = OSScreenGetBufferSizeEx(0);
-	int buf1_size = OSScreenGetBufferSizeEx(1);
+//	int buf1_size = OSScreenGetBufferSizeEx(1);
 	//Set the buffer area.
 	OSScreenSetBufferEx(0, (void *)0xF4000000);
 	OSScreenSetBufferEx(1, (void *)0xF4000000 + buf0_size);

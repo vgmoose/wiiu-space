@@ -1,12 +1,14 @@
 #include "program.h"
 #include "trigmath.h"
 #include "draw.h"
+#include "images.h"
+#include "space.h"
 
 void cleanSlate(struct Services *services)
 {
 	// clear both buffers
-	int ii=0;
-	for(ii;ii<2;ii++)
+	int ii;
+	for(ii=0;ii<2;ii++)
 	{
 		fillScreen(services, 0,0,0,0);
 		flipBuffers(services);
@@ -32,6 +34,7 @@ void _entryPoint()
 	/****************************>             Exports             <****************************/
 	//VPAD functions
 	OSDynLoad_FindExport(vpad_handle, 0, "VPADRead", &VPADRead);
+
 	// Draw functions
 	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenPutPixelEx", &services.OSScreenPutPixelEx);
 	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenClearBufferEx", &services.OSScreenClearBufferEx);
@@ -41,7 +44,6 @@ void _entryPoint()
 	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenPutFontEx", &services.OSScreenPutFontEx);
 	//OS functions
 	OSDynLoad_FindExport(services.coreinit_handle, 0, "_Exit", &_Exit);
-	
 	cleanSlate(&services);
 	
 	/****************************>             Globals             <****************************/
@@ -78,17 +80,17 @@ void _entryPoint()
 	/****************************>            VPAD Loop            <****************************/
 	int error;
 	VPADData vpad_data;
-	VPADTPData vpadtp_data;
 	
-	// decompress compressed things into their arrays
-	decompress_sprite(4156, 200, 100, compressed_title, mySpaceGlobals.title);
-	decompress_sprite(840, 36, 36, compressed_ship, mySpaceGlobals.orig_ship);
+	// decompress compressed things into their arrays, final argument is the transparent color in their palette
+	decompress_sprite(3061, 200, 100, compressed_title, mySpaceGlobals.title, 39);
+	decompress_sprite(511, 36, 36, compressed_ship, mySpaceGlobals.orig_ship, 14);
+	decompress_sprite(206, 23, 23, compressed_enemy, mySpaceGlobals.enemy, 9);
 	
 	// initialize starfield for this game
 	initStars(&mySpaceGlobals);
 	
 	mySpaceGlobals.invalid = 1;
-	
+		
 	while (1)
 	{
 		VPADRead(0, &vpad_data, 1, &error);
@@ -135,6 +137,7 @@ void _entryPoint()
 		{
 			break;
 		}
+
 	}
 	cleanSlate(mySpaceGlobals.services);
 	_Exit();

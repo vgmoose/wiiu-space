@@ -7,69 +7,7 @@
 #include "trigmath.h"
 #include "program.h"
 #include "images.h"
-
-struct Bullet {
-	int x;
-	int y;
-	float m_x;
-	float m_y;
-	int active;
-};
-
-struct Pixel {
-	int x;
-	int y;
-	int r;
-	int g;
-	int b;
-};
-
-//Struct for global variables for pong
-struct SpaceGlobals{
-	//Flag for restarting the entire game.
-	int restart;
-	
-	//Gameplay boundry
-	unsigned int frame;
-	
-	unsigned int seed;
-	
-	unsigned char rotated_ship[36][36];
-	unsigned char orig_ship[36][36];
-	unsigned char title[100][200];
-
-	//Globals for player1 location and movement dx/dy
-	float p1X;
-	float p1Y;
-	float angle;
-	
-	int touched;
-	int touchX;
-	int touchY;
-	int titleScreenRefresh;
-
-	//Game engine globals
-	uint32_t button;
-	Vec2D lstick;
-	Vec2D rstick;
-	
-	// only 20 bullets can be onscreen at a time
-	struct Bullet bullets[20];
-	struct Pixel stars[200];
-
-	int renderP1Flag;
-	int renderResetFlag;
-	int invalid;
-	
-	struct Services* services;
-	
-	int state; // 1 is title screen, 2 is gameplay, 3 is password, 4 is about
-	int lives;
-	int score;
-	int level;
-	int menuChoice;
-
-};
+#include "draw.h"
 
 //Function declarations for space functions.
 void renderShip(struct SpaceGlobals *mySpaceGlobals);
@@ -88,6 +26,11 @@ void drawMenuCursor(struct SpaceGlobals *mySpaceGlobals);
 void renderBullets(struct SpaceGlobals *mySpaceGlobals);
 void moveBullets(struct SpaceGlobals *mySpaceGlobals);
 void renderStars(struct SpaceGlobals *mySpaceGlobals);
-void decompress_sprite(int arraysize, int width, int height, const unsigned char* input, unsigned char target[][width]);
+void decompress_sprite(int arraysize, int width, int height, const signed char* input, unsigned char target[][width], char transIndex);
+void renderTexts(struct SpaceGlobals *mySpaceGlobals);
+void renderBullets(struct SpaceGlobals *mySpaceGlobals);;
+void render(struct SpaceGlobals *mySpaceGlobals);
+void blackout(struct Services * services);
+void p1Shoot(struct SpaceGlobals * mySpaceGlobals);
 
 #endif /* SPACE_H */
