@@ -32,5 +32,9 @@ void renderBullets(struct SpaceGlobals *mySpaceGlobals);;
 void render(struct SpaceGlobals *mySpaceGlobals);
 void blackout(struct Services * services);
 void p1Shoot(struct SpaceGlobals * mySpaceGlobals);
+void displayPause(struct SpaceGlobals * mySpaceGlobals);
+void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals);
+void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals);
+void checkPause(struct SpaceGlobals * mySpaceGlobals);
 
 #endif /* SPACE_H */

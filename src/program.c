@@ -96,8 +96,9 @@ void _entryPoint()
 		VPADRead(0, &vpad_data, 1, &error);
 		
 		//Get the status of the gamepad
-		mySpaceGlobals.button = vpad_data.btn_hold;
-		//If the game has been restarted, reset the game (we do this one time in the beginning to set everything up)
+		mySpaceGlobals.hold_button = vpad_data.btn_hold;
+		mySpaceGlobals.button = vpad_data.btn_trigger;
+		mySpaceGlobals.release_button = vpad_data.btn_release;
 		
 		mySpaceGlobals.rstick = vpad_data.rstick;
 		mySpaceGlobals.lstick = vpad_data.lstick;
@@ -120,17 +121,29 @@ void _entryPoint()
 			displayTitle(&mySpaceGlobals);
 			doMenuAction(&mySpaceGlobals);
 		}
-		else
+		else if (mySpaceGlobals.state == 2) // password screen
+		{
+			displayPasswordScreen(&mySpaceGlobals);
+			doPasswordMenuAction(&mySpaceGlobals);
+		}
+		else if (mySpaceGlobals.state == 3) // pause screen
+		{
+			displayPause(&mySpaceGlobals);
+			doMenuAction(&mySpaceGlobals);
+		}
+		else 	// game play
 		{
 			//Update location of player1 and 2 paddles
 			p1Move(&mySpaceGlobals);
 
 			// perform any shooting
 			p1Shoot(&mySpaceGlobals);
-
+			
 			//Render the scene
 			render(&mySpaceGlobals);
-
+			
+			// check for pausing
+			checkPause(&mySpaceGlobals);
 		}
 		//To exit the game
 		if (mySpaceGlobals.button&BUTTON_HOME)

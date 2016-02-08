@@ -89,13 +89,14 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	
 	// Handle D-pad movements as well
 	// max out speed at 1 or -1 in both directions
-	xdif = (xdif >  1 || mySpaceGlobals->button & BUTTON_RIGHT)?  1 : xdif;
-	xdif = (xdif < -1 || mySpaceGlobals->button &  BUTTON_LEFT)? -1 : xdif;
-	ydif = (ydif >  1 || mySpaceGlobals->button &    BUTTON_UP)?  1 : ydif;
-	ydif = (ydif < -1 || mySpaceGlobals->button &  BUTTON_DOWN)? -1 : ydif;
+	xdif = (xdif >  1 || mySpaceGlobals->hold_button & BUTTON_RIGHT)?  1 : xdif;
+	xdif = (xdif < -1 || mySpaceGlobals->hold_button &  BUTTON_LEFT)? -1 : xdif;
+	ydif = (ydif >  1 || mySpaceGlobals->hold_button &    BUTTON_UP)?  1 : ydif;
+	ydif = (ydif < -1 || mySpaceGlobals->hold_button &  BUTTON_DOWN)? -1 : ydif;
 	
 	// don't update angle if both are within -.1 < x < .1
-	if (xdif == 0 && ydif == 0) return;
+	// (this is an expenesive check... 128 bytes compared to just ==0)
+	if (xdif < 0.1 && xdif > -0.1 && ydif < 0.1 && ydif > -0.1) return;
 	
 	// invalid view
 	mySpaceGlobals->invalid = 1;
@@ -109,8 +110,17 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	// calculate angle to face
 	mySpaceGlobals->angle = atan2(ydif, xdif) - 3.14159265/2;
 
-
 };
+
+void checkPause(struct SpaceGlobals * mySpaceGlobals)
+{
+	if (mySpaceGlobals->button & BUTTON_PLUS)
+	{
+		// switch to the pause state and mark view as invalid
+		mySpaceGlobals->state = 3;
+		mySpaceGlobals->invalid = 1;
+	}
+}
 
 void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 {
@@ -324,7 +334,6 @@ void renderBullets(struct SpaceGlobals *mySpaceGlobals)
 					
 void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 {
-	// every 60th frame draw the status bar
 	fillRect(mySpaceGlobals->services, 0, 0, xMaxBoundry, 20, 0, 40, 40);
 
 	char score[255];
@@ -435,24 +444,138 @@ void drawMenuCursor(struct SpaceGlobals *mySpaceGlobals)
 
 void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 {
-	if (mySpaceGlobals->button & BUTTON_A || mySpaceGlobals->button & BUTTON_PLUS)
+	// if we've seen the A button not being pressed
+	if (!(mySpaceGlobals->button & BUTTON_A))
 	{
-		mySpaceGlobals->state = 2; // start game
-		mySpaceGlobals->renderResetFlag = 1; // redraw screen
+		mySpaceGlobals->allowInput = 1;
+	}
+	
+	if (mySpaceGlobals->button & BUTTON_A && mySpaceGlobals->allowInput)
+	{
+		// if we're on the title menu
+		if (mySpaceGlobals->state == 1)
+		{
+			if (mySpaceGlobals->menuChoice == 0)
+			{
+				// start game chosen
+				mySpaceGlobals->state = 7; // switch to game state
+				mySpaceGlobals->renderResetFlag = 1; // redraw screen
+			}
+			else if (mySpaceGlobals->menuChoice == 1)
+			{
+				// password screen chosen
+				mySpaceGlobals->state = 2;
+			}
+		}
+		// password screen
+		else if (mySpaceGlobals->state == 2)
+		{
+			
+		}
+		// pause screen 
+		else if (mySpaceGlobals->state == 3)
+		{
+			if (mySpaceGlobals->menuChoice == 0)
+			{
+				// resume chosen
+				mySpaceGlobals->state = 7; // switch to game state
+				
+			}
+			else if (mySpaceGlobals->menuChoice == 1)
+			{
+				// quit chosen
+				mySpaceGlobals->state = 1;
+			}
+		}
+		
+		// reset the choice
+		mySpaceGlobals->menuChoice = 0;
+		
+		// disable menu input after selecting to prevent double selects
+		mySpaceGlobals->allowInput = 0;
+
+		// mark view invalid to redraw
 		mySpaceGlobals->invalid = 1;
 	}
 	
-	if (mySpaceGlobals->button & BUTTON_DOWN || mySpaceGlobals->lstick.y < -0.3)
+	float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
+	
+	if (mySpaceGlobals->button & BUTTON_DOWN || stickY < -0.3)
 	{
 		mySpaceGlobals->menuChoice = 1;
 		mySpaceGlobals->invalid = 1;
 	}
 	
-	if (mySpaceGlobals->button & BUTTON_UP || mySpaceGlobals->lstick.y > 0.3)
+	if (mySpaceGlobals->button & BUTTON_UP || stickY > 0.3)
 	{
 		mySpaceGlobals->menuChoice = 0;
 		mySpaceGlobals->invalid = 1;
 	}
+}
+
+void displayPause(struct SpaceGlobals * mySpaceGlobals)
+{
+	if (mySpaceGlobals->invalid == 1)
+	{
+		blackout(mySpaceGlobals->services);
+
+		// display the password here
+		char resume[255];
+		__os_snprintf(resume, 255, "Resume");
+		char quit[255];
+		__os_snprintf(quit, 255, "Quit");
+		
+		drawString(mySpaceGlobals->services, 25, 12, resume);
+		drawString(mySpaceGlobals->services, 25, 13, quit);
+		
+		drawMenuCursor(mySpaceGlobals);
+		
+		flipBuffers(mySpaceGlobals->services);
+		mySpaceGlobals->invalid = 0;
+	}
+}
+
+void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
+{
+	// if we've seen up, down, left, right, and a buttons not being pressed
+	if (!(mySpaceGlobals->button & BUTTON_A & BUTTON_LEFT & BUTTON_RIGHT & BUTTON_UP & BUTTON_DOWN))
+	{
+		mySpaceGlobals->allowInput = 1;
+	}
+	
+	if (mySpaceGlobals->allowInput)
+	{
+		if (mySpaceGlobals->button & BUTTON_A && mySpaceGlobals->allowInput)
+		{
+			// try the password
+	//		tryPassword();
+
+			// disable menu input after selecting to prevent double selects
+			mySpaceGlobals->allowInput = 0;
+
+			// mark view invalid to redraw
+			mySpaceGlobals->invalid = 1;
+		}
+		
+		float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
+		
+		if (mySpaceGlobals->button & BUTTON_DOWN || stickY < -0.3)
+		{
+			mySpaceGlobals->menuChoice = 1;
+			mySpaceGlobals->invalid = 1;
+		}
+
+		if (mySpaceGlobals->button & BUTTON_UP || stickY > 0.3)
+		{
+			mySpaceGlobals->menuChoice = 0;
+			mySpaceGlobals->invalid = 1;
+		}
+	}
+}
+
+void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
+{
+	
 }
 
 void renderReset(struct SpaceGlobals *mySpaceGlobals)

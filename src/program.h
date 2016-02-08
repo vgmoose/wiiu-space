@@ -65,6 +65,8 @@ struct SpaceGlobals{
 
 	//Game engine globals
 	uint32_t button;
+	uint32_t hold_button;
+	uint32_t release_button;
 	Vec2D lstick;
 	Vec2D rstick;
 	
@@ -87,7 +89,9 @@ struct SpaceGlobals{
 	int lives;
 	int score;
 	int level;
+	
 	int menuChoice;
+	int allowInput;
 
 };
 
