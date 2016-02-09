@@ -36,5 +36,6 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals);
 void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals);
 void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals);
 void checkPause(struct SpaceGlobals * mySpaceGlobals);
+void addNewEnemies(struct SpaceGlobals * mySpaceGlobals);
 
 #endif /* SPACE_H */

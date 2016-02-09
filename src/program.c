@@ -139,6 +139,12 @@ void _entryPoint()
 			// perform any shooting
 			p1Shoot(&mySpaceGlobals);
 			
+			// handle any collisions
+			handleCollisions(&mySpaceGlobals);
+			
+			// add any new enemies
+			addNewEnemies(&mySpaceGlobals);
+			
 			//Render the scene
 			render(&mySpaceGlobals);
 			

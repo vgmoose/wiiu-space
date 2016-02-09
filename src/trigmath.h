@@ -8,4 +8,6 @@ float atan(float x);
 
 float atan2(float y, float x);
 
+int square(int x);
+
 float prand(unsigned int * x);

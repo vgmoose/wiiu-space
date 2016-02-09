@@ -38,19 +38,6 @@ void activateBullet(struct SpaceGlobals * mySpaceGlobals, float theta, int x, in
 			break;
 		}
 	}
-	
-//	for (xx=0; xx<100; xx++)
-//	{
-//		if (mySpaceGlobals->enemies[xx].position.active != 1)
-//		{
-//			mySpaceGlobals->enemies[xx].position.x = x + 18;
-//			mySpaceGlobals->enemies[xx].position.y = y + 18;
-//			mySpaceGlobals->enemies[xx].position.m_x = 6*sin(theta); // 9 is the desired bullet speed 
-//			mySpaceGlobals->enemies[xx].position.m_y = 6*cos(theta); // we have to solve for the hypotenuese 
-//			mySpaceGlobals->enemies[xx].position.active = 1;
-//			break;
-//		}
-//	}
 }
 
 void blackout(struct Services * services)
@@ -104,9 +91,7 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	// accept x and y movement from either stick
 	mySpaceGlobals->p1X += xdif*5;
 	mySpaceGlobals->p1Y -= ydif*5;
-	
-	handleCollisions(mySpaceGlobals);
-	
+		
 	// calculate angle to face
 	mySpaceGlobals->angle = atan2(ydif, xdif) - 3.14159265/2;
 
@@ -139,7 +124,45 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 	if (playerDown > yMaxBoundry)
 		mySpaceGlobals->p1Y = yMaxBoundry - 36;
 	
-	
+		// check enemies if they collide with the player or any of the 20 active bullets
+		int x;
+		for (x=0; x<100; x++)
+		{
+			if (mySpaceGlobals->enemies[x].position.active == 1)
+			{
+				// collision checkin from here: http://stackoverflow.com/a/1736741/1137828
+				// check player
+								
+				int sqMe1 = ((mySpaceGlobals->enemies[x].position.x+7)-(mySpaceGlobals->p1X+9));
+				int sqMe2 = ((mySpaceGlobals->enemies[x].position.y+7)-(mySpaceGlobals->p1Y+9));
+				
+				if (square(sqMe1) + square(sqMe2) <= (7+9)*(7+9))
+				{
+					// player was hit
+					mySpaceGlobals->lives --;
+					mySpaceGlobals->renderResetFlag = 1;
+				}
+				
+				int y;
+				for (y=0; y<20; y++)
+				{
+					if (mySpaceGlobals->bullets[y].active == 1)
+					{
+						// check player's bullets
+						sqMe1 = ((mySpaceGlobals->enemies[x].position.x+7)-(mySpaceGlobals->bullets[y].x+1));
+						sqMe2 = ((mySpaceGlobals->enemies[x].position.y+7)-(mySpaceGlobals->bullets[y].y+1));
+						
+						if (square(sqMe1) + square(sqMe2) <= (7+1)*(7+1))
+						{
+							// enemy was hit
+							mySpaceGlobals->enemies[x].position.active = 0;
+							break;
+						}
+					}
+				}
+			}
+		}
+
 }
 
 void makeRotationMatrix(float angle, int width, unsigned char original[][width], unsigned char target[][width], int transIndex)
@@ -157,25 +180,25 @@ void makeRotationMatrix(float angle, int width, unsigned char original[][width],
 	
 	float woffset = width/2.0;
 	
-	// go though every pixel in the original bitmap
+	// go though every pixel in the target bitmap
 	for (x=0; x<width; x++)
 	{
 		int y;
 		for (y=0; y<width; y++)
 		{
 			// rotate the pixel by the angle into a new spot in the rotation matrix
-			int newx = (int)((x-woffset)*cos(angle) - (y-woffset)*sin(angle) + woffset);
-			int newy = (int)((x-woffset)*sin(angle) + (y-woffset)*cos(angle) + woffset);
+			int oldx = (int)((x-woffset)*cos(angle) + (y-woffset)*sin(angle) + woffset);
+			int oldy = (int)((x-woffset)*sin(angle) - (y-woffset)*cos(angle) + woffset);
 			
-			if (newx < 0) newx += width;
-			if (newy < 0) newy += width;
+			if (oldx < 0) oldx += width;
+			if (oldy < 0) oldy += width;
 			
-			if (original[x][y] == transIndex) continue;
+			if (original[oldx][oldy] == transIndex) continue;
 			
-			if (newx < 0 || newx >= width) continue;
-			if (newy < 0 || newy >= width) continue;
+			if (oldx < 0 || oldx >= width) continue;
+			if (oldy < 0 || oldy >= width) continue;
 			
-			target[newx][newy] = original[x][y];
+			target[x][y] = original[oldx][oldy];
 		}
 	}
 }
@@ -551,7 +574,11 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 {
 	// if we've seen up, down, left, right, and a buttons not being pressed
-	if (!(mySpaceGlobals->button & BUTTON_A & BUTTON_LEFT & BUTTON_RIGHT & BUTTON_UP & BUTTON_DOWN))
+	if (!(mySpaceGlobals->button & BUTTON_A     || 
+		  mySpaceGlobals->button & BUTTON_UP    ||
+		  mySpaceGlobals->button & BUTTON_DOWN  ||
+		  mySpaceGlobals->button & BUTTON_LEFT  ||
+		  mySpaceGlobals->button & BUTTON_RIGHT   ))
 	{
 		mySpaceGlobals->allowInput = 1;
 	}
@@ -575,7 +602,7 @@ void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 		if (mySpaceGlobals->button & BUTTON_A)
 		{
 			// try the password
-	//		tryPassword();
+//			tryPassword();
 
 			// disable menu input after selecting to prevent double selects
 			mySpaceGlobals->allowInput = 0;
@@ -640,7 +667,6 @@ void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 	if (mySpaceGlobals->invalid == 1)
 	{
 		blackout(mySpaceGlobals->services);
-
 		
 //		drawPasswordMenuCursor(mySpaceGlobals);
 		char password[255];
@@ -660,6 +686,63 @@ void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 		
 		flipBuffers(mySpaceGlobals->services);
 		mySpaceGlobals->invalid = 0;
+	}
+}
+
+void addNewEnemies(struct SpaceGlobals *mySpaceGlobals)
+{
+	// formula for new enemies is level
+	
+	// get a random position from one of the sides
+	float horizOrVert = prand(&mySpaceGlobals->seed)*2;
+	
+	// randomly decide to set starting angle right for the player
+	float seekPlayer = prand(&mySpaceGlobals->seed)*2;
+	
+	// decide whether or not the enemy should be at 0 or max bounds
+	float minOrMax = prand(&mySpaceGlobals->seed)*2;
+	
+	// set speed randomly 
+	int speed = 6;// + (int)(prand(&mySpaceGlobals->seed)*12);
+	
+	int startx, starty;
+	float theta = prand(&mySpaceGlobals->seed)*3.14159265;
+	
+	// horiz size
+	if (horizOrVert < 1)
+	{
+		startx = (minOrMax < 1)? 0 : xMaxBoundry;
+		starty = (int)(prand(&mySpaceGlobals->seed)*yMaxBoundry);
+		
+		if (startx != 0)
+			theta -= 3.14159265;
+	}
+	else
+	{
+		starty = (minOrMax < 1)? 21 : yMaxBoundry;
+		startx = (int)(prand(&mySpaceGlobals->seed)*xMaxBoundry);
+		
+		if (startx == 21)
+			theta -= 3.14159265/2;
+		else
+			theta += 3.14159265/2;
+	}
+	
+	starty = (int)(prand(&mySpaceGlobals->seed)*yMaxBoundry);
+	startx = (int)(prand(&mySpaceGlobals->seed)*xMaxBoundry);
+		
+	int xx;
+	for (xx=0; xx<1; xx++)
+	{
+		if (mySpaceGlobals->enemies[xx].position.active != 1)
+		{
+			mySpaceGlobals->enemies[xx].position.x = startx;
+			mySpaceGlobals->enemies[xx].position.y = starty;
+			mySpaceGlobals->enemies[xx].position.m_x = 0*sin(theta); // 9 is the desired bullet speed 
+			mySpaceGlobals->enemies[xx].position.m_y = 0*cos(theta); // we have to solve for the hypotenuese 
+			mySpaceGlobals->enemies[xx].position.active = 1;
+			break;
+		}
 	}
 }
 
