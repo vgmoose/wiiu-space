@@ -88,11 +88,6 @@ float atan2(float y, float x)
         return ans;
 }
 
-int square(int x)
-{
-	return x*x;
-}
-
 // This is from here: http://stackoverflow.com/a/1026370/1871287
 // it is initially seeded with the time
 float prand (unsigned int *seed)

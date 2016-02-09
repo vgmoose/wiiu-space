@@ -51,26 +51,20 @@ void _entryPoint()
 	//Flag for restarting the entire game.
 	mySpaceGlobals.restart = 1;
 	mySpaceGlobals.services = &services;
-	
-	//Game engine globals
-	mySpaceGlobals.button = 0;
 
-	//Game engine globals
-	mySpaceGlobals.button = 0;
-	mySpaceGlobals.angle = 0;
-	mySpaceGlobals.score = 0;
-	mySpaceGlobals.lives = 3;
-	
 	// initial state is title screen
 	mySpaceGlobals.state = 1;
 	mySpaceGlobals.titleScreenRefresh = 1;
 
-	//Flag to determine if p1 should be rendered along with p1's movement direction
-	mySpaceGlobals.renderP1Flag = 0;
 	//Flags for render states
 	mySpaceGlobals.renderResetFlag = 0;
 	mySpaceGlobals.menuChoice = 0; // 0 is play, 1 is password
 	
+	// setup the password list
+	unsigned int pwSeed = 27;
+	int x;
+	for (x=0; x<100; x++)
+		mySpaceGlobals.passwordList[x] = (int)(prand(&pwSeed)*100000);
 	
 	// set the starting time
 	int64_t (*OSGetTime)();
@@ -86,6 +80,10 @@ void _entryPoint()
 	decompress_sprite(511, 36, 36, compressed_ship, mySpaceGlobals.orig_ship, 14);
 	decompress_sprite(206, 23, 23, compressed_enemy, mySpaceGlobals.enemy, 9);
 	
+	// setup palette and transparent index
+	mySpaceGlobals.curPalette = ship_palette;
+	mySpaceGlobals.transIndex = 14;
+	
 	// initialize starfield for this game
 	initStars(&mySpaceGlobals);
 	
@@ -96,9 +94,7 @@ void _entryPoint()
 		VPADRead(0, &vpad_data, 1, &error);
 		
 		//Get the status of the gamepad
-		mySpaceGlobals.hold_button = vpad_data.btn_hold;
-		mySpaceGlobals.button = vpad_data.btn_trigger;
-		mySpaceGlobals.release_button = vpad_data.btn_release;
+		mySpaceGlobals.button = vpad_data.btn_hold;
 		
 		mySpaceGlobals.rstick = vpad_data.rstick;
 		mySpaceGlobals.lstick = vpad_data.lstick;
@@ -131,6 +127,11 @@ void _entryPoint()
 			displayPause(&mySpaceGlobals);
 			doMenuAction(&mySpaceGlobals);
 		}
+		else if  (mySpaceGlobals.state == 4) // game over screen
+		{
+			displayGameOver(&mySpaceGlobals);
+			doMenuAction(&mySpaceGlobals);
+		}
 		else 	// game play
 		{
 			//Update location of player1 and 2 paddles
@@ -141,6 +142,13 @@ void _entryPoint()
 			
 			// handle any collisions
 			handleCollisions(&mySpaceGlobals);
+			
+			// do explosions
+			handleExplosions(&mySpaceGlobals);
+			
+			// if we're out of lives, break
+			if (mySpaceGlobals.lives <= 0 && mySpaceGlobals.state == 4)
+				continue;
 			
 			// add any new enemies
 			addNewEnemies(&mySpaceGlobals);

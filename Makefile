@@ -1,5 +1,5 @@
 CC=powerpc-eabi-gcc
-CFLAGS=-nostdinc -fno-builtin -O2 -c 
+CFLAGS=-nostdinc -fno-builtin -O1 -c 
 LOADERCFLAGS=-nostdinc -fno-builtin -c 
 LD=powerpc-eabi-ld
 LDFLAGS=-Ttext 1800000 --oformat binary 

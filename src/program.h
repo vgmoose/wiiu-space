@@ -50,8 +50,12 @@ struct SpaceGlobals{
 	
 	unsigned char rotated_ship[36][36];
 	unsigned char orig_ship[36][36];
+	const unsigned char (*curPalette)[3];
 	unsigned char enemy[23][23];
 	unsigned char title[100][200];
+	
+	int passwordList[100];
+	int playerExplodeFrame;
 
 	//Globals for player1 location and movement dx/dy
 	float p1X;
@@ -65,8 +69,6 @@ struct SpaceGlobals{
 
 	//Game engine globals
 	uint32_t button;
-	uint32_t hold_button;
-	uint32_t release_button;
 	Vec2D lstick;
 	Vec2D rstick;
 	
@@ -79,11 +81,17 @@ struct SpaceGlobals{
 	// the location of enemies
 	struct Enemy enemies[100];
 
-	int renderP1Flag;
 	int renderResetFlag;
 	int invalid;
+	int transIndex;
 	
 	struct Services* services;
+	
+	// bonuses
+	int playerChoice;
+	int dontKeepTrackOfScore;
+	int noEnemies;
+	int enemiesSeekPlayer;
 	
 	int state; // 1 is title screen, 2 is gameplay, 3 is password, 4 is about
 	int lives;
