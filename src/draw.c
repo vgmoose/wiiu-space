@@ -31,7 +31,7 @@ void putAPixel(struct Services *services, int x, int y, int r, int g, int b)
 
 	int ax, ay, az;
 	int height, width, v;
-	for (ax=1; ax<2; ax++)
+	for (ax=0; ax<2; ax++)
 		for (ay=0; ay<2; ay++)
 			for (az=0; az<2; az++)
 				services->OSScreenPutPixelEx(ax, x + ay, y + az, num);

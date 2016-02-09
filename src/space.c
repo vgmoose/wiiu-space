@@ -871,13 +871,13 @@ void addNewEnemies(struct SpaceGlobals *mySpaceGlobals)
 	}
 	
 	// seek directly to the player
-	if (mySpaceGlobals->enemiesSeekPlayer == 1)
-	{
-		float xdif = startx + 11 - (mySpaceGlobals->p1X + 18);
-		float ydif = starty + 11 - (mySpaceGlobals->p1Y + 18);
-		
-		theta = atan2(xdif, ydif) - 3.14159265;
-	}
+//	if (mySpaceGlobals->enemiesSeekPlayer == 1)
+//	{
+//		float xdif = startx + 11 - (mySpaceGlobals->p1X + 18);
+//		float ydif = starty + 11 - (mySpaceGlobals->p1Y + 18);
+//		
+//		theta = atan2(xdif, ydif) - 3.14159265;
+//	}
 		
 	int xx;
 	for (xx=0; xx<enemyCount; xx++)
@@ -1024,12 +1024,12 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 //	}
 	
 	// Enemies come right for you (kamikaze mode)
-	if (mySpaceGlobals->passwordEntered == 30236)
-	{
-		mySpaceGlobals->enemiesSeekPlayer = 1;
-		mySpaceGlobals->dontKeepTrackOfScore = 1;
-		mySpaceGlobals->state = 7;
-	}
+//	if (mySpaceGlobals->passwordEntered == 30236)
+//	{
+//		mySpaceGlobals->enemiesSeekPlayer = 1;
+//		mySpaceGlobals->dontKeepTrackOfScore = 1;
+//		mySpaceGlobals->state = 7;
+//	}
 	
 	// start installer for Hykem's IOSU Exploit
 	if (mySpaceGlobals->passwordEntered == 41666)
