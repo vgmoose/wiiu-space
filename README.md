@@ -6,20 +6,20 @@ Space game is an attempt to create a graphical shooter game on the Wii U! Since 
 ### Binary Size Tricks
 A main issue with the webkit exploit is that binaries that can be executed in the browser are capped at a certain file size. I hit issues when my binary (code550.bin) exceeded 21,400 bytes. It may not seem like it, but that's not much! I employed a couple of tricks to keep the binary size small:
 
-#### Compiling with -O2 as a CFLAG
+#### Compiling with -O1 as a CFLAG
 If you look at my Makefile and compare it to other ones for the libwiiu examples, you'll notice a few differences near the top of the file. The most important of these differences is the addition of the -O1 parameter to the CFLAGS variable. This sets the compiler's [optimization level](http://www.rapidtables.com/code/linux/gcc/gcc-o.htm) and can usually shave off up to 6,000 bytes! 
 
-There was one big issue though: I found that, whenever I compiled with -O1, very strangely, calling OSScreenFlipBuffersEx(0) in draw.c caused a crash. This didn't happen with OSScreenFlipBuffersEx(1)! I'm still not sure why this happens. I think, when compiled with -O2, the first screen buffer does not get properly initialized. Since this happens in loader.c, I moved the Makefile around to compile every file except loader.c with -O2. This way, it's all still linked together into one mostly compact binary.
+There was one big issue though: I found that, whenever I compiled with -O1, very strangely, calling OSScreenFlipBuffersEx(0) in draw.c caused a crash. This didn't happen with OSScreenFlipBuffersEx(1)! I'm still not sure why this happens. I think, when compiled with -O1, the first screen buffer does not get properly initialized. Since this happens in loader.c, I moved the Makefile around to compile every file **except loader.c** with -O1. This way, it's all still linked together into one mostly compact binary and won't crash.
 
 **Note**: I also compiled the [https://github.com/wiiudev/libwiiu](https://github.com/wiiudev/libwiiu) repo with the -O1 flag.
 
 #### Compressing Bitmaps
 A fair amount of the filesize, even after compression, is due to the bitmap image storing that is employed. Images are stored directly in images.c, with the assistance of [this script](https://gist.github.com/vgmoose/1a6810aacc46c28344ab) that converts a bitmap to a compressed C char array. The bitmap is then drawn via modifications to the draw.c library. It does not use GX2 at this time.
 
-My compresion algorithm is a little complicated, but it is detailed at the top of images.c. It tries to store information about streaks of pixels as efficiently as possible. The way I did it only allows for 125 total colors in a palette.
+My compresion algorithm is a little complicated, but it is detailed at the top of images.c. It tries to store information about streaks of pixels as efficiently as possible. The way I did it only allows for 125 total colors in a palette. The algorithm can also be used to compress arrays, the trick is storing sequences of similar numbers as instructions, such as: {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1} becomes {8, 1, 3, 0, 10, 1} (eight ones, three zeroes, ten ones).
 
 ### Speedup Tricks
-Drawing was a pain here, but I found I was able to greatly increase my drawing speed by moving all of the coreinit.rpl function pointers into a struct and passing that around to the drawing library. This is possible because the pointers do not change, so looking them every time a pixel is drawn is, as far as I can tell, just extra time that could be spent drawing!
+Drawing was a pain here, but I found I was able to greatly increase my drawing speed by moving all of the coreinit.rpl function pointers into a struct and passing that around to the drawing library. This is possible because the pointers do not change, so looking them up every time a pixel is drawn is, as far as I can tell, just extra time that could be spent drawing!
 
 I also had to wrap my head around the concept of using flipBuffers. From what I gather, calling "flipBuffers" acts as a sort of "commit" for everything you've previously drawn to appear on screne. Then the next calls you make to draw will be put into the next upcoming buffer that you then flip to again. This is done so that a seamless gameplay can be presented without flickering, despite the entire screen being redrawn every frame.
 
