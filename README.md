@@ -1,5 +1,7 @@
 ## Space Game
-This is a Wii U homebrew application. Due to an exploit on the latest Wii U firmware, you can play latest version on 5.5.0/5.5.1 by clicking [here](http://wiiu.vgmoose.com/space.mp4).
+This is a Wii U homebrew application. Due to an exploit on the latest Wii U firmware, you can play latest version on 5.5.0/5.5.1 by clicking [here](http://wiiu.vgmoose.com/space.mp4). For more info, see the [thread on it here](https://gbatemp.net/threads/release-space-game.414342/).
+
+![Logo](http://vgmoose.com/posts/24261201%20-%20[release]%20Space%20Game!%20(for%20Wii%20U).post/title.png)
 
 Space game is an attempt to create a graphical shooter game on the Wii U! Since it is designed to be executed via the .mp4 exploit in 5.5.x, there were several challenges that were imposed on its development in terms of efficiency and storage.
 
@@ -22,6 +24,9 @@ My compresion algorithm is a little complicated, but it is detailed at the top o
 Drawing was a pain here, but I found I was able to greatly increase my drawing speed by moving all of the coreinit.rpl function pointers into a struct and passing that around to the drawing library. This is possible because the pointers do not change, so looking them up every time a pixel is drawn is, as far as I can tell, just extra time that could be spent drawing!
 
 I also had to wrap my head around the concept of using flipBuffers. From what I gather, calling "flipBuffers" acts as a sort of "commit" for everything you've previously drawn to appear on screne. Then the next calls you make to draw will be put into the next upcoming buffer that you then flip to again. This is done so that a seamless gameplay can be presented without flickering, despite the entire screen being redrawn every frame.
+
+![In game](http://vgmoose.com/posts/24261201%20-%20[release]%20Space%20Game!%20(for%20Wii%20U).post/gameplay.png)
+
 
 ### Issues
 If you have any issues with the code here when you try to use it in your own app, feel free to contact me!
