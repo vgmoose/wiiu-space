@@ -48,3 +48,11 @@ I also make use of a scaling matrix for explosions, which similarly gets multipl
 
 ### Creating bitmaps
 I created my bitmaps in Photoshop using Mode -> Index color. I extracted the palettes manually by using a hex editor. I've provided the three bitmaps that I used in this repo, although the actual image files are not used by the game. There are other ways to create bitmaps like this (I believe older mspaint supports it)
+
+### Credits and License
+This program is licensed under [the MIT license](https://opensource.org/licenses/MIT), which grants anyone permission to do pretty much whatever they want as long as the copyright notice stays intact.
+ - Programmed by [VGMoose](http://vgmoose.com)
+ - Based on Pong by [Relys](https://github.com/Relys)
+ - Music in video by [(T-T)b](https://t-tb.bandcamp.com/)
+ - Space ship sprite by [Gungriffon Geona](http://shmups.system11.org/viewtopic.php?p=421436&sid=c7c9dc0b51eb40aa10bd77f724f45bb1#p421436)
+ - Logo font by [Iconian Fonts](http://www.dafont.com/ozda.font) 	  				 	 	 	    		  	   		  	
