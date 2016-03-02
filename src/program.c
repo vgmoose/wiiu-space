@@ -18,8 +18,24 @@ void cleanSlate()
 }
 int _entryPoint()
 {	
+	InitOSFunctionPointers();
+    InitVPadFunctionPointers();
+
+	//Call the Screen initilzation function.
+	OSScreenInit();
+	
+	//Grab the buffer size for each screen (TV and gamepad)
+	int buf0_size = OSScreenGetBufferSizeEx(0);
+	int buf1_size = OSScreenGetBufferSizeEx(1);
+	//Set the buffer area.
+	OSScreenSetBufferEx(0, (void *)0xF4000000);
+	OSScreenSetBufferEx(1, (void *)0xF4000000 + buf0_size);
+	
 	cleanSlate();
 	
+	OSScreenEnableEx(0, 1);
+    OSScreenEnableEx(1, 1);
+
 	/****************************>             Globals             <****************************/
 	struct SpaceGlobals mySpaceGlobals;
 	//Flag for restarting the entire game.
@@ -40,9 +56,9 @@ int _entryPoint()
 		mySpaceGlobals.passwordList[x] = (int)(prand(&pwSeed)*100000);
 	
 	// set the starting time
-	int64_t (*OSGetTime)();
 	unsigned int coreinit_handle;
 	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
+	int64_t (*OSGetTime)();
 	OSDynLoad_FindExport(coreinit_handle, 0, "OSGetTime", &OSGetTime);
 	mySpaceGlobals.seed = OSGetTime();
 	
