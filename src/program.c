@@ -4,53 +4,26 @@
 #include "images.h"
 #include "space.h"
 
-void cleanSlate(struct Services *services)
+#include "dynamic_libs/os_functions.h"
+
+void cleanSlate()
 {
 	// clear both buffers
 	int ii;
 	for(ii=0;ii<2;ii++)
 	{
-		fillScreen(services, 0,0,0,0);
-		flipBuffers(services);
+		fillScreen(0,0,0,0);
+		flipBuffers();
 	}
 }
-void _entryPoint()
-{
-	struct Services services;
-	
-	/****************************>           Get Handles           <****************************/
-	//Get a handle to coreinit.rpl
-	OSDynLoad_Acquire("coreinit.rpl", &services.coreinit_handle);
-	//Get a handle to vpad.rpl */
-	unsigned int vpad_handle;
-	OSDynLoad_Acquire("vpad.rpl", &vpad_handle);
-	/****************************>       External Prototypes       <****************************/
-	//VPAD functions
-	int(*VPADRead)(int controller, VPADData *buffer, unsigned int num, int *error);
-
-	//OS functions
-	void(*_Exit)();
-	
-	/****************************>             Exports             <****************************/
-	//VPAD functions
-	OSDynLoad_FindExport(vpad_handle, 0, "VPADRead", &VPADRead);
-
-	// Draw functions
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenPutPixelEx", &services.OSScreenPutPixelEx);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "DCFlushRange", &services.DCFlushRange);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenFlipBuffersEx", &services.OSScreenFlipBuffersEx);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenGetBufferSizeEx", &services.OSScreenGetBufferSizeEx);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenPutFontEx", &services.OSScreenPutFontEx);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenClearBufferEx", &services.OSScreenClearBufferEx);
-	//OS functions
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "_Exit", &_Exit);
-	cleanSlate(&services);
+int _entryPoint()
+{	
+	cleanSlate();
 	
 	/****************************>             Globals             <****************************/
 	struct SpaceGlobals mySpaceGlobals;
 	//Flag for restarting the entire game.
 	mySpaceGlobals.restart = 1;
-	mySpaceGlobals.services = &services;
 
 	// initial state is title screen
 	mySpaceGlobals.state = 1;
@@ -68,7 +41,9 @@ void _entryPoint()
 	
 	// set the starting time
 	int64_t (*OSGetTime)();
-    OSDynLoad_FindExport(services.coreinit_handle, 0, "OSGetTime", &OSGetTime);
+	unsigned int coreinit_handle;
+	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
+	OSDynLoad_FindExport(coreinit_handle, 0, "OSGetTime", &OSGetTime);
 	mySpaceGlobals.seed = OSGetTime();
 	
 	/****************************>            VPAD Loop            <****************************/
@@ -94,7 +69,7 @@ void _entryPoint()
 		VPADRead(0, &vpad_data, 1, &error);
 		
 		//Get the status of the gamepad
-		mySpaceGlobals.button = vpad_data.btn_hold;
+		mySpaceGlobals.button = vpad_data.btns_h;
 		
 		mySpaceGlobals.rstick = vpad_data.rstick;
 		mySpaceGlobals.lstick = vpad_data.lstick;
@@ -160,12 +135,12 @@ void _entryPoint()
 			checkPause(&mySpaceGlobals);
 		}
 		//To exit the game
-		if (mySpaceGlobals.button&BUTTON_HOME)
+		if (mySpaceGlobals.button&VPAD_BUTTON_HOME)
 		{
 			break;
 		}
 
 	}
-	cleanSlate(mySpaceGlobals.services);
-	_Exit();
+	cleanSlate();
+	return 0;
 }

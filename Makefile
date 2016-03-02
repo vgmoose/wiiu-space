@@ -1,80 +1,215 @@
-CC=powerpc-eabi-gcc
-CFLAGS=-nostdinc -fno-builtin -O1 -c 
-LOADERCFLAGS=-nostdinc -fno-builtin -c 
-LD=powerpc-eabi-ld
-LDFLAGS=-Ttext 1800000 --oformat binary 
-GLOBIGNORE="*loader.*"
-project	:=	src
-root:=.
-build	:=	 $(root)/bin
-libs := $(root)/../../libwiiu/bin
-www :=$(root)/../../www
-framework:=$(root)/../../framework
-all: setup main550 main532 main500 main410 main400 main310 main300 main210 main200
-setup:
-	mkdir -p $(root)/bin/
-main550:
-	$(CC) $(CFLAGS) -DVER=550 $(project)/*.c
-	$(CC) $(LOADERCFLAGS) -DVER=550 $(project)/loader.c
-	#-Wa,-a,-ad
-	cp -r $(root)/*.o $(build)
-	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code550.bin $(build)/loader.o `find $(libs)/550/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
-main532:
-	$(CC) $(CFLAGS) -DVER=532 $(project)/*.c
-	$(CC) $(LOADERCFLAGS) -DVER=532 $(project)/loader.c
-	#-Wa,-a,-ad
-	cp -r $(root)/*.o $(build)
-	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code532.bin $(build)/loader.o `find $(libs)/532/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
-main500:
-	$(CC) $(CFLAGS) -DVER=500 $(project)/*.c
-	$(CC) $(LOADERCFLAGS) -DVER=500 $(project)/loader.c
-	#-Wa,-a,-ad
-	cp -r $(root)/*.o $(build)
-	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code500.bin $(build)/loader.o `find $(libs)/500/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
-main410:
-	$(CC) $(CFLAGS) -DVER=410 $(project)/*.c
-	$(CC) $(LOADERCFLAGS) -DVER=410 $(project)/loader.c
-	#-Wa,-a,-ad
-	cp -r $(root)/*.o $(build)
-	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code410.bin $(build)/loader.o `find $(libs)/410/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
-main400:
-	$(CC) $(CFLAGS) -DVER=400 $(project)/*.c
-	$(CC) $(LOADERCFLAGS) -DVER=400 $(project)/loader.c
-	#-Wa,-a,-ad
-	cp -r $(root)/*.o $(build)
-	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code400.bin $(build)/loader.o `find $(libs)/400/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
-main310:
-	$(CC) $(CFLAGS) -DVER=310 $(project)/*.c
-	$(CC) $(LOADERCFLAGS) -DVER=310 $(project)/loader.c
-	#-Wa,-a,-ad
-	cp -r $(root)/*.o $(build)
-	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code310.bin $(build)/loader.o `find $(libs)/310/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
-main300:
-	$(CC) $(CFLAGS) -DVER=300 $(project)/*.c
-	$(CC) $(LOADERCFLAGS) -DVER=300 $(project)/loader.c
-	#-Wa,-a,-ad
-	cp -r $(root)/*.o $(build)
-	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code300.bin $(build)/loader.o `find $(libs)/300/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
-main210:
-	$(CC) $(CFLAGS) -DVER=210 $(project)/*.c
-	$(CC) $(LOADERCFLAGS) -DVER=210 $(project)/loader.c
-	#-Wa,-a,-ad
-	cp -r $(root)/*.o $(build)
-	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code210.bin $(build)/loader.o `find $(libs)/210/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
-main200:
-	$(CC) $(CFLAGS) -DVER=200 $(project)/*.c
-	$(CC) $(LOADERCFLAGS) -DVER=200 $(project)/loader.c
-	#-Wa,-a,-ad
-	cp -r $(root)/*.o $(build)
-	rm $(root)/*.o
-	$(LD) $(LDFLAGS) -o $(build)/code200.bin $(build)/loader.o `find $(libs)/200/ -name "*.o" ! -name "draw.o"` `find $(build) -name "*.o" ! -name "loader.o"`
+#---------------------------------------------------------------------------------
+# Clear the implicit built in rules
+#---------------------------------------------------------------------------------
+.SUFFIXES:
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(DEVKITPPC)),)
+$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
+endif
+ifeq ($(strip $(DEVKITPRO)),)
+$(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>devkitPRO")
+endif
+export PATH			:=	$(DEVKITPPC)/bin:$(PORTLIBS)/bin:$(PATH)
+export LIBOGC_INC	:=	$(DEVKITPRO)/libogc/include
+export LIBOGC_LIB	:=	$(DEVKITPRO)/libogc/lib/wii
+export PORTLIBS		:=	$(DEVKITPRO)/portlibs/ppc
+
+PREFIX	:=	powerpc-eabi-
+
+export AS	:=	$(PREFIX)as
+export CC	:=	$(PREFIX)gcc
+export CXX	:=	$(PREFIX)g++
+export AR	:=	$(PREFIX)ar
+export OBJCOPY	:=	$(PREFIX)objcopy
+
+#---------------------------------------------------------------------------------
+# TARGET is the name of the output
+# BUILD is the directory where object files & intermediate files will be placed
+# SOURCES is a list of directories containing source code
+# INCLUDES is a list of directories containing extra header files
+#---------------------------------------------------------------------------------
+TARGET		:=	space
+BUILD		:=	build
+BUILD_DBG	:=	$(TARGET)_dbg
+SOURCES		:=	src \
+				src/dynamic_libs \
+				src/fs \
+				src/system \
+				src/utils
+DATA		:=	
+
+INCLUDES	:=  src
+
+#---------------------------------------------------------------------------------
+# options for code generation
+#---------------------------------------------------------------------------------
+CFLAGS	:=  -std=gnu11 -mrvl -mcpu=750 -meabi -mhard-float -ffast-math \
+		    -O3 -Wall -Wextra -Wno-unused-parameter -Wno-strict-aliasing $(INCLUDE)
+CXXFLAGS := -std=gnu++11 -mrvl -mcpu=750 -meabi -mhard-float -ffast-math \
+		    -O3 -Wall -Wextra -Wno-unused-parameter -Wno-strict-aliasing $(INCLUDE)
+ASFLAGS	:= -mregnames
+LDFLAGS	:= -nostartfiles -Wl,-Map,$(notdir $@).map,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size,-wrap,_malloc_r,-wrap,_free_r,-wrap,_realloc_r,-wrap,_calloc_r,-wrap,_memalign_r,-wrap,_malloc_usable_size_r,-wrap,valloc,-wrap,_valloc_r,-wrap,_pvalloc_r,--gc-sections
+
+#---------------------------------------------------------------------------------
+Q := @
+MAKEFLAGS += --no-print-directory
+#---------------------------------------------------------------------------------
+# any extra libraries we wish to link with the project
+#---------------------------------------------------------------------------------
+LIBS	:= -lgcc #-lgd -lpng -lz -lfreetype -lvorbisidec
+
+#---------------------------------------------------------------------------------
+# list of directories containing libraries, this must be the top level containing
+# include and lib
+#---------------------------------------------------------------------------------
+LIBDIRS	:=	$(CURDIR)	\
+			$(DEVKITPPC)/lib  \
+			$(DEVKITPPC)/lib/gcc/powerpc-eabi/4.8.2
+
+
+#---------------------------------------------------------------------------------
+# no real need to edit anything past this point unless you need to add additional
+# rules for different file extensions
+#---------------------------------------------------------------------------------
+ifneq ($(BUILD),$(notdir $(CURDIR)))
+#---------------------------------------------------------------------------------
+export PROJECTDIR := $(CURDIR)
+export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
+					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+
+#---------------------------------------------------------------------------------
+# automatically build a list of object files for our project
+#---------------------------------------------------------------------------------
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+TTFFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.ttf)))
+PNGFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.png)))
+
+#---------------------------------------------------------------------------------
+# use CXX for linking C++ projects, CC for standard C
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(CPPFILES)),)
+	export LD	:=	$(CC)
+else
+	export LD	:=	$(CXX)
+endif
+
+export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
+					$(sFILES:.s=.o) $(SFILES:.S=.o) \
+					$(PNGFILES:.png=.png.o) $(addsuffix .o,$(BINFILES))
+
+#---------------------------------------------------------------------------------
+# build a list of include paths
+#---------------------------------------------------------------------------------
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+					-I$(CURDIR)/$(BUILD) -I$(LIBOGC_INC) \
+					-I$(PORTLIBS)/include -I$(PORTLIBS)/include/freetype2
+
+#---------------------------------------------------------------------------------
+# build a list of library paths
+#---------------------------------------------------------------------------------
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
+					-L$(LIBOGC_LIB) -L$(PORTLIBS)/lib
+
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+.PHONY: $(BUILD) clean install
+
+#---------------------------------------------------------------------------------
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+
+#---------------------------------------------------------------------------------
 clean:
-	rm -r $(build)/*
+	@echo clean ...
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).bin $(BUILD_DBG).elf
+
+#---------------------------------------------------------------------------------
+else
+
+DEPENDS	:=	$(OFILES:.o=.d)
+
+#---------------------------------------------------------------------------------
+# main targets
+#---------------------------------------------------------------------------------
+$(OUTPUT).elf:  $(OFILES)
+
+#---------------------------------------------------------------------------------
+# This rule links in binary data with the .jpg extension
+#---------------------------------------------------------------------------------
+%.elf: link.ld $(OFILES)
+	@echo "linking ... $(TARGET).elf"
+	$(Q)$(LD) -n -T $^ $(LDFLAGS) -o ../$(BUILD_DBG).elf  $(LIBPATHS) $(LIBS)
+	$(Q)$(OBJCOPY) -S -R .comment -R .gnu.attributes ../$(BUILD_DBG).elf $@
+
+../data/loader.bin:
+	$(MAKE) -C ../loader clean
+	$(MAKE) -C ../loader
+#---------------------------------------------------------------------------------
+%.a:
+#---------------------------------------------------------------------------------
+	@echo $(notdir $@)
+	@rm -f $@
+	@$(AR) -rc $@ $^
+
+#---------------------------------------------------------------------------------
+%.o: %.cpp
+	@echo $(notdir $<)
+	@$(CXX) -MMD -MP -MF $(DEPSDIR)/$*.d $(CXXFLAGS) -c $< -o $@ $(ERROR_FILTER)
+
+#---------------------------------------------------------------------------------
+%.o: %.c
+	@echo $(notdir $<)
+	@$(CC) -MMD -MP -MF $(DEPSDIR)/$*.d $(CFLAGS) -c $< -o $@ $(ERROR_FILTER)
+
+#---------------------------------------------------------------------------------
+%.o: %.S
+	@echo $(notdir $<)
+	@$(CC) -MMD -MP -MF $(DEPSDIR)/$*.d -x assembler-with-cpp $(ASFLAGS) -c $< -o $@ $(ERROR_FILTER)
+
+#---------------------------------------------------------------------------------
+%.png.o : %.png
+	@echo $(notdir $<)
+	@bin2s -a 32 $< | $(AS) -o $(@)
+
+#---------------------------------------------------------------------------------
+%.jpg.o : %.jpg
+	@echo $(notdir $<)
+	@bin2s -a 32 $< | $(AS) -o $(@)
+
+#---------------------------------------------------------------------------------
+%.ttf.o : %.ttf
+	@echo $(notdir $<)
+	@bin2s -a 32 $< | $(AS) -o $(@)
+
+#---------------------------------------------------------------------------------
+%.bin.o : %.bin
+	@echo $(notdir $<)
+	@bin2s -a 32 $< | $(AS) -o $(@)
+
+#---------------------------------------------------------------------------------
+%.wav.o : %.wav
+	@echo $(notdir $<)
+	@bin2s -a 32 $< | $(AS) -o $(@)
+
+#---------------------------------------------------------------------------------
+%.mp3.o : %.mp3
+	@echo $(notdir $<)
+	@bin2s -a 32 $< | $(AS) -o $(@)
+
+#---------------------------------------------------------------------------------
+%.ogg.o : %.ogg
+	@echo $(notdir $<)
+	@bin2s -a 32 $< | $(AS) -o $(@)
+
+-include $(DEPENDS)
+
+#---------------------------------------------------------------------------------
+endif
+#---------------------------------------------------------------------------------
