@@ -10,8 +10,10 @@ void _start()
 		);
 	/****************************>           Get Handles           <****************************/
 	//Get a handle to coreinit.rpl
-	unsigned int coreinit_handle;
+	unsigned int coreinit_handle, avm_handle;
 	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
+	// CreeperMario: Get a handle to the audio/video manager - avm.rpl
+	OSDynLoad_Acquire("avm.rpl", &avm_handle);
 	/****************************>       External Prototypes       <****************************/
 	//OSScreen functions
 	void(*OSScreenInit)();
@@ -25,6 +27,8 @@ void _start()
 	int(*IM_Open)();
 	int(*IM_Close)(int fd);
 	int(*IM_SetDeviceState)(int fd, void *mem, int state, int a, int b);
+	// CreeperMario: Audio/Video manager functions
+	bool(*AVMSetTVScale)(int width, int height);
 	/****************************>             Exports             <****************************/
 	//OSScreen functions
 	OSDynLoad_FindExport(coreinit_handle, 0, "OSScreenInit", &OSScreenInit);
@@ -38,13 +42,19 @@ void _start()
 	OSDynLoad_FindExport(coreinit_handle, 0, "IM_Open", &IM_Open);
 	OSDynLoad_FindExport(coreinit_handle, 0, "IM_Close", &IM_Close);
 	OSDynLoad_FindExport(coreinit_handle, 0, "IM_SetDeviceState", &IM_SetDeviceState);
+	// CreeperMario: Audio/Video manager functions
+	OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", &AVMSetTVScale);
+
+	/*** CreeperMario: Set the TV Screen's 'scale factor'. ***/
+	AVMSetTVScale(854, 480);
+
 	/****************************>          Initial Setup          <****************************/
 	//Restart system to get lib access
 	int fd = IM_Open();
 	void *mem = OSAllocFromSystem(0x100, 64);
 	memset(mem, 0, 0x100);
 	//set restart flag to force quit browser
-	IM_SetDeviceState(fd, mem, 3, 0, 0); 
+	IM_SetDeviceState(fd, mem, 3, 0, 0);
 	IM_Close(fd);
 	OSFreeToSystem(mem);
 	//wait a bit for browser end
