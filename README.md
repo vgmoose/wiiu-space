@@ -1,5 +1,5 @@
 ## Space Game
-This is a Wii U homebrew application. Due to an exploit on the latest Wii U firmware, you can play latest version on 5.5.0/5.5.1 by clicking [here](http://wiiu.vgmoose.com/space.mp4). For more info, see the [thread on it here](https://gbatemp.net/threads/release-space-game.414342/).
+This is a Wii U homebrew application. Due to an exploit on the latest Wii U firmware, you can play latest version on 5.5.0/5.5.1 by clicking [here](http://wiiu.vgmoose.com/space.mp4). For more info, see the [thread on it here](https://gbatemp.net/threads/release-space-game.414342/) and the [video here](https://www.youtube.com/watch?v=KMuicPmOIHw).
 
 ![Logo](http://vgmoose.com/posts/24261201%20-%20[release]%20Space%20Game!%20(for%20Wii%20U).post/title.png)
 
@@ -55,4 +55,43 @@ This program is licensed under [the MIT license](https://opensource.org/licenses
  - Based on Pong by [Relys](https://github.com/Relys)
  - Music in video by [(T-T)b](https://t-tb.bandcamp.com/)
  - Space ship sprite by [Gungriffon Geona](http://shmups.system11.org/viewtopic.php?p=421436&sid=c7c9dc0b51eb40aa10bd77f724f45bb1#p421436)
- - Logo font by [Iconian Fonts](http://www.dafont.com/ozda.font) 	  				 	 	 	    		  	   		  	
+ - Logo font by [Iconian Fonts](http://www.dafont.com/ozda.font) 	
+ - libwiiu/bugfixes: [MarioNumber1](https://github.com/MarioNumber1), [CreeperMario](https://github.com/CreeperMario), [NWPlayer123](https://github.com/NWPlayer123), [dimok](https://github.com/dimok789) 
+
+### How to Compile and Run
+Checkout this project to the osscreenexamples directory of libwiiu, make it, and then host the mp4 file to your Wii U. [Here are some instructions I've written](http://vgmoose.com/blog/how-to-host-a-file-locally-4370481922/) on how to host a file, however you can also find various tutorials elsewhere.
+
+```bash
+# Set your Wii U version
+export VER=550
+
+# Setup libwiiu
+git clone https://github.com/wiiudev/libwiiu.git
+cd libwiiu/libwiiu
+make
+
+# Checkout space game
+cd ../osscreenexamples/
+git clone https://github.com/vgmoose/space.git
+
+# Compile space game
+cd space
+make
+
+# Setup wiiuhaxx
+cd bin
+git clone https://github.com/yellows8/wiiuhaxx_common.git
+cp code$VER.bin wiiuhaxx_common
+
+cd wiiuhaxx_common
+git clone https://gist.github.com/vgmoose/9226a502f7804886f5220664385f548b
+cp 9226a502f7804886f5220664385f548b/* .
+
+# Create exploited mp4
+php -r '$_REQUEST["sysver"]="'$VER'"; require_once("wiiuhaxx.php");' > space_game.mp4
+file space_game.mp4
+```			 	
+
+Once the process is done, you'll want to host the ```space_game.mp4``` file. If you get an error that the version isn't specified, make sure you exported the VER variable.	    
+
+Space Game also uses a slightly larger binary size, which is overridden in wiiuhaxx.php in the above instructions. See the ELF branch if you'd rather compile to an ELF.		  	   		  	
