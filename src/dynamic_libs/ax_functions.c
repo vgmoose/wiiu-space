@@ -21,10 +21,12 @@
  * 3. This notice may not be removed or altered from any source
  * distribution.
  ***************************************************************************/
+#include "common/common.h"
 #include "os_functions.h"
 #include "ax_functions.h"
 
 EXPORT_DECL(void, AXInitWithParams, u32 * params);
+EXPORT_DECL(void, AXInit, void);
 EXPORT_DECL(void, AXQuit, void);
 EXPORT_DECL(u32, AXGetInputSamplesPerSec, void);
 EXPORT_DECL(u32, AXGetInputSamplesPerFrame, void);
@@ -47,13 +49,27 @@ EXPORT_DECL(void, AXSetVoiceLoopOffset, void *v, u32 offset);
 
 void InitAXFunctionPointers(void)
 {
+    unsigned int sound_handle = 0;
     unsigned int *funcPointer = 0;
-    unsigned int sound_handle;
-    OSDynLoad_Acquire("sndcore2.rpl", &sound_handle);
 
-    OS_FIND_EXPORT(sound_handle, AXInitWithParams);
+    if(OS_FIRMWARE >= 400)
+    {
+        AXInit = 0;
+
+        OSDynLoad_Acquire("sndcore2.rpl", &sound_handle);
+        OS_FIND_EXPORT(sound_handle, AXInitWithParams);
+        OS_FIND_EXPORT(sound_handle, AXGetInputSamplesPerSec);
+    }
+    else
+    {
+        AXInitWithParams = 0;
+        AXGetInputSamplesPerSec = 0;
+
+        OSDynLoad_Acquire("snd_core.rpl", &sound_handle);
+        OS_FIND_EXPORT(sound_handle, AXInit);
+    }
+
     OS_FIND_EXPORT(sound_handle, AXQuit);
-    OS_FIND_EXPORT(sound_handle, AXGetInputSamplesPerSec);
     OS_FIND_EXPORT(sound_handle, AXVoiceBegin);
     OS_FIND_EXPORT(sound_handle, AXVoiceEnd);
     OS_FIND_EXPORT(sound_handle, AXSetVoiceType);
@@ -72,3 +88,23 @@ void InitAXFunctionPointers(void)
     OS_FIND_EXPORT(sound_handle, AXSetVoiceLoopOffset);
 }
 
+void ProperlyEndTransitionAudio(void)
+{
+    bool (* check_os_audio_transition_flag_old)(void);
+    void (* AXInit_old)(void);
+    void (* AXQuit_old)(void);
+
+    unsigned int *funcPointer = 0;
+    unsigned int sound_handle;
+    OSDynLoad_Acquire("snd_core.rpl", &sound_handle);
+
+    OS_FIND_EXPORT_EX(sound_handle, check_os_audio_transition_flag, check_os_audio_transition_flag_old);
+    OS_FIND_EXPORT_EX(sound_handle, AXInit, AXInit_old);
+    OS_FIND_EXPORT_EX(sound_handle, AXQuit, AXQuit_old);
+
+    if (check_os_audio_transition_flag_old())
+    {
+        AXInit_old();
+        AXQuit_old();
+    }
+}
