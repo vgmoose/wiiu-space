@@ -269,8 +269,10 @@ void handleExplosions(struct SpaceGlobals* mySpaceGlobals)
 	}
 }
 
-void makeRotationMatrix(float angle, int width, unsigned char original[][width], unsigned char target[][width], int transIndex)
+void makeRotationMatrix(float angle, int width, void *orig, void *targ, int transIndex)
 {
+	unsigned char (*original)[width] = (unsigned char (*)[width])(orig);
+	unsigned char (*target)[width] = (unsigned char (*)[width])(targ);
 //	if (angle < 0 || angle > 2*3.14159265) return;
 	int x;
 	for (x=0; x<width; x++)
@@ -357,8 +359,9 @@ void render(struct SpaceGlobals *mySpaceGlobals)
 }
 
 // see the notes in images.c for more info on how this works
-void decompress_sprite(int arraysize, int width, int height, const signed char* input, unsigned char target[][width], char transIndex)
+void decompress_sprite(int arraysize, int width, int height, const signed char* input, void *targ, char transIndex)
 {
+	unsigned char (*target)[width] = (unsigned char (*)[width])(targ);
 	int cx = 0, cy = 0;
 	int x;
 	int posinrow = 0;
