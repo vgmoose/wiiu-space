@@ -6,6 +6,11 @@
 #include "images.h"
 #include "draw.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// //! C wrapper for out C++ functions
 //Function declarations for space functions.
 void renderShip(struct SpaceGlobals *mySpaceGlobals);
 void renderInitialPlayers(struct SpaceGlobals *mySpaceGlobals);
@@ -22,14 +27,14 @@ void doMenuAction(struct SpaceGlobals *mySpaceGlobals);
 void drawMenuCursor(struct SpaceGlobals *mySpaceGlobals);
 void moveBullets(struct SpaceGlobals *mySpaceGlobals);
 void renderStars(struct SpaceGlobals *mySpaceGlobals);
-void decompress_sprite(int arraysize, int width, int height, const signed char* input, unsigned char target[][width], char transIndex);
+void decompress_sprite(int arraysize, int width, int height, const signed char* input, void *targ, char transIndex);
 void renderTexts(struct SpaceGlobals *mySpaceGlobals);
 void render(struct SpaceGlobals *mySpaceGlobals);
 void blackout();
 void totallyRefreshState(struct SpaceGlobals *mySpaceGlobals);
 void p1Shoot(struct SpaceGlobals * mySpaceGlobals);
 void displayPause(struct SpaceGlobals * mySpaceGlobals);
-void makeRotationScaleMatrix(float angle, int frame, int width, unsigned char original[][width], unsigned char target[][width], int transIndex);
+void makeRotationMatrix(float angle, int width, void *orig, void *targ, int transIndex);
 void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals);
 void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals);
 void checkPause(struct SpaceGlobals * mySpaceGlobals);
@@ -39,5 +44,8 @@ void initGameState(struct SpaceGlobals * mySpaceGlobals);
 void displayGameOver(struct SpaceGlobals * mySpaceGlobals);
 void handleExplosions(struct SpaceGlobals * mySpaceGlobals);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SPACE_H */
