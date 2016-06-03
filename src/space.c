@@ -199,8 +199,10 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 
 }
 
-void makeScaleMatrix(int frame, int width, unsigned char original[][width], unsigned char target[][width], int transIndex)
+void makeScaleMatrix(int frame, int width, void *orig, void *targ, int transIndex)
 {
+	unsigned char (*original)[width] = (unsigned char (*)[width])(orig);
+	unsigned char (*target)[width] = (unsigned char (*)[width])(targ);
 	int x;
 	for (x=0; x<width; x++)
 	{
