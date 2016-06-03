@@ -50,11 +50,18 @@ void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 {
 	if (mySpaceGlobals->playerExplodeFrame > 1)
 		return;
+		
+	float sensitivity = 0.1f;
+		
+	float xdif = 0;
+	float ydif = 0;
 	
-	if (mySpaceGlobals->touched)
+	if ((fabs(mySpaceGlobals->rstick.x) > sensitivity) || (fabs(mySpaceGlobals->rstick.y) > sensitivity))
 	{
-		float xdif = mySpaceGlobals->p1X - mySpaceGlobals->touchX + 18;
-		float ydif = mySpaceGlobals->p1Y - mySpaceGlobals->touchY + 18;
+		if (fabs(mySpaceGlobals->rstick.x) > sensitivity)
+			xdif = mySpaceGlobals->p1X - (mySpaceGlobals->p1X + (mySpaceGlobals->rstick.x * 18));
+		if (fabs(mySpaceGlobals->rstick.y) > sensitivity)
+			ydif = mySpaceGlobals->p1Y - (mySpaceGlobals->p1Y - (mySpaceGlobals->rstick.y * 18));
 		mySpaceGlobals->angle = my_atan2(xdif, ydif);
 		
 //		activateBullet(mySpaceGlobals, mySpaceGlobals->angle - 3.14159265, mySpaceGlobals->p1X, mySpaceGlobals->p1Y);
@@ -88,11 +95,11 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 		
 	// Handle analog stick movements
 	Vec2D left = mySpaceGlobals->lstick;
-	Vec2D right = mySpaceGlobals->rstick;
+	// Vec2D right = mySpaceGlobals->rstick;
 
 	// get the differences
-	float xdif = left.x + right.x;
-	float ydif = left.y + right.y;
+	float xdif = left.x;
+	float ydif = left.y;
 	
 	// Handle D-pad movements as well
 	// max out speed at 1 or -1 in both directions
