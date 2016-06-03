@@ -34,9 +34,13 @@ BUILD_DBG	:=	$(TARGET)_dbg
 SOURCES		:=	src \
 				src/dynamic_libs \
 				src/fs \
+				src/game \
+				src/resources \
+				src/sounds \
 				src/system \
 				src/utils
-DATA		:=	
+DATA		:=	data \
+				data/sounds
 
 INCLUDES	:=  src
 
@@ -56,7 +60,7 @@ MAKEFLAGS += --no-print-directory
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lgcc #-lgd -lpng -lz -lfreetype -lvorbisidec
+LIBS	:= -lgcc -lgd -lpng -lz -lfreetype -lvorbisidec -lmad
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -82,6 +86,7 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
 #---------------------------------------------------------------------------------
+FILELIST	:=	$(shell bash ./filelist.sh)
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
