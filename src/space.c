@@ -282,7 +282,8 @@ void makeRotationMatrix(float angle, int width, void *orig, void *targ, int tran
 		int y;
 		for (y=0; y<width; y++)
 		{
-			target[x][y] = transIndex;
+//			target[x][y] = transIndex;
+            target[x][y] = original[x][y]; // TODO: temporary, prevents rotation
 		}
 	}
 	
@@ -306,7 +307,8 @@ void makeRotationMatrix(float angle, int width, void *orig, void *targ, int tran
 			if (oldx < 0 || oldx >= width) continue;
 			if (oldy < 0 || oldy >= width) continue;
 			
-			target[x][y] = original[oldx][oldy];
+            // TODO: crashes with this below line! When trying to assign to target, but only after doing the above math
+//			target[x][y] = original[oldx][oldy];
 		}
 	}
 }
@@ -563,6 +565,12 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		char credits[255];
 		__os_snprintf(credits, 255, "by vgmoose");
 
+        char musiccredits[255];
+		__os_snprintf(musiccredits, 255, "~*cruise*~ by (T-T)b");
+        
+        char license[255];
+		__os_snprintf(license, 255, "MIT License");
+        
 		char play[255];
 		__os_snprintf(play, 255, "Start Game");
 		char password[255];
@@ -572,6 +580,9 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		drawString(37, 9, credits);
 		drawString(25, 12, play);
 		drawString(25, 13, password);
+        
+        drawString(45, 17, musiccredits);
+        drawString(-2, 17, license);
 		
 		drawMenuCursor(mySpaceGlobals);
 		

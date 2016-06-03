@@ -120,6 +120,8 @@ void Application::executeThread(void)
 	// setup palette and transparent index
 	mySpaceGlobals.curPalette = ship_palette;
 	mySpaceGlobals.transIndex = 14;
+    
+    mySpaceGlobals.passwordEntered = 0;
 	
 	// initialize starfield for this game
 	initStars(&mySpaceGlobals);
