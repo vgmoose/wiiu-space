@@ -1,9 +1,9 @@
 #include "trigmath.h"
 #include "space.h"
 ///** Modified Math.h to include sin, cos, and tan **/
-#define M_PI   3.14159265
-#define M_2_PI 6.28318531
-#define M_PI_2 1.57079632
+#define M_PI   3.14159265f
+#define M_2_PI 6.28318531f
+#define M_PI_2 1.57079632f
 
 float my_sincos(float x)
 {
@@ -11,7 +11,7 @@ float my_sincos(float x)
 		x -= M_2_PI;
 	
 	// common code for both sin and cos
-	return 1.27323954 * x + ((x<0)? 1:-1)*0.405284735 * x * x;
+	return 1.27323954f * x + ((x<0)? 1:-1)*0.405284735f * x * x;
 }
 
 // This sine function is mostly accurate for -pi < x < pi

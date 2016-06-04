@@ -51,17 +51,20 @@ void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 	if (mySpaceGlobals->playerExplodeFrame > 1)
 		return;
 		
-	float sensitivity = 0.1f;
-		
-	float xdif = 0;
-	float ydif = 0;
+//	float sensitivity = 0.1f;
+//				
+//	float xdif = 0;
+//	float ydif = 0;
 	
-	if ((fabs(mySpaceGlobals->rstick.x) > sensitivity) || (fabs(mySpaceGlobals->rstick.y) > sensitivity))
+	if (mySpaceGlobals->touched)
+//	if ((fabs(mySpaceGlobals->rstick.x) > sensitivity) || (fabs(mySpaceGlobals->rstick.y) > sensitivity))
 	{
-		if (fabs(mySpaceGlobals->rstick.x) > sensitivity)
-			xdif = mySpaceGlobals->p1X - (mySpaceGlobals->p1X + (mySpaceGlobals->rstick.x * 18));
-		if (fabs(mySpaceGlobals->rstick.y) > sensitivity)
-			ydif = mySpaceGlobals->p1Y - (mySpaceGlobals->p1Y - (mySpaceGlobals->rstick.y * 18));
+//		if (fabs(mySpaceGlobals->rstick.x) > sensitivity)
+//			xdif = mySpaceGlobals->p1X - (mySpaceGlobals->p1X + (mySpaceGlobals->rstick.x * 18));
+//		if (fabs(mySpaceGlobals->rstick.y) > sensitivity)
+//			ydif = mySpaceGlobals->p1Y - (mySpaceGlobals->p1Y - (mySpaceGlobals->rstick.y * 18));
+		float xdif = mySpaceGlobals->p1X - mySpaceGlobals->touchX + 18;
+		float ydif = mySpaceGlobals->p1Y - mySpaceGlobals->touchY + 18;
 		mySpaceGlobals->angle = my_atan2(xdif, ydif);
 		
 //		activateBullet(mySpaceGlobals, mySpaceGlobals->angle - 3.14159265, mySpaceGlobals->p1X, mySpaceGlobals->p1Y);
@@ -78,6 +81,8 @@ void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 				mySpaceGlobals->bullets[xx].m_x = 9*my_sin(theta); // 9 is the desired bullet speed 
 				mySpaceGlobals->bullets[xx].m_y = 9*my_cos(theta); // we have to solve for the hypotenuese 
 				mySpaceGlobals->bullets[xx].active = 1;
+//				mySpaceGlobals->firstShotFired = 1;
+//				mySpaceGlobals->displayHowToPlay = 0;
 				break;
 			}
 		}
@@ -95,17 +100,17 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 		
 	// Handle analog stick movements
 	Vec2D left = mySpaceGlobals->lstick;
-	// Vec2D right = mySpaceGlobals->rstick;
+	Vec2D right = mySpaceGlobals->rstick;
 
 	// get the differences
-	float xdif = left.x;
-	float ydif = left.y;
+	float xdif = left.x + right.x;
+	float ydif = left.y + right.y;
 	
 	// Handle D-pad movements as well
 	// max out speed at 1 or -1 in both directions
 	xdif = (xdif >  1 || mySpaceGlobals->button & VPAD_BUTTON_RIGHT)?  1 : xdif;
 	xdif = (xdif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_LEFT)? -1 : xdif;
-	ydif = (ydif >  1 || mySpaceGlobals->button &    VPAD_BUTTON_UP)?  1 : ydif;
+	ydif = (ydif >  1 || mySpaceGlobals->button &	VPAD_BUTTON_UP)?  1 : ydif;
 	ydif = (ydif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_DOWN)? -1 : ydif;
 	
 	// don't update angle if both are within -.1 < x < .1
@@ -126,6 +131,10 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	if (mySpaceGlobals->frame % 60 == 0)
 	{
 		increaseScore(mySpaceGlobals, 10);
+		
+		// if the score is at least 100 and a shot hasn't been fired yet, display a message about shooting
+//		if (mySpaceGlobals->score >= 100 && !mySpaceGlobals->firstShotFired)
+//			mySpaceGlobals->displayHowToPlay = 1;
 	}
 
 };
@@ -282,29 +291,30 @@ void makeRotationMatrix(float angle, int width, void *orig, void *targ, int tran
 {
 	unsigned char (*original)[width] = (unsigned char (*)[width])(orig);
 	unsigned char (*target)[width] = (unsigned char (*)[width])(targ);
-//	if (angle < 0 || angle > 2*3.14159265) return;
+	
 	int x;
 	for (x=0; x<width; x++)
 	{
 		int y;
 		for (y=0; y<width; y++)
 		{
-//			target[x][y] = transIndex;
-            target[x][y] = original[x][y]; // TODO: temporary, prevents rotation
+			target[x][y] = transIndex;
 		}
 	}
 	
-	float woffset = width/2.0;
+	float woffset = width/2.0f;
 	
+	int ix;
 	// go though every pixel in the target bitmap
-	for (x=0; x<width; x++)
+	for (ix=0; ix<width; ix++)
 	{
-		int y;
-		for (y=0; y<width; y++)
+		int iy;
+		for (iy=0; iy<width; iy++)
 		{
+				
 			// rotate the pixel by the angle into a new spot in the rotation matrix
-			int oldx = (int)((x-woffset)*my_cos(angle) + (y-woffset)*my_sin(angle) + woffset);
-			int oldy = (int)((x-woffset)*my_sin(angle) - (y-woffset)*my_cos(angle) + woffset);
+			int oldx = (int)((ix-woffset)*my_cos(angle) + (iy-woffset)*my_sin(angle) + woffset);
+			int oldy = (int)((ix-woffset)*my_sin(angle) - (iy-woffset)*my_cos(angle) + woffset);
 			
 //			if (oldx < 0) oldx += width;
 //			if (oldy < 0) oldy += width;
@@ -314,8 +324,8 @@ void makeRotationMatrix(float angle, int width, void *orig, void *targ, int tran
 			if (oldx < 0 || oldx >= width) continue;
 			if (oldy < 0 || oldy >= width) continue;
 			
-            // TODO: crashes with this below line! When trying to assign to target, but only after doing the above math
-//			target[x][y] = original[oldx][oldy];
+			// TODO: crashes with this below line! When trying to assign to target, but only after doing the above math
+			target[ix][iy] = original[oldx][oldy];
 		}
 	}
 }
@@ -457,12 +467,16 @@ void moveBullets(struct SpaceGlobals *mySpaceGlobals)
 				mySpaceGlobals->enemies[x].position.active = 0;
 			
 			// rotate the enemy slowly
-			mySpaceGlobals->enemies[x].angle += 0.02;
-			if (mySpaceGlobals->enemies[x].angle > 6.28318530)
-				mySpaceGlobals->enemies[x].angle = 0;
+			mySpaceGlobals->enemies[x].angle += 0.02f;
+			if (mySpaceGlobals->enemies[x].angle > 6.28318530f)
+				mySpaceGlobals->enemies[x].angle = 0.0f;
 			
+//			int targetAngle = mySpaceGlobals->enemies[x].angle;
+						
+			// TODO: the below crashes... with angle instead of 0
 			makeRotationMatrix(mySpaceGlobals->enemies[x].angle, 23, mySpaceGlobals->enemy, mySpaceGlobals->enemies[x].rotated_sprite, 9);
-			
+//			makeScaleMatrix(3, 23, mySpaceGlobals->enemy, mySpaceGlobals->enemies[x].rotated_sprite, 9);
+
 			mySpaceGlobals->invalid = 1;
 		}
 	}
@@ -486,6 +500,13 @@ void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 	char lives[255];
 	__os_snprintf(lives, 255, "Lives: %d", mySpaceGlobals->lives);
 	drawString(55, -1, lives);
+	
+//	if (mySpaceGlobals->displayHowToPlay)
+//	{
+//		char nag[255];
+//		__os_snprintf(nag, 255, "Touch and hold on the screen to rapid fire!");
+//		drawString(30, 17, nag);
+//	}
 			
 }
 
@@ -536,6 +557,8 @@ void initGameState(struct SpaceGlobals *mySpaceGlobals)
 	for (x=0; x<100; x++)
 	{
 		mySpaceGlobals->enemies[x].position.active = 0;
+		mySpaceGlobals->enemies[x].angle = 3.14f;
+		makeRotationMatrix(0, 23, mySpaceGlobals->enemy, mySpaceGlobals->enemies[x].rotated_sprite, 9);
 	}
 
 }
@@ -572,12 +595,12 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		char credits[255];
 		__os_snprintf(credits, 255, "by vgmoose");
 
-        char musiccredits[255];
+		char musiccredits[255];
 		__os_snprintf(musiccredits, 255, "~*cruise*~ by (T-T)b");
-        
-        char license[255];
+		
+		char license[255];
 		__os_snprintf(license, 255, "MIT License");
-        
+		
 		char play[255];
 		__os_snprintf(play, 255, "Start Game");
 		char password[255];
@@ -587,9 +610,9 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		drawString(37, 9, credits);
 		drawString(25, 12, play);
 		drawString(25, 13, password);
-        
-        drawString(45, 17, musiccredits);
-        drawString(-2, 17, license);
+		
+		drawString(45, 17, musiccredits);
+		drawString(-2, 17, license);
 		
 		drawMenuCursor(mySpaceGlobals);
 		
@@ -729,8 +752,8 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 {
 	// if we've seen up, down, left, right, and a buttons not being pressed
-	if (!(mySpaceGlobals->button & VPAD_BUTTON_A     || 
-		  mySpaceGlobals->button & VPAD_BUTTON_UP    ||
+	if (!(mySpaceGlobals->button & VPAD_BUTTON_A	 || 
+		  mySpaceGlobals->button & VPAD_BUTTON_UP	||
 		  mySpaceGlobals->button & VPAD_BUTTON_DOWN  ||
 		  mySpaceGlobals->button & VPAD_BUTTON_LEFT  ||
 		  mySpaceGlobals->button & VPAD_BUTTON_RIGHT   ))
@@ -772,7 +795,7 @@ void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 		float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
 		float stickX = mySpaceGlobals->lstick.x + mySpaceGlobals->rstick.x;
 		int down  = (mySpaceGlobals->button & VPAD_BUTTON_DOWN  || stickY < -0.3);
-		int up    = (mySpaceGlobals->button & VPAD_BUTTON_UP    || stickY >  0.3);
+		int up	= (mySpaceGlobals->button & VPAD_BUTTON_UP	|| stickY >  0.3);
 		int left  = (mySpaceGlobals->button & VPAD_BUTTON_LEFT  || stickX < -0.3);
 		int right = (mySpaceGlobals->button & VPAD_BUTTON_RIGHT || stickX >  0.3);
 		
@@ -921,6 +944,8 @@ void addNewEnemies(struct SpaceGlobals *mySpaceGlobals)
 void totallyRefreshState(struct SpaceGlobals *mySpaceGlobals)
 {
 	initGameState(mySpaceGlobals);
+//	mySpaceGlobals->displayHowToPlay = 0;
+//	mySpaceGlobals->firstShotFired = 0;
 	mySpaceGlobals->lives = 3;
 	mySpaceGlobals->playerExplodeFrame = 0;
 	mySpaceGlobals->score = 0;
