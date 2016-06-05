@@ -89,8 +89,8 @@ struct SpaceGlobals{
 	int passwordEntered;
 	int allowInput;
 	
-//	int displayHowToPlay;
-//	int firstShotFired;
+	int displayHowToPlay;
+	int firstShotFired;
 
 };
 

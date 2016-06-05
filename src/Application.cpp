@@ -67,7 +67,7 @@ int Application::exec()
 void Application::executeThread(void)
 {
 	/****************************>             Globals             <****************************/
-	struct SpaceGlobals mySpaceGlobals;
+	struct SpaceGlobals mySpaceGlobals = {};
 	//Flag for restarting the entire game.
 	mySpaceGlobals.restart = 1;
 
