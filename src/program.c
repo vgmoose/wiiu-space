@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 	for (x=0; x<100; x++)
 		mySpaceGlobals.passwordList[x] = (int)(prand(&pwSeed)*100000);
 	
-	mySpaceGlobals.seed = 654321;
+	mySpaceGlobals.seed = OSGetTime();
 	
 	/****************************>            VPAD Loop            <****************************/
 	int error;
