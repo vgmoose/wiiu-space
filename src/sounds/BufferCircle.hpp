@@ -27,8 +27,8 @@
 #define BUFFER_CIRCLE_HPP_
 
 #include <vector>
-#include <gctypes.h>
-
+#include <wut_types.h>
+#include <vpad/input.h>
 class BufferCircle
 {
 	public:

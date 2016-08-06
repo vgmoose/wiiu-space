@@ -26,8 +26,8 @@
 #ifndef SOUND_DECODER_HPP
 #define SOUND_DECODER_HPP
 
-#include "fs/CFile.hpp"
-#include "system/CMutex.h"
+#include "../fs/CFile.hpp"
+#include "../system/CMutex.h"
 #include "BufferCircle.hpp"
 
 #define usleep(usecs)                   OSSleepTicks(MICROSECS_TO_TICKS(usecs))

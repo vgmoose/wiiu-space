@@ -27,10 +27,10 @@
 #define SOUNDHANDLER_H_
 
 #include <vector>
-#include <gctypes.h>
-#include "system/CThread.h"
+#include <wut_types.h>
+#include <vpad/input.h>
+#include "../system/CThread.h"
 #include "SoundDecoder.hpp"
-#include "Voice.h"
 
 #define MAX_DECODERS	16  // can be increased up to 96
 
@@ -50,7 +50,6 @@ public:
 	void RemoveDecoder(int voice);
 
 	SoundDecoder * getDecoder(int i) { return ((i < 0 || i >= MAX_DECODERS) ? NULL : DecoderList[i]); };
-	Voice * getVoice(int i) { return ((i < 0 || i >= MAX_DECODERS) ? NULL : voiceList[i]); };
 
 	void ThreadSignal() { resumeThread(); };
 	bool IsDecoding() { return Decoding; };
@@ -71,7 +70,6 @@ protected:
 	bool Decoding;
 	bool ExitRequested;
 
-	Voice * voiceList[MAX_DECODERS];
 	SoundDecoder * DecoderList[MAX_DECODERS];
 };
 

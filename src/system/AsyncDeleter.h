@@ -17,7 +17,6 @@
 #ifndef _ASYNC_DELETER_H
 #define _ASYNC_DELETER_H
 
-#include <queue>
 #include "CThread.h"
 #include "CMutex.h"
 
@@ -56,8 +55,8 @@ private:
     void executeThread(void);
 
     bool exitApplication;
-    std::queue<AsyncDeleter::Element *> deleteElements;
-    std::queue<AsyncDeleter::Element *> realDeleteElements;
+//    std::queue<AsyncDeleter::Element *> deleteElements;
+//    std::queue<AsyncDeleter::Element *> realDeleteElements;
     CMutex deleteMutex;
 };
 

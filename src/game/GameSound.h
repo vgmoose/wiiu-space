@@ -17,8 +17,9 @@
 #ifndef GAME_SOUND_H_
 #define GAME_SOUND_H_
 
-#include <gctypes.h>
-#include "system/AsyncDeleter.h"
+#include <wut_types.h>
+#include <vpad/input.h>
+#include "../system/AsyncDeleter.h"
 
 #define usleep(usecs)                   OSSleepTicks(MICROSECS_TO_TICKS(usecs))
 #define sleep(secs)                     OSSleepTicks(SECS_TO_TICKS(secs))

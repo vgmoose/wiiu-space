@@ -6,8 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <gctypes.h>
-
+#include <wut_types.h>
+#include <vpad/input.h>
 class CFile
 {
 	public:

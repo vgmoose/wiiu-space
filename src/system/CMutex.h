@@ -18,7 +18,6 @@
 #define _CMUTEX_H_
 
 #include <malloc.h>
-#include "dynamic_libs/os_functions.h"
 
 class CMutex
 {

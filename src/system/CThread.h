@@ -17,10 +17,10 @@
 #ifndef CTHREAD_H_
 #define CTHREAD_H_
 
-#include <gctypes.h>
 #include <malloc.h>
 #include <unistd.h>
-#include "dynamic_libs/os_functions.h"
+#include <wut_types.h>
+#include <vpad/input.h>
 
 class CThread
 {

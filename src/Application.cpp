@@ -12,6 +12,8 @@
 #include "draw.h"
 #include "images.h"
 #include "space.h"
+#include <wut_types.h>
+#include <vpad/input.h>
 
 Application *Application::applicationInstance = NULL;
 bool Application::exitApplication = false;
@@ -93,8 +95,8 @@ void Application::executeThread(void)
 	mySpaceGlobals.seed = OSGetTime();
 	
 	/****************************>            VPAD Loop            <****************************/
-	int error;
-	VPADData vpad_data;
+	VPADReadError error;
+	VPADStatus vpad_data;
 	
 	// decompress compressed things into their arrays, final argument is the transparent color in their palette
 	decompress_sprite(3061, 200, 100, compressed_title, mySpaceGlobals.title, 39);
@@ -117,16 +119,16 @@ void Application::executeThread(void)
 		VPADRead(0, &vpad_data, 1, &error);
 		
 		//Get the status of the gamepad
-		mySpaceGlobals.button = vpad_data.btns_h;
+		mySpaceGlobals.button = vpad_data.hold;
 		
-		mySpaceGlobals.rstick = vpad_data.rstick;
-		mySpaceGlobals.lstick = vpad_data.lstick;
+		mySpaceGlobals.rstick = vpad_data.rightStick;
+		mySpaceGlobals.lstick = vpad_data.leftStick;
 		
-		mySpaceGlobals.touched = vpad_data.tpdata.touched;
+		mySpaceGlobals.touched = vpad_data.tpNormal.touched;
 		if (mySpaceGlobals.touched == 1)
 		{
-			mySpaceGlobals.touchX = ((vpad_data.tpdata.x / 9) - 11);
-			mySpaceGlobals.touchY = ((3930 - vpad_data.tpdata.y) / 16);
+			mySpaceGlobals.touchX = ((vpad_data.tpNormal.x / 9) - 11);
+			mySpaceGlobals.touchY = ((3930 - vpad_data.tpNormal.y) / 16);
 		}
 		
 		if (mySpaceGlobals.restart == 1)
