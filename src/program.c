@@ -18,6 +18,7 @@ char log_buf[0x400];
 
 bool isAppRunning = true;
 bool initialized = false;
+struct SpaceGlobals mySpaceGlobals;
 
 void screenInit()
 {
@@ -97,6 +98,7 @@ bool AppRunning()
       }
       else if(status == PROCUI_STATUS_IN_FOREGROUND)
       {
+          mySpaceGlobals.invalid = 1;
          // Reallocate MEM1, reinit screen, etc.
          if(!initialized)
          {
@@ -126,14 +128,13 @@ int main(int argc, char **argv)
 {
 	OSDynLoadModule avm_handle = 0;
 	OSDynLoad_Acquire("avm.rpl", &avm_handle);
-	bool(*AVMSetTVScale)(int width, int height);
-	OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", &AVMSetTVScale);  // compiler warning, not quite understanding how they setup OSDynLoad_FindExport in WUT
-	AVMSetTVScale(854, 480);  // Not working, hope to find a solution
+    bool(*AVMSetTVScale)(int width, int height);
+    OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", &AVMSetTVScale);  // compiler warning, not quite understanding how they setup OSDynLoad_FindExport in WUT
+    AVMSetTVScale(854, 480);  // Not working, hope to find a solution
 
 	OSScreenInit();
 	ProcUIInit(&SaveCallback);
-	struct SpaceGlobals mySpaceGlobals;
-	
+
 	/****************************>             Globals             <****************************/
 	//struct SpaceGlobals mySpaceGlobals;
 	//Flag for restarting the entire game.
