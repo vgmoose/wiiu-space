@@ -1,8 +1,5 @@
 #ifndef SPACE_H
 #define SPACE_H
-#include "../../../libwiiu/src/coreinit.h"
-#include "../../../libwiiu/src/vpad.h"
-#include "../../../libwiiu/src/types.h"
 // This math has added trig function approximations
 #include "trigmath.h"
 #include "program.h"
@@ -28,7 +25,7 @@ void renderStars(struct SpaceGlobals *mySpaceGlobals);
 void decompress_sprite(int arraysize, int width, int height, const signed char* input, unsigned char target[][width], char transIndex);
 void renderTexts(struct SpaceGlobals *mySpaceGlobals);
 void render(struct SpaceGlobals *mySpaceGlobals);
-void blackout(struct Services * services);
+void blackout();
 void totallyRefreshState(struct SpaceGlobals *mySpaceGlobals);
 void p1Shoot(struct SpaceGlobals * mySpaceGlobals);
 void displayPause(struct SpaceGlobals * mySpaceGlobals);
@@ -39,5 +36,7 @@ void checkPause(struct SpaceGlobals * mySpaceGlobals);
 void addNewEnemies(struct SpaceGlobals * mySpaceGlobals);
 void tryPassword(struct SpaceGlobals * mySpaceGlobals);
 void initGameState(struct SpaceGlobals * mySpaceGlobals);
+void displayGameOver(struct SpaceGlobals *mySpaceGlobals);
+void handleExplosions(struct SpaceGlobals* mySpaceGlobals);
 
 #endif /* SPACE_H */

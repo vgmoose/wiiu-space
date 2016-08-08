@@ -1,56 +1,143 @@
+#include <coreinit/core.h>
+#include <coreinit/debug.h>
+#include <coreinit/dynload.h>
+#include <coreinit/internal.h>
+#include <coreinit/screen.h>
+#include <coreinit/foreground.h>
+#include <proc_ui/procui.h>
+#include <vpad/input.h>
+#include "memory.h"
+
 #include "program.h"
 #include "trigmath.h"
 #include "draw.h"
 #include "images.h"
 #include "space.h"
 
-void cleanSlate(struct Services *services)
+char log_buf[0x400];
+
+bool isAppRunning = true;
+bool initialized = false;
+
+void screenInit()
+{
+	//Grab the buffer size for each screen (TV and gamepad)
+	int buf0_size = OSScreenGetBufferSizeEx(0);
+	int buf1_size = OSScreenGetBufferSizeEx(1);
+	/*__os_snprintf(log_buf, 0x400, "Screen sizes %x, %x\n", buf0_size, buf1_size);
+	OSReport(log_buf);*/
+	
+	//Set the buffer area.
+	screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x40);
+	/*__os_snprintf(log_buf, 0x400, "Allocated screen buffers at %x\n", screenBuffer);
+	OSReport(log_buf);*/
+	
+    OSScreenSetBufferEx(0, screenBuffer + 0x40);
+    OSScreenSetBufferEx(1, (screenBuffer + buf0_size + 0x40));
+    //OSReport("Set screen buffers\n");
+
+    OSScreenEnableEx(0, 1);
+    OSScreenEnableEx(1, 1);
+    
+    //Clear both framebuffers.
+	for (int ii = 0; ii < 2; ii++)
+	{
+		fillScreen(0,0,0,0);
+		flipBuffers();
+	}
+}
+
+void screenDeinit()
+{
+    for(int ii = 0; ii < 2; ii++)
+	{
+		fillScreen(0,0,0,0);
+		flipBuffers();
+	}
+    
+    MEM1_free(screenBuffer);
+}
+
+void SaveCallback()
+{
+   OSSavesDone_ReadyToRelease(); // Required
+}
+
+bool AppRunning()
+{
+   if(!OSIsMainCore())
+   {
+      ProcUISubProcessMessages(true);
+   }
+   else
+   {
+      ProcUIStatus status = ProcUIProcessMessages(true);
+    
+      if(status == PROCUI_STATUS_EXITING)
+      {
+          // Being closed, deinit things and prepare to exit
+          isAppRunning = false;
+          
+          if(initialized)
+          {
+              initialized = false;
+              screenDeinit();
+              memoryRelease();
+          }
+          ProcUIShutdown();
+      }
+      else if(status == PROCUI_STATUS_RELEASE_FOREGROUND)
+      {
+          // Free up MEM1 to next foreground app, etc.
+          initialized = false;
+          
+          screenDeinit();
+          memoryRelease();
+          ProcUIDrawDoneRelease();
+      }
+      else if(status == PROCUI_STATUS_IN_FOREGROUND)
+      {
+         // Reallocate MEM1, reinit screen, etc.
+         if(!initialized)
+         {
+            initialized = true;
+            
+            memoryInitialize();
+            screenInit();
+         }
+      }
+   }
+
+   return isAppRunning;
+}
+
+void cleanSlate()
 {
 	// clear both buffers
 	int ii;
 	for(ii=0;ii<2;ii++)
 	{
-		fillScreen(services, 0,0,0,0);
-		flipBuffers(services);
+		fillScreen(0,0,0,0);
+		flipBuffers();
 	}
 }
-void _entryPoint()
+
+int main(int argc, char **argv)
 {
-	struct Services services;
-	
-	/****************************>           Get Handles           <****************************/
-	//Get a handle to coreinit.rpl
-	OSDynLoad_Acquire("coreinit.rpl", &services.coreinit_handle);
-	//Get a handle to vpad.rpl */
-	unsigned int vpad_handle;
-	OSDynLoad_Acquire("vpad.rpl", &vpad_handle);
-	/****************************>       External Prototypes       <****************************/
-	//VPAD functions
-	int(*VPADRead)(int controller, VPADData *buffer, unsigned int num, int *error);
+	OSDynLoadModule avm_handle = 0;
+	OSDynLoad_Acquire("avm.rpl", &avm_handle);
+    bool(*AVMSetTVScale)(int width, int height);
+    OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", &AVMSetTVScale);  // compiler warning, not quite understanding how they setup OSDynLoad_FindExport in WUT
+    AVMSetTVScale(854, 480);  // Not working, hope to find a solution
 
-	//OS functions
-	void(*_Exit)();
-	
-	/****************************>             Exports             <****************************/
-	//VPAD functions
-	OSDynLoad_FindExport(vpad_handle, 0, "VPADRead", &VPADRead);
-
-	// Draw functions
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenPutPixelEx", &services.OSScreenPutPixelEx);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "DCFlushRange", &services.DCFlushRange);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenFlipBuffersEx", &services.OSScreenFlipBuffersEx);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenGetBufferSizeEx", &services.OSScreenGetBufferSizeEx);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenPutFontEx", &services.OSScreenPutFontEx);
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "OSScreenClearBufferEx", &services.OSScreenClearBufferEx);
-	//OS functions
-	OSDynLoad_FindExport(services.coreinit_handle, 0, "_Exit", &_Exit);
-	cleanSlate(&services);
+	OSScreenInit();
+	ProcUIInit(&SaveCallback);
+	struct SpaceGlobals mySpaceGlobals;
 	
 	/****************************>             Globals             <****************************/
-	struct SpaceGlobals mySpaceGlobals;
+	//struct SpaceGlobals mySpaceGlobals;
 	//Flag for restarting the entire game.
 	mySpaceGlobals.restart = 1;
-	mySpaceGlobals.services = &services;
 
 	// initial state is title screen
 	mySpaceGlobals.state = 1;
@@ -66,14 +153,11 @@ void _entryPoint()
 	for (x=0; x<100; x++)
 		mySpaceGlobals.passwordList[x] = (int)(prand(&pwSeed)*100000);
 	
-	// set the starting time
-	int64_t (*OSGetTime)();
-    OSDynLoad_FindExport(services.coreinit_handle, 0, "OSGetTime", &OSGetTime);
-	mySpaceGlobals.seed = OSGetTime();
+	mySpaceGlobals.seed = 654321;
 	
 	/****************************>            VPAD Loop            <****************************/
 	int error;
-	VPADData vpad_data;
+	VPADStatus vpad_data;
 	
 	// decompress compressed things into their arrays, final argument is the transparent color in their palette
 	decompress_sprite(3061, 200, 100, compressed_title, mySpaceGlobals.title, 39);
@@ -89,21 +173,21 @@ void _entryPoint()
 	
 	mySpaceGlobals.invalid = 1;
 		
-	while (1)
+	while (AppRunning())
 	{
 		VPADRead(0, &vpad_data, 1, &error);
 		
 		//Get the status of the gamepad
-		mySpaceGlobals.button = vpad_data.btn_hold;
+		mySpaceGlobals.button = vpad_data.hold;
 		
-		mySpaceGlobals.rstick = vpad_data.rstick;
-		mySpaceGlobals.lstick = vpad_data.lstick;
+		mySpaceGlobals.rstick = vpad_data.rightStick;
+		mySpaceGlobals.lstick = vpad_data.leftStick;
 		
-		mySpaceGlobals.touched = vpad_data.tpdata.touched;
+		mySpaceGlobals.touched = vpad_data.tpNormal.touched;
 		if (mySpaceGlobals.touched == 1)
 		{
-			mySpaceGlobals.touchX = ((vpad_data.tpdata.x / 9) - 11);
-			mySpaceGlobals.touchY = ((3930 - vpad_data.tpdata.y) / 16);
+			mySpaceGlobals.touchX = ((vpad_data.tpNormal.x / 9) - 11);
+			mySpaceGlobals.touchY = ((3930 - vpad_data.tpNormal.y) / 16);
 		}
 		
 		if (mySpaceGlobals.restart == 1)
@@ -159,13 +243,8 @@ void _entryPoint()
 			// check for pausing
 			checkPause(&mySpaceGlobals);
 		}
-		//To exit the game
-		if (mySpaceGlobals.button&BUTTON_HOME)
-		{
-			break;
-		}
 
 	}
-	cleanSlate(mySpaceGlobals.services);
-	_Exit();
+
+	return 0;
 }
