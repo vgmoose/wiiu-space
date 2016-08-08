@@ -72,6 +72,9 @@ void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 				mySpaceGlobals->bullets[xx].m_x = 9*sin(theta); // 9 is the desired bullet speed 
 				mySpaceGlobals->bullets[xx].m_y = 9*cos(theta); // we have to solve for the hypotenuese 
 				mySpaceGlobals->bullets[xx].active = 1;
+				mySpaceGlobals->firstShotFired = 1;
+				if (mySpaceGlobals->score >= 1000)
+					mySpaceGlobals->displayHowToPlay = 0;
 				break;
 			}
 		}
@@ -120,6 +123,10 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	if (mySpaceGlobals->frame % 60 == 0)
 	{
 		increaseScore(mySpaceGlobals, 10);
+		
+		// if the score is at least 50 and a shot hasn't been fired yet, display a message about shooting
+		if (mySpaceGlobals->score >= 50 && !mySpaceGlobals->firstShotFired)
+			mySpaceGlobals->displayHowToPlay = 1;
 	}
 
 };
@@ -472,6 +479,13 @@ void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 	char lives[255];
 	__os_snprintf(lives, 255, "Lives: %d", mySpaceGlobals->lives);
 	drawString(55, -1, lives);
+	
+	if (mySpaceGlobals->displayHowToPlay)
+	{
+		char nag[255];
+		__os_snprintf(nag, 255, "Touch and hold on the screen to rapid fire!");
+		drawString(20, 17, nag);
+	}
 			
 }
 
@@ -898,6 +912,8 @@ void addNewEnemies(struct SpaceGlobals *mySpaceGlobals)
 void totallyRefreshState(struct SpaceGlobals *mySpaceGlobals)
 {
 	initGameState(mySpaceGlobals);
+	mySpaceGlobals->displayHowToPlay = 0;
+	mySpaceGlobals->firstShotFired = 0;
 	mySpaceGlobals->lives = 3;
 	mySpaceGlobals->playerExplodeFrame = 0;
 	mySpaceGlobals->score = 0;

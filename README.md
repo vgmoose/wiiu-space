@@ -5,6 +5,12 @@ This is a Wii U homebrew application. Due to an exploit on the latest Wii U firm
 
 Space game is an attempt to create a graphical shooter game on the Wii U! Since it is designed to be executed via the .mp4 exploit in 5.5.x, there were several challenges that were imposed on its development in terms of efficiency and storage.
 
+### How to Compile and Run
+
+- install [decaf-emu/wut](https://github.com/decaf-emu/wut)
+- download the wut branch of this repo
+- cd into it and run "make"
+
 ### Binary Size Tricks
 A main issue with the webkit exploit is that binaries that can be executed in the browser are capped at a certain file size. I hit issues when my binary (code550.bin) exceeded 21,400 bytes. It may not seem like it, but that's not much! I employed a couple of tricks to keep the binary size small:
 
@@ -58,40 +64,3 @@ This program is licensed under [the MIT license](https://opensource.org/licenses
  - Logo font by [Iconian Fonts](http://www.dafont.com/ozda.font) 	
  - libwiiu/bugfixes: [MarioNumber1](https://github.com/MarioNumber1), [CreeperMario](https://github.com/CreeperMario), [NWPlayer123](https://github.com/NWPlayer123), [dimok](https://github.com/dimok789) 
 
-### How to Compile and Run
-Checkout this project to the osscreenexamples directory of libwiiu, make it, and then host the mp4 file to your Wii U. [Here are some instructions I've written](http://vgmoose.com/blog/how-to-host-a-file-locally-4370481922/) on how to host a file, however you can also find various tutorials elsewhere.
-
-```bash
-# Set your Wii U version
-export VER=550
-
-# Setup libwiiu
-git clone https://github.com/wiiudev/libwiiu.git
-cd libwiiu/libwiiu
-make
-
-# Checkout space game
-cd ../osscreenexamples/
-git clone https://github.com/vgmoose/space.git
-
-# Compile space game
-cd space
-make
-
-# Setup wiiuhaxx
-cd bin
-git clone https://github.com/yellows8/wiiuhaxx_common.git
-cp code$VER.bin wiiuhaxx_common
-
-cd wiiuhaxx_common
-git clone https://gist.github.com/vgmoose/9226a502f7804886f5220664385f548b
-cp 9226a502f7804886f5220664385f548b/* .
-
-# Create exploited mp4
-php -r '$_REQUEST["sysver"]="'$VER'"; require_once("wiiuhaxx.php");' > space_game.mp4
-file space_game.mp4
-```			 	
-
-Once the process is done, you'll want to host the ```space_game.mp4``` file. If you get an error that the version isn't specified, make sure you exported the VER variable.	    
-
-Space Game also uses a slightly larger binary size, which is overridden in wiiuhaxx.php in the above instructions. See the ELF branch if you'd rather compile to an ELF.		  	   		  	
