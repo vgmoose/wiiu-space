@@ -126,9 +126,9 @@ int main(int argc, char **argv)
 {
 	OSDynLoadModule avm_handle = 0;
 	OSDynLoad_Acquire("avm.rpl", &avm_handle);
-    bool(*AVMSetTVScale)(int width, int height);
-    OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", &AVMSetTVScale);  // compiler warning, not quite understanding how they setup OSDynLoad_FindExport in WUT
-    AVMSetTVScale(854, 480);  // Not working, hope to find a solution
+	bool(*AVMSetTVScale)(int width, int height);
+	OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", &AVMSetTVScale);  // compiler warning, not quite understanding how they setup OSDynLoad_FindExport in WUT
+	AVMSetTVScale(854, 480);  // Not working, hope to find a solution
 
 	OSScreenInit();
 	ProcUIInit(&SaveCallback);
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 	for (x=0; x<100; x++)
 		mySpaceGlobals.passwordList[x] = (int)(prand(&pwSeed)*100000);
 	
-	mySpaceGlobals.seed = 654321;
+	mySpaceGlobals.seed = OSGetTime();
 	
 	/****************************>            VPAD Loop            <****************************/
 	int error;
