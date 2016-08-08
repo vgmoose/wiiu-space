@@ -1,5 +1,7 @@
 #include "space.h"
 #include "trigmath.h"
+#include <coreinit/internal.h>
+#include <coreinit/debug.h>
 
 /**
 This class is a bit of a mess, but it basically does "everything else" in the game.
@@ -22,9 +24,9 @@ pong example, but also I believe necesary since global variables don't seem to b
 #define yMinBoundry 0
 #define yMaxBoundry 240
 
-void blackout(struct Services * services)
+void blackout()
 {
-	fillScreen(services, 0,0,0,0);
+	fillScreen(0,0,0,0);
 }
 
 void increaseScore(struct SpaceGlobals* mySpaceGlobals, int inc)
@@ -86,8 +88,8 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 		return;
 		
 	// Handle analog stick movements
-	Vec2D left = mySpaceGlobals->lstick;
-	Vec2D right = mySpaceGlobals->rstick;
+	VPADVec2D left = mySpaceGlobals->lstick;
+	VPADVec2D right = mySpaceGlobals->rstick;
 
 	// get the differences
 	float xdif = left.x + right.x;
@@ -95,10 +97,10 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	
 	// Handle D-pad movements as well
 	// max out speed at 1 or -1 in both directions
-	xdif = (xdif >  1 || mySpaceGlobals->button & BUTTON_RIGHT)?  1 : xdif;
-	xdif = (xdif < -1 || mySpaceGlobals->button &  BUTTON_LEFT)? -1 : xdif;
-	ydif = (ydif >  1 || mySpaceGlobals->button &    BUTTON_UP)?  1 : ydif;
-	ydif = (ydif < -1 || mySpaceGlobals->button &  BUTTON_DOWN)? -1 : ydif;
+	xdif = (xdif >  1 || mySpaceGlobals->button & VPAD_BUTTON_RIGHT)?  1 : xdif;
+	xdif = (xdif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_LEFT)? -1 : xdif;
+	ydif = (ydif >  1 || mySpaceGlobals->button &    VPAD_BUTTON_UP)?  1 : ydif;
+	ydif = (ydif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_DOWN)? -1 : ydif;
 	
 	// don't update angle if both are within -.1 < x < .1
 	// (this is an expenesive check... 128 bytes compared to just ==0)
@@ -124,7 +126,7 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 
 void checkPause(struct SpaceGlobals * mySpaceGlobals)
 {
-	if (mySpaceGlobals->button & BUTTON_PLUS)
+	if (mySpaceGlobals->button & VPAD_BUTTON_PLUS)
 	{
 		// switch to the pause state and mark view as invalid
 		mySpaceGlobals->state = 3;
@@ -318,7 +320,7 @@ void renderEnemies(struct SpaceGlobals *mySpaceGlobals)
 			int z, za;
 			for (z=0; z<4; z++)
 				for (za=0; za<2; za++)
-					drawPixel(mySpaceGlobals->services, mySpaceGlobals->bullets[x].x + z, mySpaceGlobals->bullets[x].y + za, 255, 0, 0);
+					drawPixel(mySpaceGlobals->bullets[x].x + z, mySpaceGlobals->bullets[x].y + za, 255, 0, 0);
 		}
 	}
 	
@@ -327,7 +329,7 @@ void renderEnemies(struct SpaceGlobals *mySpaceGlobals)
 	{
 		if (mySpaceGlobals->enemies[x].position.active >= 1)
 		{
-			drawBitmap(mySpaceGlobals->services, mySpaceGlobals->enemies[x].position.x, mySpaceGlobals->enemies[x].position.y, 23, 23, mySpaceGlobals->enemies[x].rotated_sprite, enemy_palette);
+			drawBitmap(mySpaceGlobals->enemies[x].position.x, mySpaceGlobals->enemies[x].position.y, 23, 23, mySpaceGlobals->enemies[x].rotated_sprite, enemy_palette);
 		}
 	}
 }
@@ -336,7 +338,7 @@ void render(struct SpaceGlobals *mySpaceGlobals)
 {
 	if (mySpaceGlobals->invalid == 1)
 	{
-		blackout(mySpaceGlobals->services);
+		blackout();
 
 		mySpaceGlobals->frame++;
 
@@ -349,8 +351,7 @@ void render(struct SpaceGlobals *mySpaceGlobals)
 		renderEnemies(mySpaceGlobals);
 		renderShip(mySpaceGlobals);
 		renderTexts(mySpaceGlobals);
-
-		flipBuffers(mySpaceGlobals->services);
+		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
 }
@@ -455,22 +456,22 @@ void moveBullets(struct SpaceGlobals *mySpaceGlobals)
 					
 void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 {
-	fillRect(mySpaceGlobals->services, 0, 0, xMaxBoundry, 20, 0, 0, 0);
+	fillRect(0, 0, xMaxBoundry, 20, 0, 0, 0);
 
 	char score[255];
 	if (mySpaceGlobals->dontKeepTrackOfScore == 1)
 		__os_snprintf(score, 255, "Score: N/A");
 	else
 		__os_snprintf(score, 255, "Score: %09d", mySpaceGlobals->score);
-	drawString(mySpaceGlobals->services, 0, -1, score);
+	drawString(0, -1, score);
 	
 	char level[255];
 	__os_snprintf(level, 255, "Lv %d", mySpaceGlobals->level+1);
-	drawString(mySpaceGlobals->services, 30, -1, level);
+	drawString(30, -1, level);
 
 	char lives[255];
 	__os_snprintf(lives, 255, "Lives: %d", mySpaceGlobals->lives);
-	drawString(mySpaceGlobals->services, 55, -1, lives);
+	drawString(55, -1, lives);
 			
 }
 
@@ -482,7 +483,7 @@ void renderShip(struct SpaceGlobals *mySpaceGlobals)
 	if (mySpaceGlobals->playerExplodeFrame < 2)
 		makeRotationMatrix(mySpaceGlobals->angle, 36, mySpaceGlobals->orig_ship, mySpaceGlobals->rotated_ship, mySpaceGlobals->transIndex);
 
-	drawBitmap(mySpaceGlobals->services, posx, posy, 36, 36, mySpaceGlobals->rotated_ship, mySpaceGlobals->curPalette);
+	drawBitmap(posx, posy, 36, 36, mySpaceGlobals->rotated_ship, mySpaceGlobals->curPalette);
 
 }
 
@@ -492,7 +493,7 @@ void renderStars(struct SpaceGlobals *mySpaceGlobals)
 	if (mySpaceGlobals->lives == 1 && mySpaceGlobals->playerExplodeFrame > 1)
 		return;
 	
-	drawPixels(mySpaceGlobals->services, mySpaceGlobals->stars);
+	drawPixels(mySpaceGlobals->stars);
 }
 
 //Reset the game
@@ -546,13 +547,13 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 {
 	if (mySpaceGlobals->invalid == 1)
 	{
-		blackout(mySpaceGlobals->services);
+		blackout();
 		
 		// draw some stars
 		renderStars(mySpaceGlobals);
 
 		// display the bitmap in upper center screen
-		drawBitmap(mySpaceGlobals->services, 107, 30, 200, 100, mySpaceGlobals->title, title_palette);
+		drawBitmap(107, 30, 200, 100, mySpaceGlobals->title, title_palette);
 
 		char credits[255];
 		__os_snprintf(credits, 255, "by vgmoose");
@@ -563,13 +564,13 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		__os_snprintf(password, 255, "Password");
 
 		//display the menu under it
-		drawString(mySpaceGlobals->services, 37, 9, credits);
-		drawString(mySpaceGlobals->services, 25, 12, play);
-		drawString(mySpaceGlobals->services, 25, 13, password);
+		drawString(37, 9, credits);
+		drawString(25, 12, play);
+		drawString(25, 13, password);
 		
 		drawMenuCursor(mySpaceGlobals);
 		
-		flipBuffers(mySpaceGlobals->services);
+		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
 
@@ -584,18 +585,18 @@ void drawMenuCursor(struct SpaceGlobals *mySpaceGlobals)
 	// display the cursor on the correct item
 	char cursor[255];
 	__os_snprintf(cursor, 255, ">>            <<");
-	drawString(mySpaceGlobals->services, 22, 12 + mySpaceGlobals->menuChoice, cursor);	
+	drawString(22, 12 + mySpaceGlobals->menuChoice, cursor);	
 }
 
 void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 {
 	// if we've seen the A button not being pressed
-	if (!(mySpaceGlobals->button & BUTTON_A))
+	if (!(mySpaceGlobals->button & VPAD_BUTTON_A))
 	{
 		mySpaceGlobals->allowInput = 1;
 	}
 	
-	if (mySpaceGlobals->button & BUTTON_A && mySpaceGlobals->allowInput)
+	if (mySpaceGlobals->button & VPAD_BUTTON_A && mySpaceGlobals->allowInput)
 	{
 		// if we're on the title menu
 		if (mySpaceGlobals->state == 1)
@@ -667,13 +668,13 @@ void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 	
 	float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
 	
-	if (mySpaceGlobals->button & BUTTON_DOWN || stickY < -0.3)
+	if (mySpaceGlobals->button & VPAD_BUTTON_DOWN || stickY < -0.3)
 	{
 		mySpaceGlobals->menuChoice = 1;
 		mySpaceGlobals->invalid = 1;
 	}
 	
-	if (mySpaceGlobals->button & BUTTON_UP || stickY > 0.3)
+	if (mySpaceGlobals->button & VPAD_BUTTON_UP || stickY > 0.3)
 	{
 		mySpaceGlobals->menuChoice = 0;
 		mySpaceGlobals->invalid = 1;
@@ -684,7 +685,7 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 {
 	if (mySpaceGlobals->invalid == 1)
 	{
-		blackout(mySpaceGlobals->services);
+		blackout();
 
 		// display the password here
 		char resume[255];
@@ -692,12 +693,12 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 		char quit[255];
 		__os_snprintf(quit, 255, "Quit");
 		
-		drawString(mySpaceGlobals->services, 25, 12, resume);
-		drawString(mySpaceGlobals->services, 25, 13, quit);
+		drawString(25, 12, resume);
+		drawString(25, 13, quit);
 		
 		drawMenuCursor(mySpaceGlobals);
 		
-		flipBuffers(mySpaceGlobals->services);
+		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
 }
@@ -705,18 +706,18 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 {
 	// if we've seen up, down, left, right, and a buttons not being pressed
-	if (!(mySpaceGlobals->button & BUTTON_A     || 
-		  mySpaceGlobals->button & BUTTON_UP    ||
-		  mySpaceGlobals->button & BUTTON_DOWN  ||
-		  mySpaceGlobals->button & BUTTON_LEFT  ||
-		  mySpaceGlobals->button & BUTTON_RIGHT   ))
+	if (!(mySpaceGlobals->button & VPAD_BUTTON_A     || 
+		  mySpaceGlobals->button & VPAD_BUTTON_UP    ||
+		  mySpaceGlobals->button & VPAD_BUTTON_DOWN  ||
+		  mySpaceGlobals->button & VPAD_BUTTON_LEFT  ||
+		  mySpaceGlobals->button & VPAD_BUTTON_RIGHT   ))
 	{
 		mySpaceGlobals->allowInput = 1;
 	}
 	
 	if (mySpaceGlobals->allowInput)
 	{
-		if (mySpaceGlobals->button & BUTTON_B)
+		if (mySpaceGlobals->button & VPAD_BUTTON_B)
 		{
 			// go back to title screen
 			mySpaceGlobals->state = 1;
@@ -730,7 +731,7 @@ void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 			// mark view invalid to redraw
 			mySpaceGlobals->invalid = 1;
 		}
-		if (mySpaceGlobals->button & BUTTON_A)
+		if (mySpaceGlobals->button & VPAD_BUTTON_A)
 		{
 			// try the password
 			tryPassword(mySpaceGlobals);
@@ -747,10 +748,10 @@ void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 		
 		float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
 		float stickX = mySpaceGlobals->lstick.x + mySpaceGlobals->rstick.x;
-		int down  = (mySpaceGlobals->button & BUTTON_DOWN  || stickY < -0.3);
-		int up    = (mySpaceGlobals->button & BUTTON_UP    || stickY >  0.3);
-		int left  = (mySpaceGlobals->button & BUTTON_LEFT  || stickX < -0.3);
-		int right = (mySpaceGlobals->button & BUTTON_RIGHT || stickX >  0.3);
+		int down  = (mySpaceGlobals->button & VPAD_BUTTON_DOWN  || stickY < -0.3);
+		int up    = (mySpaceGlobals->button & VPAD_BUTTON_UP    || stickY >  0.3);
+		int left  = (mySpaceGlobals->button & VPAD_BUTTON_LEFT  || stickX < -0.3);
+		int right = (mySpaceGlobals->button & VPAD_BUTTON_RIGHT || stickX >  0.3);
 		
 		if (up || down)
 		{
@@ -797,7 +798,7 @@ void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 {
 	if (mySpaceGlobals->invalid == 1)
 	{
-		blackout(mySpaceGlobals->services);
+		blackout();
 		
 //		drawPasswordMenuCursor(mySpaceGlobals);
 		char password[255];
@@ -809,13 +810,13 @@ void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 		char down_cur[255];
 		__os_snprintf(down_cur, 255, "^");
 		
-		drawString(mySpaceGlobals->services, 22, 8, password);
+		drawString(22, 8, password);
 		
-		drawString(mySpaceGlobals->services, 32 + mySpaceGlobals->menuChoice, 7, up_cur);
-		drawString(mySpaceGlobals->services, 32, 8, cur_pw);
-		drawString(mySpaceGlobals->services, 32 + mySpaceGlobals->menuChoice, 9, down_cur);
+		drawString(32 + mySpaceGlobals->menuChoice, 7, up_cur);
+		drawString(32, 8, cur_pw);
+		drawString(32 + mySpaceGlobals->menuChoice, 9, down_cur);
 		
-		flipBuffers(mySpaceGlobals->services);
+		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
 }
@@ -910,11 +911,11 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
 {
 	if (mySpaceGlobals->invalid == 1)
 	{
-		blackout(mySpaceGlobals->services);
+		blackout();
 				
 		char gameover[255];
 		__os_snprintf(gameover, 255, "Game Over!");
-		drawString(mySpaceGlobals->services, 25, 5, gameover);
+		drawString(25, 5, gameover);
 
 		// only display score + pw if the player didn't use cheats
 		if (mySpaceGlobals->dontKeepTrackOfScore != 1)
@@ -924,8 +925,8 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
 			char pass[255];
 			__os_snprintf(pass, 255, "Lv %d Password: %05d", mySpaceGlobals->level+1, mySpaceGlobals->passwordList[mySpaceGlobals->level]);
 
-			drawString(mySpaceGlobals->services, 23, 7, finalscore);
-			drawString(mySpaceGlobals->services, 21, 8, pass);
+			drawString(23, 7, finalscore);
+			drawString(21, 8, pass);
 		}
 	
 		
@@ -934,15 +935,15 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
 		char quit[255];
 		__os_snprintf(quit, 255, "Quit");
 		
-		drawString(mySpaceGlobals->services, 25, 12, resume);
-		drawString(mySpaceGlobals->services, 25, 13, quit);
+		drawString(25, 12, resume);
+		drawString(25, 13, quit);
 		
 		drawMenuCursor(mySpaceGlobals);
 		
-		flipBuffers(mySpaceGlobals->services);
+		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
-	blackout(mySpaceGlobals->services);
+	blackout();
 	
 	
 	
@@ -1032,11 +1033,12 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 //	}
 	
 	// start installer for Hykem's IOSU Exploit
-	if (mySpaceGlobals->passwordEntered == 41666)
+	// Commented out due to a lack of OSFatal in WUT
+	/*if (mySpaceGlobals->passwordEntered == 41666)
 	{
-		blackout(mySpaceGlobals->services);
+		blackout();
 		OSFatal("Installing IOSU Exploit... This may take a while.");
-	}
+	}*/
 	
 	// 100 passwords, one for each level
 	int x;

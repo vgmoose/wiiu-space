@@ -1,10 +1,8 @@
 #ifndef PROGRAM_H
 #define PROGRAM_H
 
-#include "../../../libwiiu/src/coreinit.h"
-#include "../../../libwiiu/src/vpad.h"
-#include "../../../libwiiu/src/types.h"
-//Using modified version of draw to render at twice the scale to improve framerate
+#include <coreinit/core.h>
+#include <vpad/input.h>
 
 struct Bullet {
 	int x;
@@ -28,16 +26,6 @@ struct Pixel {
 	int b;
 };
 
-struct Services
-{
-	unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
-	unsigned int coreinit_handle;
-	void(*DCFlushRange)(void *buffer, uint32_t length);
-	unsigned int(*OSScreenFlipBuffersEx)(unsigned int bufferNum);
-	unsigned int(*OSScreenGetBufferSizeEx)(unsigned int bufferNum);
-	unsigned int(*OSScreenClearBufferEx)(unsigned int bufferNum, unsigned int temp);
-	unsigned int(*OSScreenPutFontEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, void * buffer);
-};
 //Struct for global variables for pong
 struct SpaceGlobals{
 	//Flag for restarting the entire game.
@@ -69,8 +57,8 @@ struct SpaceGlobals{
 
 	//Game engine globals
 	uint32_t button;
-	Vec2D lstick;
-	Vec2D rstick;
+	VPADVec2D lstick;
+	VPADVec2D rstick;
 	
 	// only 20 bullets can be onscreen at a time
 	struct Bullet bullets[20];
@@ -84,8 +72,6 @@ struct SpaceGlobals{
 	int renderResetFlag;
 	int invalid;
 	int transIndex;
-	
-	struct Services* services;
 	
 	// bonuses
 	int playerChoice;
@@ -104,6 +90,6 @@ struct SpaceGlobals{
 
 };
 
-void _entryPoint();
+void* screenBuffer;
 
 #endif /* PROGRAM_H */
