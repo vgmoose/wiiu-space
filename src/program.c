@@ -128,9 +128,9 @@ int main(int argc, char **argv)
 {
 	OSDynLoadModule avm_handle = 0;
 	OSDynLoad_Acquire("avm.rpl", &avm_handle);
-    bool(*AVMSetTVScale)(int width, int height);
-    OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", &AVMSetTVScale);  // compiler warning, not quite understanding how they setup OSDynLoad_FindExport in WUT
-    AVMSetTVScale(854, 480);  // Not working, hope to find a solution
+	bool(*AVMSetTVScale)(int width, int height);
+	OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", (void **)&AVMSetTVScale);
+	AVMSetTVScale(854, 480);  // Not working, hope to find a solution
 
 	OSScreenInit();
 	ProcUIInit(&SaveCallback);
