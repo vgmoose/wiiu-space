@@ -98,14 +98,15 @@ bool AppRunning()
       }
       else if(status == PROCUI_STATUS_IN_FOREGROUND)
       {
-          mySpaceGlobals.invalid = 1;
          // Reallocate MEM1, reinit screen, etc.
          if(!initialized)
          {
             initialized = true;
-            
             memoryInitialize();
             screenInit();
+            
+            // redraw the screen upon resume
+            mySpaceGlobals.invalid = 1;
          }
       }
    }
