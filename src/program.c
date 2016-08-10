@@ -29,12 +29,12 @@ void screenInit()
 	OSReport(log_buf);*/
 	
 	//Set the buffer area.
-	screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x40);
+	screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x100);
 	/*__os_snprintf(log_buf, 0x400, "Allocated screen buffers at %x\n", screenBuffer);
 	OSReport(log_buf);*/
 	
-    OSScreenSetBufferEx(0, screenBuffer + 0x40);
-    OSScreenSetBufferEx(1, (screenBuffer + buf0_size + 0x40));
+    OSScreenSetBufferEx(0, screenBuffer);
+    OSScreenSetBufferEx(1, (screenBuffer + buf0_size));
     //OSReport("Set screen buffers\n");
 
     OSScreenEnableEx(0, 1);
