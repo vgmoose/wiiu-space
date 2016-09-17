@@ -5,6 +5,7 @@
 void flipBuffers();
 void fillScreen(char r, char g, char b, char a);
 void drawString(int x, int y, char * string);
+void drawStringTv(int x, int y, char * string);
 void drawRect(int x1, int y1, int x2, int y2, char r, char g, char b, char a);
 void drawPixel(int x, int y, char r, char g, char b);
 

@@ -471,20 +471,24 @@ void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 	else
 		__os_snprintf(score, 255, "Score: %09d", mySpaceGlobals->score);
 	drawString(0, -1, score);
+	drawStringTv(0, -1, score);
 	
 	char level[255];
 	__os_snprintf(level, 255, "Lv %d", mySpaceGlobals->level+1);
 	drawString(30, -1, level);
+	drawStringTv(51, -1, level);
 
 	char lives[255];
 	__os_snprintf(lives, 255, "Lives: %d", mySpaceGlobals->lives);
 	drawString(55, -1, lives);
+	drawStringTv(90, -1, lives);
 	
 	if (mySpaceGlobals->displayHowToPlay)
 	{
 		char nag[255];
 		__os_snprintf(nag, 255, "Touch and hold on the screen to rapid fire!");
 		drawString(20, 17, nag);
+		drawStringTv(56, 27, nag);
 	}
 			
 }
@@ -579,8 +583,11 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 
 		//display the menu under it
 		drawString(37, 9, credits);
+		drawStringTv(62, 14, credits);
 		drawString(25, 12, play);
+		drawStringTv(44, 17, play);
 		drawString(25, 13, password);
+		drawStringTv(45, 18, password);
 		
 		drawMenuCursor(mySpaceGlobals);
 		
@@ -599,7 +606,8 @@ void drawMenuCursor(struct SpaceGlobals *mySpaceGlobals)
 	// display the cursor on the correct item
 	char cursor[255];
 	__os_snprintf(cursor, 255, ">>            <<");
-	drawString(22, 12 + mySpaceGlobals->menuChoice, cursor);	
+	drawString(22, 12 + mySpaceGlobals->menuChoice, cursor);
+	drawStringTv(41, 17 + mySpaceGlobals->menuChoice, cursor);
 }
 
 void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
@@ -707,8 +715,10 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 		char quit[255];
 		__os_snprintf(quit, 255, "Quit");
 		
-		drawString(25, 12, resume);
-		drawString(25, 13, quit);
+		drawString(27, 12, resume);
+		drawStringTv(46, 17, resume);
+		drawString(28, 13, quit);
+		drawStringTv(47, 18, quit);
 		
 		drawMenuCursor(mySpaceGlobals);
 		
@@ -825,10 +835,14 @@ void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 		__os_snprintf(down_cur, 255, "^");
 		
 		drawString(22, 8, password);
+		drawStringTv(41, 14, password);
 		
 		drawString(32 + mySpaceGlobals->menuChoice, 7, up_cur);
-		drawString(32, 8, cur_pw);
-		drawString(32 + mySpaceGlobals->menuChoice, 9, down_cur);
+		drawStringTv(51 + mySpaceGlobals->menuChoice, 13, up_cur);
+ 		drawString(32, 8, cur_pw);
+		drawStringTv(51, 14, cur_pw);
+ 		drawString(32 + mySpaceGlobals->menuChoice, 9, down_cur);
+		drawStringTv(51 + mySpaceGlobals->menuChoice, 15, down_cur);
 		
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
@@ -932,6 +946,7 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
 		char gameover[255];
 		__os_snprintf(gameover, 255, "Game Over!");
 		drawString(25, 5, gameover);
+		drawStringTv(44, 10, gameover);
 
 		// only display score + pw if the player didn't use cheats
 		if (mySpaceGlobals->dontKeepTrackOfScore != 1)
@@ -942,17 +957,21 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
 			__os_snprintf(pass, 255, "Lv %d Password: %05d", mySpaceGlobals->level+1, mySpaceGlobals->passwordList[mySpaceGlobals->level]);
 
 			drawString(23, 7, finalscore);
-			drawString(21, 8, pass);
+			drawStringTv(42, 12, finalscore);
+ 			drawString(21, 8, pass);
+			drawStringTv(40, 13, pass);
 		}
 	
 		
 		char resume[255];
-		__os_snprintf(resume, 255, "Try Again");
+		__os_snprintf(resume, 255, "Try  Again");
 		char quit[255];
 		__os_snprintf(quit, 255, "Quit");
 		
 		drawString(25, 12, resume);
-		drawString(25, 13, quit);
+		drawStringTv(44, 17, resume);
+		drawString(28, 13, quit);
+		drawStringTv(47, 18, quit);
 		
 		drawMenuCursor(mySpaceGlobals);
 		

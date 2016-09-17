@@ -36,13 +36,32 @@ void putAPixel(int x, int y, int r, int g, int b)
 	for (ax=0; ax<2; ax++)
 		for (ay=0; ay<2; ay++)
 			for (az=0; az<2; az++)
-				OSScreenPutPixelEx(ax, x + ay, y + az, num);
+				if (ax) {  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+					OSScreenPutPixelEx(ax, x + ay, y + az, num);
+				}    // uncomment for fullscreen on TV, text on the TV will have to be moved though
+				else {    // uncomment for fullscreen on TV, text on the TV will have to be moved though
+					 int a;  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+					 for (a = 0; a < 2; a++) {  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+						 int x1 = ( ( (x + ay) * 3 ) / 2 ) + a;  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+						 int y1 = ( ( (y + az) * 3 ) / 2 ) + a;  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+						 int x2 = ( ( (x + ay) * 3 ) / 2 ) + ( 1 - a );  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+						 int y2 = ( ( (y + az) * 3 ) / 2 ) + a;  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+						 OSScreenPutPixelEx( 0, x1, y1, num );  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+						 OSScreenPutPixelEx( 0, x2, y2, num );  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+					 }  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+					 OSScreenPutPixelEx( 1, x, y, num );  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+				 }  // uncomment for fullscreen on TV, text on the TV will have to be moved though
 }
 
 void drawString(int x, int y, char * string)
 {
-	OSScreenPutFontEx(0, x, y, string);
+	//OSScreenPutFontEx(0, x, y, string);
 	OSScreenPutFontEx(1, x, y, string);
+}
+
+void drawStringTv(int x, int y, char * string)
+{
+	OSScreenPutFontEx(0, x, y, string);
 }
 
 void fillScreen(char r,char g,char b,char a)
