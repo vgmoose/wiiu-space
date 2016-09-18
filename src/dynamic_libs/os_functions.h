@@ -36,8 +36,8 @@ extern "C" {
 #define MILLISECS_TO_TICKS(msec)        (SECS_TO_TICKS(msec) / 1000)
 #define MICROSECS_TO_TICKS(usec)        (SECS_TO_TICKS(usec) / 1000000)
 
-//#define usleep(usecs)                   OSSleepTicks(MICROSECS_TO_TICKS(usecs))
-//#define sleep(secs)                     OSSleepTicks(SECS_TO_TICKS(secs))
+/*#define usleep(usecs)                   OSSleepTicks(MICROSECS_TO_TICKS(usecs))
+#define sleep(secs)                     OSSleepTicks(SECS_TO_TICKS(secs))*/
 
 #define FLUSH_DATA_BLOCK(addr)          asm volatile("dcbf 0, %0; sync" : : "r"(((addr) & ~31)))
 #define INVAL_DATA_BLOCK(addr)          asm volatile("dcbi 0, %0; sync" : : "r"(((addr) & ~31)))
@@ -66,12 +66,18 @@ extern "C" {
 /* Handle for coreinit */
 extern unsigned int coreinit_handle;
 void InitOSFunctionPointers(void);
+void InitAcquireOS(void);
 
 //!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //! Lib handle functions
 //!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 extern int (* OSDynLoad_Acquire)(const char* rpl, u32 *handle);
 extern int (* OSDynLoad_FindExport)(u32 handle, int isdata, const char *symbol, void *address);
+
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//! Security functions
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern int (* OSGetSecurityLevel)(void);
 
 //!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //! Thread functions
@@ -86,6 +92,7 @@ extern int (* OSSetThreadPriority)(void * thread, int priority);
 extern void (* OSDetachThread)(void * thread);
 extern void (* OSSleepTicks)(u64 ticks);
 extern u64 (* OSGetTick)(void);
+extern u64 (* OSGetTime)(void);
 
 //!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //! Mutex functions
@@ -99,12 +106,14 @@ extern int (* OSTryLockMutex)(void* mutex);
 //! System functions
 //!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 extern u64 (* OSGetTitleID)(void);
+extern void (* OSGetArgcArgv)(int* argc, char*** argv);
 extern void (* __Exit)(void);
 extern void (* OSFatal)(const char* msg);
 extern void (* DCFlushRange)(const void *addr, u32 length);
 extern void (* ICInvalidateRange)(const void *addr, u32 length);
 extern void* (* OSEffectiveToPhysical)(const void*);
 extern int (* __os_snprintf)(char* s, int n, const char * format, ...);
+extern int * (* __gh_errno_ptr)(void);
 
 extern void (*OSScreenInit)(void);
 extern unsigned int (*OSScreenGetBufferSizeEx)(unsigned int bufferNum);
@@ -113,14 +122,49 @@ extern int (*OSScreenClearBufferEx)(unsigned int bufferNum, unsigned int temp);
 extern int (*OSScreenFlipBuffersEx)(unsigned int bufferNum);
 extern int (*OSScreenPutFontEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, const char * buffer);
 extern int (*OSScreenEnableEx)(unsigned int bufferNum, int enable);
-extern unsigned int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, uint32_t color);
+extern int (*OSScreenPutPixelEx)(unsigned int bufferNum, unsigned int posX, unsigned int posY, unsigned int colour);
 
 typedef unsigned char (*exception_callback)(void * interruptedContext);
 extern void (* OSSetExceptionCallback)(u8 exceptionType, exception_callback newCallback);
 
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//! MCP functions
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern int (* MCP_Open)(void);
+extern int (* MCP_Close)(int handle);
+extern int (* MCP_GetOwnTitleInfo)(int handle, void * data);
+
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//! LOADER functions
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 extern int (* LiWaitIopComplete)(int unknown_syscall_arg_r3, int * remaining_bytes);
 extern int (* LiWaitIopCompleteWithInterrupts)(int unknown_syscall_arg_r3, int * remaining_bytes);
+extern void (* addr_LiWaitOneChunk)(void);
+extern void (* addr_sgIsLoadingBuffer)(void);
+extern void (* addr_gDynloadInitialized)(void);
 
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//! Kernel function addresses
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern void (* addr_PrepareTitle_hook)(void);
+
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//! Other function addresses
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern void (*DCInvalidateRange)(void *buffer, uint32_t length);
+
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//! Energy Saver functions
+//!----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+////Burn-in Reduction
+extern int (*IMEnableDim)(void);
+extern int (*IMDisableDim)(void);
+extern int (*IMIsDimEnabled)(int * result);
+//Auto power down
+extern int (*IMEnableAPD)(void);
+extern int (*IMDisableAPD)(void);
+extern int (*IMIsAPDEnabled)(int * result);
+extern int (*IMIsAPDEnabledBySysSettings)(int * result);
 
 #ifdef __cplusplus
 }

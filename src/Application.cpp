@@ -86,10 +86,11 @@ void Application::executeThread(void)
 		mySpaceGlobals.passwordList[x] = (int)(prand(&pwSeed)*100000);
 	
 	// set the starting time
-	unsigned int coreinit_handle;
+	// Not necessary - updated dynamic_libs fix this
+	/*unsigned int coreinit_handle;
 	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
 	int64_t (*OSGetTime)();
-	OSDynLoad_FindExport(coreinit_handle, 0, "OSGetTime", &OSGetTime);
+	OSDynLoad_FindExport(coreinit_handle, 0, "OSGetTime", &OSGetTime);*/
 	mySpaceGlobals.seed = OSGetTime();
 	
 	/****************************>            VPAD Loop            <****************************/
