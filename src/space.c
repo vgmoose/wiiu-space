@@ -1137,3 +1137,15 @@ void renderReset(struct SpaceGlobals *mySpaceGlobals)
 	mySpaceGlobals->renderResetFlag = 0;
 	mySpaceGlobals->invalid = 1;
 }
+
+void drawControllerSelectScreen(struct SpaceGlobals *mySpaceGlobals) {
+	fillScreen(0, 0, 0, 255);
+	renderStars(mySpaceGlobals);
+	drawString(5, 7, "Press the A button on the controller you want to use");
+	drawString(8, 10, "You can use the Wii U GamePad or any connected");
+	drawString(21, 11, "Wii U Pro Controller");
+	drawStringTv(23, 11, "Press the A button on the controller you want to use");
+	drawStringTv(26, 14, "You can use the Wii U GamePad or any connected");
+	drawStringTv(39, 15, "Wii U Pro Controller");
+	flipBuffers();
+}

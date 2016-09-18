@@ -97,6 +97,11 @@ void Application::executeThread(void)
 	int error;
 	VPADData vpad_data;
 	
+	KPADData pad_one_data;
+	KPADData pad_two_data;
+	KPADData pad_three_data;
+	KPADData pad_four_data;
+	
 	// decompress compressed things into their arrays, final argument is the transparent color in their palette
 	decompress_sprite(3061, 200, 100, compressed_title, mySpaceGlobals.title, 39);
 	decompress_sprite(511, 36, 36, compressed_ship, mySpaceGlobals.orig_ship, 14);
@@ -112,6 +117,34 @@ void Application::executeThread(void)
 	initStars(&mySpaceGlobals);
 	
 	mySpaceGlobals.invalid = 1;
+	
+	// Before the game starts, we will ask the user which controller they will use.
+	drawControllerSelectScreen(&mySpaceGlobals);
+	
+	while(1) {
+		VPADRead(0, &vpad_data, 1, &error);
+		KPADRead(0, &pad_one_data, 1);
+		if(error == 0 && (vpad_data.btns_r & VPAD_BUTTON_A)) {
+			mySpaceGlobals.selectedController = 0;
+			break;
+		}
+		if(WPADProbe(0, NULL) == 0 && pad_one_data.device_type == 31) if(pad_one_data.pro.btns_r & WPAD_PRO_BUTTON_A) {
+			mySpaceGlobals.selectedController = 1;
+			break;
+		}
+		if(WPADProbe(1, NULL) == 0 && pad_two_data.device_type == 31) if(pad_two_data.pro.btns_r & WPAD_PRO_BUTTON_A) {
+			mySpaceGlobals.selectedController = 2;
+			break;
+		}
+		if(WPADProbe(2, NULL) == 0 && pad_three_data.device_type == 31) if(pad_three_data.pro.btns_r & WPAD_PRO_BUTTON_A) {
+			mySpaceGlobals.selectedController = 3;
+			break;
+		}
+		if(WPADProbe(3, NULL) == 0 && pad_four_data.device_type == 31) if(pad_four_data.pro.btns_r & WPAD_PRO_BUTTON_A) {
+			mySpaceGlobals.selectedController = 4;
+			break.
+		}
+	}
 		
 	while(!exitApplication)
 	{
