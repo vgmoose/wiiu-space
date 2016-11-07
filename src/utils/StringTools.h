@@ -26,9 +26,9 @@
 #ifndef __STRING_TOOLS_H
 #define __STRING_TOOLS_H
 
-#include <gctypes.h>
 #include <vector>
 #include <string>
+#include "common/types.h"
 
 const char * fmt(const char * format, ...);
 const wchar_t * wfmt(const char * format, ...);

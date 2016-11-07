@@ -14,23 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#include "GameSound.h"
+#include "GuiSound.h"
 #include "sounds/SoundHandler.hpp"
-#include "dynamic_libs/os_functions.h"
 
-GameSound::GameSound(const char * filepath)
+GuiSound::GuiSound(const char * filepath)
 {
 	voice = -1;
 	Load(filepath);
 }
 
-GameSound::GameSound(const u8 * snd, s32 length)
+GuiSound::GuiSound(const u8 * snd, s32 length)
 {
 	voice = -1;
 	Load(snd, length);
 }
 
-GameSound::~GameSound()
+GuiSound::~GuiSound()
 {
     if(voice >= 0)
     {
@@ -39,7 +38,7 @@ GameSound::~GameSound()
 }
 
 
-bool GameSound::Load(const char * filepath)
+bool GuiSound::Load(const char * filepath)
 {
     if(voice >= 0)
     {
@@ -70,7 +69,7 @@ bool GameSound::Load(const char * filepath)
 	return true;
 }
 
-bool GameSound::Load(const u8 * snd, s32 len)
+bool GuiSound::Load(const u8 * snd, s32 len)
 {
     if(voice >= 0)
     {
@@ -104,7 +103,7 @@ bool GameSound::Load(const u8 * snd, s32 len)
 	return true;
 }
 
-void GameSound::Play()
+void GuiSound::Play()
 {
     Stop();
 
@@ -115,7 +114,7 @@ void GameSound::Play()
 
 }
 
-void GameSound::Stop()
+void GuiSound::Stop()
 {
     Voice * v = SoundHandler::instance()->getVoice(voice);
     if(v)
@@ -138,7 +137,7 @@ void GameSound::Stop()
     }
 }
 
-void GameSound::Pause()
+void GuiSound::Pause()
 {
     if(!IsPlaying())
         return;
@@ -148,7 +147,7 @@ void GameSound::Pause()
         v->setState(Voice::STATE_STOP);
 }
 
-void GameSound::Resume()
+void GuiSound::Resume()
 {
     if(IsPlaying())
         return;
@@ -158,7 +157,7 @@ void GameSound::Resume()
         v->setState(Voice::STATE_START);
 }
 
-bool GameSound::IsPlaying()
+bool GuiSound::IsPlaying()
 {
     Voice * v = SoundHandler::instance()->getVoice(voice);
     if(v)
@@ -168,7 +167,7 @@ bool GameSound::IsPlaying()
 
 }
 
-void GameSound::SetVolume(u32 vol)
+void GuiSound::SetVolume(u32 vol)
 {
     if(vol > 100)
         vol = 100;
@@ -180,14 +179,14 @@ void GameSound::SetVolume(u32 vol)
         v->setVolume(volumeConv);
 }
 
-void GameSound::SetLoop(bool l)
+void GuiSound::SetLoop(bool l)
 {
     SoundDecoder * decoder = SoundHandler::instance()->getDecoder(voice);
     if(decoder)
         decoder->SetLoop(l);
 }
 
-void GameSound::Rewind()
+void GuiSound::Rewind()
 {
     Stop();
 }

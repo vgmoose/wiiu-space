@@ -3,15 +3,15 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "common/fs_defs.h"
-#include "dynamic_libs/fs_functions.h"
+#include <coreinit/filesystem.h>
 
+#define FS_MAX_MOUNTPATH_SIZE           128
 
 int MountFS(void *pClient, void *pCmd, char **mount_path)
 {
     int result = -1;
 
-    void *mountSrc = malloc(FS_MOUNT_SOURCE_SIZE);
+    void *mountSrc = malloc(sizeof(FSMountSource));
     if(!mountSrc)
         return -3;
 
@@ -21,11 +21,11 @@ int MountFS(void *pClient, void *pCmd, char **mount_path)
         return -4;
     }
 
-    memset(mountSrc, 0, FS_MOUNT_SOURCE_SIZE);
+    memset(mountSrc, 0, sizeof(FSMountSource));
     memset(mountPath, 0, FS_MAX_MOUNTPATH_SIZE);
 
     // Mount sdcard
-    if (FSGetMountSource(pClient, pCmd, FS_SOURCETYPE_EXTERNAL, mountSrc, -1) == 0)
+    if (FSGetMountSource(pClient, pCmd, FS_MOUNT_SOURCE_SD, mountSrc, -1) == 0)
     {
         result = FSMount(pClient, pCmd, mountSrc, mountPath, FS_MAX_MOUNTPATH_SIZE, -1);
         if((result == 0) && mount_path) {

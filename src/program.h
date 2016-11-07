@@ -1,9 +1,9 @@
 #ifndef PROGRAM_H
 #define PROGRAM_H
-#include "dynamic_libs/os_functions.h"
-#include "dynamic_libs/vpad_functions.h"
 
 //Using modified version of draw to render at twice the scale to improve framerate
+#include <coreinit/core.h>
+#include <vpad/input.h>
 
 struct Bullet {
 	int x;
@@ -58,8 +58,8 @@ struct SpaceGlobals{
 
 	//Game engine globals
 	uint32_t button;
-	Vec2D lstick;
-	Vec2D rstick;
+	VPADVec2D lstick;
+	VPADVec2D rstick;
 	
 	// only 20 bullets can be onscreen at a time
 	struct Bullet bullets[20];

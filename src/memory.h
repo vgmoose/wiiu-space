@@ -14,56 +14,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#ifndef _CMUTEX_H_
-#define _CMUTEX_H_
+#ifndef __MEMORY_H_
+#define __MEMORY_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <malloc.h>
-#include <coreinit/mutex.h>
 
-class CMutex
-{
-public:
-    CMutex() {
-        pMutex = (OSMutex*) malloc(sizeof(OSMutex));
-        if(!pMutex)
-            return;
+void memoryInitialize(void);
+void memoryRelease(void);
 
-        OSInitMutex(pMutex);
-    }
-    virtual ~CMutex() {
-        if(pMutex)
-            free(pMutex);
-    }
+void * MEM2_alloc(unsigned int size, unsigned int align);
+void MEM2_free(void *ptr);
 
-    void lock(void) {
-        if(pMutex)
-            OSLockMutex(pMutex);
-    }
-    void unlock(void) {
-        if(pMutex)
-            OSUnlockMutex(pMutex);
-    }
-    bool tryLock(void) {
-        if(!pMutex)
-            return false;
+void * MEM1_alloc(unsigned int size, unsigned int align);
+void MEM1_free(void *ptr);
 
-        return (OSTryLockMutex(pMutex) != 0);
-    }
-private:
-    OSMutex *pMutex;
-};
+void * MEMBucket_alloc(unsigned int size, unsigned int align);
+void MEMBucket_free(void *ptr);
 
-class CMutexLock
-{
-public:
-    CMutexLock() {
-        mutex.lock();
-    }
-    virtual ~CMutexLock() {
-        mutex.unlock();
-    }
-private:
-    CMutex mutex;
-};
+#ifdef __cplusplus
+}
+#endif
 
-#endif // _CMUTEX_H_
+#endif // __MEMORY_H_

@@ -17,8 +17,8 @@
 #ifndef _AXSOUND_H_
 #define _AXSOUND_H_
 
-#include "dynamic_libs/os_functions.h"
-#include "dynamic_libs/ax_functions.h"
+#include <sndcore2/core.h>
+#include <sndcore2/voice.h>
 
 class Voice
 {
@@ -47,19 +47,18 @@ public:
         voice = AXAcquireVoice(prio, 0, 0);
         if(voice)
         {
-            AXVoiceBegin(voice);
             AXSetVoiceType(voice, 0);
             setVolume(0x80000000);
 
-            u32 mix[24];
+            AXVoiceDeviceMixData mix[6];
             memset(mix, 0, sizeof(mix));
-            mix[0] = 0x80000000;
-            mix[4] = 0x80000000;
+            mix[0].bus[0].volume = 0x8000;
+            mix[0].bus[0].delta = 0;
+            mix[1].bus[0].volume = 0x8000;
+            mix[1].bus[0].delta = 0;
 
             AXSetVoiceDeviceMix(voice, 0, 0, mix);
             AXSetVoiceDeviceMix(voice, 1, 0, mix);
-
-            AXVoiceEnd(voice);
         }
     }
 
@@ -78,23 +77,23 @@ public:
 
         memset(&voiceBuffer, 0, sizeof(voiceBuffer));
 
-        voiceBuffer.samples = buffer;
-        voiceBuffer.format = format;
-        voiceBuffer.loop = (nextBuffer == NULL) ? 0 : 1;
-        voiceBuffer.cur_pos = 0;
-        voiceBuffer.end_pos = bufferSize >> 1;
-        voiceBuffer.loop_offset = ((nextBuffer - buffer) >> 1);
+        voiceBuffer.data = buffer;
+        voiceBuffer.dataType = format;
+        voiceBuffer.loopingEnabled = (nextBuffer == NULL) ? 0 : 1;
+        voiceBuffer.currentOffset = 0;
+        voiceBuffer.endOffset = bufferSize >> 1;
+        voiceBuffer.loopOffset = ((nextBuffer - buffer) >> 1);
         nextBufferSize = nextBufSize;
 
-        u32 samplesPerSec = (AXGetInputSamplesPerSec != 0) ? AXGetInputSamplesPerSec() : 32000;
+        // TODO: handle support for 3.1.0 with dynamic libs instead of static linking it
+        //u32 samplesPerSec = (AXGetInputSamplesPerSec != 0) ? AXGetInputSamplesPerSec() : 32000;
+        u32 samplesPerSec = AXGetInputSamplesPerSec();
 
-        ratioBits[0] = (u32)(0x00010000 * ((f32)sampleRate / (f32)samplesPerSec));
-        ratioBits[1] = 0;
-        ratioBits[2] = 0;
-        ratioBits[3] = 0;
+        memset(&ratioBits, 0, sizeof(ratioBits));
+        ratioBits.ratio = (u32)(0x00010000 * ((f32)sampleRate / (f32)samplesPerSec));
 
         AXSetVoiceOffsets(voice, &voiceBuffer);
-        AXSetVoiceSrc(voice, ratioBits);
+        AXSetVoiceSrc(voice, &ratioBits);
         AXSetVoiceSrcType(voice, 1);
         AXSetVoiceState(voice, 1);
     }
@@ -108,16 +107,21 @@ public:
     void setVolume(u32 vol)
     {
         if(voice)
-            AXSetVoiceVe(voice, &vol);
+        {
+            AXVoiceVeData data;
+            data.volume = vol >> 16;
+            data.delta = vol & 0xFFFF;
+            AXSetVoiceVe(voice, &data);
+        }
     }
 
 
     void setNextBuffer(const u8 *buffer, u32 bufferSize)
     {
-        voiceBuffer.loop_offset = ((buffer - voiceBuffer.samples) >> 1);
+        voiceBuffer.loopOffset = ((buffer - (const u8*)voiceBuffer.data) >> 1);
         nextBufferSize = bufferSize;
 
-        AXSetVoiceLoopOffset(voice, voiceBuffer.loop_offset);
+        AXSetVoiceLoopOffset(voice, voiceBuffer.loopOffset);
     }
 
     bool isBufferSwitched()
@@ -126,7 +130,7 @@ public:
         if(lastLoopCounter != loopCounter)
         {
             lastLoopCounter = loopCounter;
-            AXSetVoiceEndOffset(voice, voiceBuffer.loop_offset  + (nextBufferSize >> 1));
+            AXSetVoiceEndOffset(voice, voiceBuffer.loopOffset  + (nextBufferSize >> 1));
             return true;
         }
         return false;
@@ -149,19 +153,9 @@ public:
     }
 
 private:
-    void *voice;
-    u32 ratioBits[4];
-
-    typedef struct _ax_buffer_t {
-        u16 format;
-        u16 loop;
-        u32 loop_offset;
-        u32 end_pos;
-        u32 cur_pos;
-        const unsigned char *samples;
-    } ax_buffer_t;
-
-    ax_buffer_t voiceBuffer;
+    AXVoice *voice;
+    AXVoiceSrc ratioBits;
+    AXVoiceOffsets voiceBuffer;
     u32 state;
     u32 nextBufferSize;
     u32 lastLoopCounter;

@@ -30,9 +30,6 @@
 #include "system/CMutex.h"
 #include "BufferCircle.hpp"
 
-#define usleep(usecs)                   OSSleepTicks(MICROSECS_TO_TICKS(usecs))
-#define sleep(secs)                     OSSleepTicks(SECS_TO_TICKS(secs))
-
 class SoundDecoder
 {
 public:

@@ -1,6 +1,14 @@
 #include "program.h"
 #include "Application.h"
 #include "common/common.h"
+#include <coreinit/core.h>
+#include <coreinit/debug.h>
+#include <coreinit/dynload.h>
+#include <coreinit/internal.h>
+#include <coreinit/screen.h>
+#include <coreinit/foreground.h>
+#include <proc_ui/procui.h>
+#include <vpad/input.h>
 // #include "dynamic_libs/os_functions.h"
 // #include "gui/FreeTypeGX.h"
 // #include "gui/VPadController.h"
@@ -12,9 +20,117 @@
 #include "draw.h"
 #include "images.h"
 #include "space.h"
+#include "memory.h"
+
+
+bool isAppRunning = true;
+bool initialized = false;
+bool Application::exitApplication = false;
+
+struct SpaceGlobals mySpaceGlobals = {};
+void* screenBuffer;
+
+void screenInit()
+{
+	//Grab the buffer size for each screen (TV and gamepad)
+	int buf0_size = OSScreenGetBufferSizeEx(OSScreenID::SCREEN_TV);
+	int buf1_size = OSScreenGetBufferSizeEx(OSScreenID::SCREEN_DRC);
+	/*__os_snprintf(log_buf, 0x400, "Screen sizes %x, %x\n", buf0_size, buf1_size);
+	OSReport(log_buf);*/
+	
+	//Set the buffer area.
+	screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x100);
+	/*__os_snprintf(log_buf, 0x400, "Allocated screen buffers at %x\n", screenBuffer);
+	OSReport(log_buf);*/
+	
+    OSScreenSetBufferEx(OSScreenID::SCREEN_TV, screenBuffer);
+    OSScreenSetBufferEx(OSScreenID::SCREEN_DRC, (screenBuffer + buf0_size));
+    //OSReport("Set screen buffers\n");
+
+    OSScreenEnableEx(OSScreenID::SCREEN_TV, 1);
+    OSScreenEnableEx(OSScreenID::SCREEN_DRC, 1);
+    
+    //Clear both framebuffers.
+	for (int ii = 0; ii < 2; ii++)
+	{
+		fillScreen(0,0,0,0);
+		flipBuffers();
+	}
+}
+
+void screenDeinit()
+{
+    for(int ii = 0; ii < 2; ii++)
+	{
+		fillScreen(0,0,0,0);
+		flipBuffers();
+	}
+    
+    MEM1_free(screenBuffer);
+}
+
+bool Application::procUI(void)
+{
+   if(!OSIsMainCore())
+   {
+      ProcUISubProcessMessages(true);
+   }
+   else
+   {
+      ProcUIStatus status = ProcUIProcessMessages(true);
+    
+      if(status == PROCUI_STATUS_EXITING)
+      {
+          // Being closed, deinit things and prepare to exit
+          isAppRunning = false;
+          
+          if(initialized)
+          {
+              initialized = false;
+              screenDeinit();
+              memoryRelease();
+          }
+          ProcUIShutdown();
+      }
+      else if(status == PROCUI_STATUS_RELEASE_FOREGROUND)
+      {
+          // Free up MEM1 to next foreground app, etc.
+          initialized = false;
+          
+          screenDeinit();
+          memoryRelease();
+          ProcUIDrawDoneRelease();
+      }
+      else if(status == PROCUI_STATUS_IN_FOREGROUND)
+      {
+         // Reallocate MEM1, reinit screen, etc.
+         if(!initialized)
+         {
+            initialized = true;
+            memoryInitialize();
+            screenInit();
+            
+            // redraw the screen upon resume
+            mySpaceGlobals.invalid = 1;
+         }
+      }
+   }
+
+   return isAppRunning;
+}
+
+void cleanSlate()
+{
+	// clear both buffers
+	int ii;
+	for(ii=0;ii<2;ii++)
+	{
+		fillScreen(0,0,0,0);
+		flipBuffers();
+	}
+}
 
 Application *Application::applicationInstance = NULL;
-bool Application::exitApplication = false;
 
 Application::Application()
 	: CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x20000)
@@ -25,7 +141,7 @@ Application::Application()
     Resources::LoadFiles("sd:/wiiu/apps/spacegame/media");
 
     //! create bgMusic
-    bgMusic = new GameSound(Resources::GetFile("spacegame.mp3"), Resources::GetFileSize("spacegame.mp3"));
+    bgMusic = new GuiSound(Resources::GetFile("spacegame.mp3"), Resources::GetFileSize("spacegame.mp3"));
     bgMusic->SetLoop(true);
     bgMusic->SetVolume(50);
     bgMusic->Play();
@@ -36,12 +152,14 @@ Application::Application()
 Application::~Application()
 {
     delete bgMusic;
-
+    
 	AsyncDeleter::destroyInstance();
 
     Resources::Clear();
 
 	SoundHandler::DestroyInstance();
+    
+    ProcUIInit(OSSavesDone_ReadyToRelease);
 }
 
 void Application::playBGM()
@@ -67,7 +185,6 @@ int Application::exec()
 void Application::executeThread(void)
 {
 	/****************************>             Globals             <****************************/
-	struct SpaceGlobals mySpaceGlobals = {};
 	//Flag for restarting the entire game.
 	mySpaceGlobals.restart = 1;
 
@@ -86,15 +203,11 @@ void Application::executeThread(void)
 		mySpaceGlobals.passwordList[x] = (int)(prand(&pwSeed)*100000);
 	
 	// set the starting time
-	unsigned int coreinit_handle;
-	OSDynLoad_Acquire("coreinit.rpl", &coreinit_handle);
-	int64_t (*OSGetTime)();
-	OSDynLoad_FindExport(coreinit_handle, 0, "OSGetTime", &OSGetTime);
 	mySpaceGlobals.seed = OSGetTime();
 	
 	/****************************>            VPAD Loop            <****************************/
-	int error;
-	VPADData vpad_data;
+	VPADReadError error;
+	VPADStatus vpad_data;
 	
 	// decompress compressed things into their arrays, final argument is the transparent color in their palette
 	decompress_sprite(3061, 200, 100, compressed_title, mySpaceGlobals.title, 39);
@@ -112,21 +225,21 @@ void Application::executeThread(void)
 	
 	mySpaceGlobals.invalid = 1;
 		
-	while(!exitApplication)
+	while(procUI())
 	{
 		VPADRead(0, &vpad_data, 1, &error);
 		
 		//Get the status of the gamepad
-		mySpaceGlobals.button = vpad_data.btns_h;
+		mySpaceGlobals.button = vpad_data.hold;
 		
-		mySpaceGlobals.rstick = vpad_data.rstick;
-		mySpaceGlobals.lstick = vpad_data.lstick;
+		mySpaceGlobals.rstick = vpad_data.rightStick;
+		mySpaceGlobals.lstick = vpad_data.leftStick;
 		
-		mySpaceGlobals.touched = vpad_data.tpdata.touched;
+		mySpaceGlobals.touched = vpad_data.tpNormal.touched;
 		if (mySpaceGlobals.touched == 1)
 		{
-			mySpaceGlobals.touchX = ((vpad_data.tpdata.x / 9) - 11);
-			mySpaceGlobals.touchY = ((3930 - vpad_data.tpdata.y) / 16);
+			mySpaceGlobals.touchX = ((vpad_data.tpNormal.x / 9) - 11);
+			mySpaceGlobals.touchY = ((3930 - vpad_data.tpNormal.y) / 16);
 		}
 		
 		if (mySpaceGlobals.restart == 1)

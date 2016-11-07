@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-#include <gctypes.h>
+#include "common/types.h"
 
 #define WPAD_BUTTON_LEFT                    0x0001
 #define WPAD_BUTTON_RIGHT                   0x0002

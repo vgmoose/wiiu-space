@@ -28,31 +28,10 @@
 extern "C" {
 #endif
 
-#include <gctypes.h>
+#include "common/types.h"
 
 void InitAXFunctionPointers(void);
 void ProperlyEndTransitionAudio(void);
-
-extern void (* AXInitWithParams)(u32 * params);
-extern void (* AXInit)(void);
-extern void (* AXQuit)(void);
-extern u32 (* AXGetInputSamplesPerSec)(void);
-extern s32 (* AXVoiceBegin)(void *v);
-extern s32 (* AXVoiceEnd)(void *v);
-extern void (* AXSetVoiceType)(void *v, u16 type);
-extern void (* AXSetVoiceOffsets)(void *v, const void *buf);
-extern void (* AXSetVoiceSrcType)(void *v, u32 type);
-extern void (* AXSetVoiceVe)(void *v, const void *vol);
-extern s32 (* AXSetVoiceDeviceMix)(void *v, s32 device, u32 id, void *mix);
-extern void (* AXSetVoiceState)(void *v, u16 state);
-extern void (* AXSetVoiceSrc)(void *v, const void *src);
-extern s32 (* AXSetVoiceSrcRatio)(void *v, f32 ratio);
-extern void * (* AXAcquireVoice)(u32 prio, void * callback, u32 arg);
-extern void (* AXFreeVoice)(void *v);
-extern void (* AXRegisterFrameCallback)(void * callback);
-extern u32 (* AXGetVoiceLoopCount)(void * v);
-extern void (* AXSetVoiceEndOffset)(void * v, u32 offset);
-extern void (* AXSetVoiceLoopOffset)(void * v, u32 offset);
 
 #ifdef __cplusplus
 }

@@ -18,7 +18,7 @@
 #define _APPLICATION_H
 
 #include "system/CThread.h"
-#include "game/GameSound.h"
+#include "gui/GuiSound.h"
 #include "trigmath.h"
 
 class Application : public CThread
@@ -36,13 +36,14 @@ public:
         }
     }
 
-    GameSound *getBgMusic(void) const {
+    GuiSound *getBgMusic(void) const {
         return bgMusic;
     }
 	
 	void playBGM(void);
 	void stopBGM(void);
 
+    bool procUI(void);
     int exec(void);
 
     void quit(int code) {
@@ -59,7 +60,7 @@ private:
 
     void executeThread(void);
 
-    GameSound *bgMusic;
+    GuiSound *bgMusic;
     int exitCode;
 };
 

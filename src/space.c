@@ -1,6 +1,7 @@
 #include "space.h"
 #include "trigmath.h"
-#include "dynamic_libs/os_functions.h"
+#include <coreinit/internal.h>
+#include <coreinit/debug.h>
 
 /**
 This class is a bit of a mess, but it basically does "everything else" in the game.
@@ -100,8 +101,8 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 		return;
 		
 	// Handle analog stick movements
-	Vec2D left = mySpaceGlobals->lstick;
-	Vec2D right = mySpaceGlobals->rstick;
+	VPADVec2D left = mySpaceGlobals->lstick;
+	VPADVec2D right = mySpaceGlobals->rstick;
 
 	// get the differences
 	float xdif = left.x + right.x;

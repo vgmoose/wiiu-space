@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <gctypes.h>
+#include "common/types.h"
 
 class CFile
 {

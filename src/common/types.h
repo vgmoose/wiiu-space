@@ -1,7 +1,7 @@
 #ifndef TYPES_H
 #define	TYPES_H
 
-#include <gctypes.h>
+#include <wut_types.h>
 
 #endif	/* TYPES_H */
 

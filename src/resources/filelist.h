@@ -9,19 +9,17 @@
 #ifndef _FILELIST_H_
 #define _FILELIST_H_
 
-#include <gctypes.h>
-
 typedef struct _RecourceFile
 {
-	const char *filename;
-	const u8   *DefaultFile;
-	const u32  &DefaultFileSize;
-	u8		   *CustomFile;
-	u32		    CustomFileSize;
+	const char          *filename;
+	const unsigned char *DefaultFile;
+	const unsigned int  &DefaultFileSize;
+	unsigned char	    *CustomFile;
+	unsigned int        CustomFileSize;
 } RecourceFile;
 
-extern const u8 spacegame_mp3[];
-extern const u32 spacegame_mp3_size;
+extern const unsigned char spacegame_mp3[];
+extern const unsigned int spacegame_mp3_size;
 
 static RecourceFile RecourceList[] =
 {

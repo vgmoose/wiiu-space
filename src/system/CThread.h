@@ -17,10 +17,9 @@
 #ifndef CTHREAD_H_
 #define CTHREAD_H_
 
-#include <gctypes.h>
 #include <malloc.h>
 #include <unistd.h>
-#include "dynamic_libs/os_functions.h"
+#include <coreinit/thread.h>
 
 class CThread
 {
@@ -37,12 +36,12 @@ public:
 	    //! save attribute assignment
 	    iAttributes = iAttr;
 		//! allocate the thread
-		pThread = memalign(8, 0x1000);
+		pThread = (OSThread*)memalign(8, sizeof(OSThread));
 		//! allocate the stack
 		pThreadStack = (u8 *) memalign(0x20, iStackSize);
         //! create the thread
 		if(pThread && pThreadStack)
-            OSCreateThread(pThread, &CThread::threadCallback, 1, this, (u32)pThreadStack+iStackSize, iStackSize, iPriority, iAttributes);
+            OSCreateThread(pThread, &CThread::threadCallback, 1, (char*)this, pThreadStack+iStackSize, iStackSize, iPriority, iAttributes);
 	}
 
 	//! destructor
@@ -104,14 +103,14 @@ public:
 	    eAttributePinnedAff         = 0x10
 	};
 private:
-	static int threadCallback(int argc, void *arg)
+	static int threadCallback(int argc, const char **argv)
 	{
 		//! After call to start() continue with the internal function
-		((CThread *) arg)->executeThread();
+		((CThread *) argv)->executeThread();
 		return 0;
 	}
     int iAttributes;
-	void *pThread;
+	OSThread *pThread;
 	u8 *pThreadStack;
 	Callback pCallback;
 	void *pCallbackArg;

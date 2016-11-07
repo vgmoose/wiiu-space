@@ -21,7 +21,7 @@
  * 3. This notice may not be removed or altered from any source
  * distribution.
  ***************************************************************************/
-#include "os_functions.h"
+#include "exports.h"
 #include "padscore_functions.h"
 
 EXPORT_DECL(void, KPADInit, void);
@@ -34,7 +34,7 @@ EXPORT_DECL(s32, KPADRead, s32 chan, void * data, u32 size);
 void InitPadScoreFunctionPointers(void)
 {
     unsigned int *funcPointer = 0;
-    unsigned int padscore_handle;
+    OSDynLoadModule padscore_handle;
     OSDynLoad_Acquire("padscore.rpl", &padscore_handle);
 
     OS_FIND_EXPORT(padscore_handle, KPADInit);

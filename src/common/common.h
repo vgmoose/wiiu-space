@@ -7,8 +7,10 @@ extern "C" {
 
 #include "os_defs.h"
 
+#define HBL_VERSION                 "v2.0"
+
 #define CAFE_OS_SD_PATH             "/vol/external01"
-#define SD_PATH                     "sd:"
+#define SD_PATH                     "fs:"
 #define WIIU_PATH                   "/wiiu"
 
 #ifndef MEM_BASE
@@ -22,10 +24,11 @@ extern "C" {
 
 #define OS_SPECIFICS                ((OsSpecifics*)(MEM_BASE + 0x1500))
 
+#define APP_BASE_MEM                ((unsigned char*)(MEM_BASE + 0x2000))
+
 #ifndef EXIT_SUCCESS
 #define EXIT_SUCCESS                0
 #endif
-#define EXIT_HBL_EXIT               0xFFFFFFFE
 #define EXIT_RELAUNCH_ON_LOAD       0xFFFFFFFD
 
 #ifdef __cplusplus

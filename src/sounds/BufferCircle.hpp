@@ -27,7 +27,7 @@
 #define BUFFER_CIRCLE_HPP_
 
 #include <vector>
-#include <gctypes.h>
+#include "common/types.h"
 
 class BufferCircle
 {

@@ -14,26 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#ifndef GAME_SOUND_H_
-#define GAME_SOUND_H_
+#ifndef GUI_SOUND_H_
+#define GUI_SOUND_H_
 
-#include <gctypes.h>
+#include "common/types.h"
 #include "system/AsyncDeleter.h"
 
-#define usleep(usecs)                   OSSleepTicks(MICROSECS_TO_TICKS(usecs))
-#define sleep(secs)                     OSSleepTicks(SECS_TO_TICKS(secs))
-
 //!Sound conversion and playback. A wrapper for other sound libraries - ASND, libmad, ltremor, etc
-class GameSound : public AsyncDeleter::Element
+class GuiSound : public AsyncDeleter::Element
 {
 	public:
 		//!Constructor
 		//!\param sound Pointer to the sound data
 		//!\param filesize Length of sound data
-		GameSound(const char * filepath);
-		GameSound(const u8 * sound, int length);
+		GuiSound(const char * filepath);
+		GuiSound(const u8 * sound, s32 length);
 		//!Destructor
-		virtual ~GameSound();
+		virtual ~GuiSound();
 		//!Load a file and replace the old one
 		bool Load(const char * filepath);
 		//!Load a file and replace the old one

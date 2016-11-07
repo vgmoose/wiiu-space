@@ -29,7 +29,7 @@
 
 #include <vector>
 #include <string>
-#include <gctypes.h>
+#include "common/types.h"
 
 typedef struct
 {
@@ -45,11 +45,11 @@ public:
 	//!\param path Path from where to load the filelist of all files
 	//!\param filter A fileext that needs to be filtered
 	//!\param flags search/filter flags from the enum
-	DirList(const std::string & path, const char *filter = NULL, u32 flags = Files | Dirs);
+	DirList(const std::string & path, const char *filter = NULL, u32 flags = Files | Dirs, u32 maxDepth = 0xffffffff);
 	//!Destructor
 	virtual ~DirList();
 	//! Load all the files from a directory
-	bool LoadPath(const std::string & path, const char *filter = NULL, u32 flags = Files | Dirs);
+	bool LoadPath(const std::string & path, const char *filter = NULL, u32 flags = Files | Dirs, u32 maxDepth = 0xffffffff);
 	//! Get a filename of the list
 	//!\param list index
 	const char * GetFilename(int index) const;
@@ -88,6 +88,7 @@ protected:
 	inline bool valid(u32 pos) const { return (pos < FileInfo.size()); };
 
 	u32 Flags;
+	u32 Depth;
 	const char *Filter;
 	std::vector<DirEntry> FileInfo;
 };

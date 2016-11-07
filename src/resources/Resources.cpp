@@ -1,11 +1,10 @@
-#include <gctypes.h>
 #include <malloc.h>
 #include <string.h>
 #include "Resources.h"
 #include "filelist.h"
 #include "system/AsyncDeleter.h"
 #include "fs/fs_utils.h"
-#include "game/GameSound.h"
+#include "gui/GuiSound.h"
 
 Resources * Resources::instance = NULL;
 
@@ -81,12 +80,13 @@ u32 Resources::GetFileSize(const char * filename)
 	return 0;
 }
 
-GameSound * Resources::GetSound(const char * filename)
+
+GuiSound * Resources::GetSound(const char * filename)
 {
     if(!instance)
         instance = new Resources;
 
-    std::map<std::string, std::pair<unsigned int, GameSound *> >::iterator itr = instance->soundDataMap.find(std::string(filename));
+    std::map<std::string, std::pair<unsigned int, GuiSound *> >::iterator itr = instance->soundDataMap.find(std::string(filename));
     if(itr != instance->soundDataMap.end())
     {
         itr->second.first++;
@@ -103,7 +103,7 @@ GameSound * Resources::GetSound(const char * filename)
 			if(buff == NULL)
                 return NULL;
 
-            GameSound * sound = new GameSound(buff, size);
+            GuiSound * sound = new GuiSound(buff, size);
             instance->soundDataMap[std::string(filename)].first = 1;
             instance->soundDataMap[std::string(filename)].second = sound;
 
@@ -114,9 +114,9 @@ GameSound * Resources::GetSound(const char * filename)
 	return NULL;
 }
 
-void Resources::RemoveSound(GameSound * sound)
+void Resources::RemoveSound(GuiSound * sound)
 {
-    std::map<std::string, std::pair<unsigned int, GameSound *> >::iterator itr;
+    std::map<std::string, std::pair<unsigned int, GuiSound *> >::iterator itr;
 
     for(itr = instance->soundDataMap.begin(); itr != instance->soundDataMap.end(); itr++)
     {

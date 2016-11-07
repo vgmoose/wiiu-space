@@ -22,9 +22,9 @@
  * distribution.
  ***************************************************************************/
 #include "common/common.h"
-#include "os_functions.h"
+#include "exports.h"
 #include "ax_functions.h"
-
+/*
 EXPORT_DECL(void, AXInitWithParams, u32 * params);
 EXPORT_DECL(void, AXInit, void);
 EXPORT_DECL(void, AXQuit, void);
@@ -46,9 +46,10 @@ EXPORT_DECL(void, AXRegisterFrameCallback, void * callback);
 EXPORT_DECL(u32, AXGetVoiceLoopCount, void *v);
 EXPORT_DECL(void, AXSetVoiceEndOffset, void *v, u32 offset);
 EXPORT_DECL(void, AXSetVoiceLoopOffset, void *v, u32 offset);
-
+*/
 void InitAXFunctionPointers(void)
 {
+    /*
     unsigned int sound_handle = 0;
     unsigned int *funcPointer = 0;
 
@@ -86,6 +87,7 @@ void InitAXFunctionPointers(void)
     OS_FIND_EXPORT(sound_handle, AXGetVoiceLoopCount);
     OS_FIND_EXPORT(sound_handle, AXSetVoiceEndOffset);
     OS_FIND_EXPORT(sound_handle, AXSetVoiceLoopOffset);
+    */
 }
 
 void ProperlyEndTransitionAudio(void)
@@ -95,7 +97,7 @@ void ProperlyEndTransitionAudio(void)
     void (* AXQuit_old)(void);
 
     unsigned int *funcPointer = 0;
-    unsigned int sound_handle;
+    OSDynLoadModule sound_handle;
     OSDynLoad_Acquire("snd_core.rpl", &sound_handle);
 
     OS_FIND_EXPORT_EX(sound_handle, check_os_audio_transition_flag, check_os_audio_transition_flag_old);

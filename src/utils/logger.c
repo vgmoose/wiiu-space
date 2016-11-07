@@ -1,20 +1,21 @@
+#include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <nsysnet/socket.h>
 #include "common/common.h"
-#include "dynamic_libs/os_functions.h"
-#include "dynamic_libs/socket_functions.h"
 #include "logger.h"
 
 #ifdef DEBUG_LOGGER
 static int log_socket = -1;
 static volatile int log_lock = 0;
 
-
 void log_init(const char * ipString)
 {
+    socket_lib_init();
+
 	log_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (log_socket < 0)
 		return;
