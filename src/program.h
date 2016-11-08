@@ -2,6 +2,7 @@
 #define PROGRAM_H
 #include "dynamic_libs/os_functions.h"
 #include "dynamic_libs/vpad_functions.h"
+#include "dynamic_libs/padscore_functions.h"
 
 //Using modified version of draw to render at twice the scale to improve framerate
 
@@ -91,6 +92,8 @@ struct SpaceGlobals{
 	
 	int displayHowToPlay;
 	int firstShotFired;
+	
+	int selectedController;
 
 };
 

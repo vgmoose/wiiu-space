@@ -44,6 +44,7 @@ void initGameState(struct SpaceGlobals * mySpaceGlobals);
 void displayGameOver(struct SpaceGlobals * mySpaceGlobals);
 void handleExplosions(struct SpaceGlobals * mySpaceGlobals);
 void makeScaleMatrix(int frame, int width, void *orig, void *targ, int transIndex);
+void drawControllerSelectScreen(struct SpaceGlobals *mySpaceGlobals);
 
 #ifdef __cplusplus
 }
