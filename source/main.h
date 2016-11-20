@@ -19,7 +19,7 @@ u8* screenTopLeft;
 u8* screenTopRight;
 u8* screenBottom;
 
-FS_archive sdmcArchive;
+FS_Archive sdmcArchive;
 
 u32 kDown;
 u32 kHeld;

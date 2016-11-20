@@ -13,11 +13,11 @@ int main()
 	// Initialize services
 	srvInit();			// mandatory
 	aptInit();			// mandatory
-	hidInit(NULL);	// input (buttons, screen)
-	gfxInit();			// graphics
+	hidInit();	// input (buttons, screen)
+	gfxInitDefault();			// graphics
 	fsInit();
-	sdmcArchive = (FS_archive){0x9, (FS_path){PATH_EMPTY, 1, (u8*)""}};
-	FSUSER_OpenArchive(NULL, &sdmcArchive);
+	sdmcArchive = (FS_Archive){0x9, (FS_Path){PATH_EMPTY, 1, (u8*)""}};
+	FSUSER_OpenArchive(&sdmcArchive);
 
 	gfxSet3D(true);
 
@@ -228,12 +228,12 @@ bool TakeScreenshot(char* path)
 	int x, y;
 	
 	Handle file;
-	FS_path filePath;
-	filePath.type = PATH_CHAR;
+	FS_Path filePath;
+	filePath.type = PATH_ASCII;
 	filePath.size = strlen(path) + 1;
 	filePath.data = (u8*)path;
 	
-	Result res = FSUSER_OpenFile(NULL, &file, sdmcArchive, filePath, FS_OPEN_CREATE|FS_OPEN_WRITE, FS_ATTRIBUTE_NONE);
+	Result res = FSUSER_OpenFile(&file, sdmcArchive, filePath, FS_OPEN_CREATE|FS_OPEN_WRITE, 0);
 	if (res) 
 		return false;
 		
