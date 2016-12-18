@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu type="complex" access="777">
   <version type="unsignedInt" length="4">33</version>
-  <product_code type="string" length="32">WUP-P-SALT</product_code>
-  <content_platform type="string" length="32">WUP</content_platform>
+  <product_code type="string" length="32">WUP-P-SPGM</product_code>
+  <content_platform type="string" length="32">vgmoose</content_platform>
   <company_code type="string" length="8">0001</company_code>
   <mastering_date type="string" length="32"></mastering_date>
   <logo_type type="unsignedInt" length="4">0</logo_type>
@@ -15,7 +15,7 @@
   <install_flag type="hexBinary" length="4">00000000</install_flag>
   <closing_msg type="unsignedInt" length="4">0</closing_msg>
   <title_version type="unsignedInt" length="4">0</title_version>
-  <title_id type="hexBinary" length="8">00050000505A4B00</title_id>
+  <title_id type="hexBinary" length="8">0005000000055225</title_id>
   <group_id type="hexBinary" length="4">00006D32</group_id>
   <boss_id type="hexBinary" length="8">0000000000000000</boss_id>
   <os_version type="hexBinary" length="8">000500101000400A</os_version>
@@ -70,7 +70,7 @@
   <reserved_flag6 type="hexBinary" length="4">00000003</reserved_flag6>
   <reserved_flag7 type="hexBinary" length="4">00000000</reserved_flag7>
   <longname_ja length="512" type="string">App Name （日本）</longname_ja>
-  <longname_en length="512" type="string">Pazaak</longname_en>
+  <longname_en length="512" type="string">Space Game</longname_en>
   <longname_fr length="512" type="string">App Name (FR)</longname_fr>
   <longname_de length="512" type="string">App Name (DE)</longname_de>
   <longname_it length="512" type="string">App Name (IT)</longname_it>
@@ -82,7 +82,7 @@
   <longname_ru length="512" type="string">App Name (RU)</longname_ru>
   <longname_zht length="512" type="string">App Name (ZHT)</longname_zht>
   <shortname_ja length="256" type="string">App Name Short （日本）</shortname_ja>
-  <shortname_en length="256" type="string">Pazaak</shortname_en>
+  <shortname_en length="256" type="string">Space Game</shortname_en>
   <shortname_fr length="256" type="string">App Name Short (FR)</shortname_fr>
   <shortname_de length="256" type="string">App Name Short (DE)</shortname_de>
   <shortname_it length="256" type="string">App Name Short (IT)</shortname_it>
@@ -94,7 +94,7 @@
   <shortname_ru length="256" type="string">App Name Short (RU)</shortname_ru>
   <shortname_zht length="256" type="string">App Name Short (ZHT)</shortname_zht>
   <publisher_ja length="256" type="string">パブリッシャー名（日本）</publisher_ja>
-  <publisher_en length="256" type="string">Shiny Quagsire</publisher_en>
+  <publisher_en length="256" type="string">VGMoose, CreeperMario, Brienj</publisher_en>
   <publisher_fr length="256" type="string">Publisher Name (FR)</publisher_fr>
   <publisher_de length="256" type="string">Publisher Name (DE)</publisher_de>
   <publisher_it length="256" type="string">Publisher Name (IT)</publisher_it>
