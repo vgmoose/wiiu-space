@@ -11,28 +11,28 @@
 /* Exceptions */
 typedef struct OSContext
 {
-  /* OSContext identifier */
-  uint32_t tag1;
-  uint32_t tag2;
+	/* OSContext identifier */
+	uint32_t tag1;
+	uint32_t tag2;
 
-  /* GPRs */
-  uint32_t gpr[32];
+	/* GPRs */
+	uint32_t gpr[32];
 
-  /* Special registers */
-  uint32_t cr;
-  uint32_t lr;
-  uint32_t ctr;
-  uint32_t xer;
+	/* Special registers */
+	uint32_t cr;
+	uint32_t lr;
+	uint32_t ctr;
+	uint32_t xer;
 
-  /* Initial PC and MSR */
-  uint32_t srr0;
-  uint32_t srr1;
+	/* Initial PC and MSR */
+	uint32_t srr0;
+	uint32_t srr1;
 
-  /* Only valid during DSI exception */
-  uint32_t exception_specific0;
-  uint32_t exception_specific1;
+	/* Only valid during DSI exception */
+	uint32_t exception_specific0;
+	uint32_t exception_specific1;
 
-  /* There is actually a lot more here but we don't need the rest*/
+	/* There is actually a lot more here but we don't need the rest*/
 } OSContext;
 
 #include <coreinit/exception.h>
@@ -54,38 +54,38 @@ typedef struct _framerec {
 } frame_rec, *frame_rec_t;
 
 static const char *exception_names[] = {
-    "DSI",
-    "ISI",
-    "PROGRAM"
+	"DSI",
+	"ISI",
+	"PROGRAM"
 };
 
 static const char exception_print_formats[18][45] = {
-     "Exception type %s occurred!\n",                       // 0
-     "GPR00 %08X GPR08 %08X GPR16 %08X GPR24 %08X\n",       // 1
-     "GPR01 %08X GPR09 %08X GPR17 %08X GPR25 %08X\n",       // 2
-     "GPR02 %08X GPR10 %08X GPR18 %08X GPR26 %08X\n",       // 3
-     "GPR03 %08X GPR11 %08X GPR19 %08X GPR27 %08X\n",       // 4
-     "GPR04 %08X GPR12 %08X GPR20 %08X GPR28 %08X\n",       // 5
-     "GPR05 %08X GPR13 %08X GPR21 %08X GPR29 %08X\n",       // 6
-     "GPR06 %08X GPR14 %08X GPR22 %08X GPR30 %08X\n",       // 7
-     "GPR07 %08X GPR15 %08X GPR23 %08X GPR31 %08X\n",       // 8
-     "LR    %08X SRR0  %08x SRR1  %08x\n",                  // 9
-     "DAR   %08X DSISR %08X\n",                             // 10
-     "\nSTACK DUMP:",                                       // 11
-     " --> ",                                               // 12
-      " -->\n",                                             // 13
-      "\n",                                                 // 14
-      "%p",                                                 // 15
-      "\nCODE DUMP:\n",                                     // 16
-      "%p:  %08X %08X %08X %08X\n",                         // 17
+	 "Exception type %s occurred!\n",                       // 0
+	 "GPR00 %08X GPR08 %08X GPR16 %08X GPR24 %08X\n",       // 1
+	 "GPR01 %08X GPR09 %08X GPR17 %08X GPR25 %08X\n",       // 2
+	 "GPR02 %08X GPR10 %08X GPR18 %08X GPR26 %08X\n",       // 3
+	 "GPR03 %08X GPR11 %08X GPR19 %08X GPR27 %08X\n",       // 4
+	 "GPR04 %08X GPR12 %08X GPR20 %08X GPR28 %08X\n",       // 5
+	 "GPR05 %08X GPR13 %08X GPR21 %08X GPR29 %08X\n",       // 6
+	 "GPR06 %08X GPR14 %08X GPR22 %08X GPR30 %08X\n",       // 7
+	 "GPR07 %08X GPR15 %08X GPR23 %08X GPR31 %08X\n",       // 8
+	 "LR    %08X SRR0  %08x SRR1  %08x\n",                  // 9
+	 "DAR   %08X DSISR %08X\n",                             // 10
+	 "\nSTACK DUMP:",                                       // 11
+	 " --> ",                                               // 12
+	  " -->\n",                                             // 13
+	  "\n",                                                 // 14
+	  "%p",                                                 // 15
+	  "\nCODE DUMP:\n",                                     // 16
+	  "%p:  %08X %08X %08X %08X\n",                         // 17
 };
 
 static unsigned char exception_cb(OSContext * context, unsigned char exception_type) {
-    char buf[850];
-    int pos = 0;
-    /*
-     * This part is mostly from libogc. Thanks to the devs over there.
-     */
+	char buf[850];
+	int pos = 0;
+	/*
+	 * This part is mostly from libogc. Thanks to the devs over there.
+	 */
 	pos += sprintf(buf + pos, exception_print_formats[0], exception_names[exception_type]);
 	pos += sprintf(buf + pos, exception_print_formats[1], context->gpr[0], context->gpr[8], context->gpr[16], context->gpr[24]);
 	pos += sprintf(buf + pos, exception_print_formats[2], context->gpr[1], context->gpr[9], context->gpr[17], context->gpr[25]);
@@ -98,40 +98,40 @@ static unsigned char exception_cb(OSContext * context, unsigned char exception_t
 	pos += sprintf(buf + pos, exception_print_formats[9], context->lr, context->srr0, context->srr1);
 
 	//if(exception_type == OS_EXCEPTION_DSI) {
-        pos += sprintf(buf + pos, exception_print_formats[10], context->exception_specific1, context->exception_specific0); // this freezes
+		pos += sprintf(buf + pos, exception_print_formats[10], context->exception_specific1, context->exception_specific0); // this freezes
 	//}
 
-    void *pc = (void*)context->srr0;
-    void *lr = (void*)context->lr;
-    void *r1 = (void*)context->gpr[1];
+	void *pc = (void*)context->srr0;
+	void *lr = (void*)context->lr;
+	void *r1 = (void*)context->gpr[1];
 	register uint32_t i = 0;
 	register frame_rec_t l,p = (frame_rec_t)lr;
 
 	l = p;
 	p = r1;
 	if(!p)
-        asm volatile("mr %0,%%r1" : "=r"(p));
+		asm volatile("mr %0,%%r1" : "=r"(p));
 
 	pos += sprintf(buf + pos, exception_print_formats[11]);
 
 	for(i = 0; i < CPU_STACK_TRACE_DEPTH-1 && p->up; p = p->up, i++) {
 		if(i % 4)
-            pos += sprintf(buf + pos, exception_print_formats[12]);
+			pos += sprintf(buf + pos, exception_print_formats[12]);
 		else {
 			if(i > 0)
-                pos += sprintf(buf + pos, exception_print_formats[13]);
+				pos += sprintf(buf + pos, exception_print_formats[13]);
 			else
-                pos += sprintf(buf + pos, exception_print_formats[14]);
+				pos += sprintf(buf + pos, exception_print_formats[14]);
 		}
 
 		switch(i) {
 			case 0:
 				if(pc)
-                    pos += sprintf(buf + pos, exception_print_formats[15],pc);
+					pos += sprintf(buf + pos, exception_print_formats[15],pc);
 				break;
 			case 1:
 				if(!l)
-                    l = (frame_rec_t)mfspr(8);
+					l = (frame_rec_t)mfspr(8);
 				pos += sprintf(buf + pos, exception_print_formats[15],(void*)l);
 				break;
 			default:
@@ -145,25 +145,25 @@ static unsigned char exception_cb(OSContext * context, unsigned char exception_t
 		pos += sprintf(buf + pos, exception_print_formats[16]);
 		// TODO by Dimok: this was actually be 3 instead of 2 lines in libogc .... but there is just no more space anymore on the screen
 		for (i = 0; i < 8; i += 4)
-            pos += sprintf(buf + pos, exception_print_formats[17], &(pAdd[i]),pAdd[i], pAdd[i+1], pAdd[i+2], pAdd[i+3]);
+			pos += sprintf(buf + pos, exception_print_formats[17], &(pAdd[i]),pAdd[i], pAdd[i+1], pAdd[i+2], pAdd[i+3]);
 	//}
 
-    OSFatal(buf);
-    return 1;
+	OSFatal(buf);
+	return 1;
 }
 
 static unsigned char dsi_exception_cb(void * context) {
-    return exception_cb(context, 0);
+	return exception_cb(context, 0);
 }
 static unsigned char isi_exception_cb(void * context) {
-    return exception_cb(context, 1);
+	return exception_cb(context, 1);
 }
 static unsigned char program_exception_cb(void * context) {
-    return exception_cb(context, 2);
+	return exception_cb(context, 2);
 }
 
 void setup_os_exceptions(void) {
-    OSSetExceptionCallback(OS_EXCEPTION_DSI, (OSExceptionCallbackFn)dsi_exception_cb);
-    OSSetExceptionCallback(OS_EXCEPTION_ISI, (OSExceptionCallbackFn)isi_exception_cb);
-    OSSetExceptionCallback(OS_EXCEPTION_PROGRAM, (OSExceptionCallbackFn)program_exception_cb);
+	OSSetExceptionCallback(OS_EXCEPTION_DSI, (OSExceptionCallbackFn)dsi_exception_cb);
+	OSSetExceptionCallback(OS_EXCEPTION_ISI, (OSExceptionCallbackFn)isi_exception_cb);
+	OSSetExceptionCallback(OS_EXCEPTION_PROGRAM, (OSExceptionCallbackFn)program_exception_cb);
 }

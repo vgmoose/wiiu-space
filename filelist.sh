@@ -53,13 +53,13 @@ do
   # To prevent this from screwing our program, we will remove the paths from the
   # entries returned by the above loop if we are running on a Darwin platform.
   if [[ $OSTYPE == darwin* ]]; then
-    if [[ ${filename:0:15} == ./data/sounds// ]]; then
-      filename=${filename:15}
-    elif [[ ${filename:0:15} == ./data/images// ]]; then
-      filename=${filename:15}
-    elif [[ ${filename:0:14} == ./data/fonts// ]]; then
-      filename=${filename:14}
-    fi
+	if [[ ${filename:0:15} == ./data/sounds// ]]; then
+	  filename=${filename:15}
+	elif [[ ${filename:0:15} == ./data/images// ]]; then
+	  filename=${filename:15}
+	elif [[ ${filename:0:14} == ./data/fonts// ]]; then
+	  filename=${filename:14}
+	fi
   fi
 
 	echo 'extern const unsigned char '$filename'_'$extension'[];' >> $outFile
@@ -77,13 +77,13 @@ do
 
   # See above for documentation on what this does.
   if [[ $OSTYPE == darwin* ]]; then
-    if [[ ${filename:0:15} == ./data/sounds// ]]; then
-      filename=${filename:15}
-    elif [[ ${filename:0:15} == ./data/images// ]]; then
-      filename=${filename:15}
-    elif [[ ${filename:0:14} == ./data/fonts// ]]; then
-      filename=${filename:14}
-    fi
+	if [[ ${filename:0:15} == ./data/sounds// ]]; then
+	  filename=${filename:15}
+	elif [[ ${filename:0:15} == ./data/images// ]]; then
+	  filename=${filename:15}
+	elif [[ ${filename:0:14} == ./data/fonts// ]]; then
+	  filename=${filename:14}
+	fi
   fi
 
 	echo -e '\t{"'$filename'.'$extension'", '$filename'_'$extension', '$filename'_'$extension'_size, NULL, 0},' >> $outFile

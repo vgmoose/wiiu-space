@@ -6,13 +6,16 @@
 ifeq ($(strip $(DEVKITPPC)),)
 $(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
 endif
+
 ifeq ($(strip $(DEVKITPRO)),)
 $(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>devkitPRO")
 endif
+
 ifeq ($(strip $(WUT_ROOT)),)
 $(error "Please ensure WUT_ROOT is in your environment.")
 endif
-export PATH			:=	$(DEVKITPPC)/bin:$(PORTLIBS)/bin:$(PATH)
+
+export PATH			:=	$(DEVKITPPC)/bin:$(PORTLIBS)/bin:$(WUT_ROOT)/tools/bin:$(PATH)
 export LIBOGC_INC	:=	$(DEVKITPRO)/libogc/include
 export LIBOGC_LIB	:=	$(DEVKITPRO)/libogc/lib/wii
 export PORTLIBS		:=	$(DEVKITPRO)/portlibs/ppc
@@ -25,7 +28,8 @@ export CXX	:=	$(PREFIX)g++
 export AR	:=	$(PREFIX)ar
 export OBJCOPY	:=	$(PREFIX)objcopy
 
-export ELF2RPL	:= $(WUT_ROOT)/tools/bin/elf2rpl
+export WIILOAD_APP := wiiload
+export ELF2RPL	   := elf2rpl
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -53,9 +57,9 @@ INCLUDES	:=  src
 # options for code generation
 #---------------------------------------------------------------------------------
 CFLAGS	:=  -std=gnu11 -mrvl -mcpu=750 -meabi -mhard-float -ffast-math \
-		    -O3 -Wall -Wextra -Wno-unused-parameter -Wno-strict-aliasing $(INCLUDE)
+		    -O3 -Wall -Wextra -Wno-unused-parameter -Wno-strict-aliasing $(INCLUDE) -DDEBUG_LOGGER
 CXXFLAGS := -std=gnu++11 -mrvl -mcpu=750 -meabi -mhard-float -ffast-math \
-		    -O3 -Wall -Wextra -Wno-unused-parameter -Wno-strict-aliasing $(INCLUDE)
+		    -O3 -Wall -Wextra -Wno-unused-parameter -Wno-strict-aliasing $(INCLUDE) -DDEBUG_LOGGER
 ASFLAGS	:= -mregnames
 LDFLAGS	:= -nostartfiles -T $(WUT_ROOT)/rules/rpl.ld -pie -fPIE -z common-page-size=64 -z max-page-size=64 -lcrt \
 			-Wl,-wrap,malloc,-wrap,free,-wrap,memalign,-wrap,calloc,-wrap,realloc,-wrap,malloc_usable_size \
@@ -130,7 +134,7 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)) \
 					-L$(LIBOGC_LIB) -L$(PORTLIBS)/lib
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
-.PHONY: $(BUILD) clean install
+.PHONY: $(BUILD) clean run install
 
 #---------------------------------------------------------------------------------
 $(BUILD):
@@ -141,6 +145,11 @@ $(BUILD):
 clean:
 	@echo "[RM]  Cleaning built data..."
 	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).bin $(BUILD_DBG).elf $(OUTPUT).rpx
+
+#---------------------------------------------------------------------------------
+run:
+	@echo "[WII] Uploading $(notdir $(OUTPUT).rpx)..."
+	@$(WIILOAD_APP) "$(OUTPUT).rpx"
 
 #---------------------------------------------------------------------------------
 else
@@ -192,37 +201,37 @@ $(OUTPUT).elf:  $(OFILES)
 
 #---------------------------------------------------------------------------------
 %.png.o : %.png
-	@echo "[BIN] String-ifying $(notdir $<)..."
+	@echo "[BIN] Generating string representation of binary object $(notdir $<)..."
 	@bin2s -a 32 $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 %.jpg.o : %.jpg
-	@echo "[BIN] String-ifying $(notdir $<)..."
+	@echo "[BIN] Generating string representation of binary object $(notdir $<)..."
 	@bin2s -a 32 $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 %.ttf.o : %.ttf
-	@echo "[BIN] String-ifying $(notdir $<)..."
+	@echo "[BIN] Generating string representation of binary object $(notdir $<)..."
 	@bin2s -a 32 $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 %.bin.o : %.bin
-	@echo "[BIN] String-ifying $(notdir $<)..."
+	@echo "[BIN] Generating string representation of binary object $(notdir $<)..."
 	@bin2s -a 32 $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 %.wav.o : %.wav
-	@echo "[BIN] String-ifying $(notdir $<)..."
+	@echo "[BIN] Generating string representation of binary object $(notdir $<)..."
 	@bin2s -a 32 $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 %.mp3.o : %.mp3
-	@echo "[BIN] String-ifying $(notdir $<)..."
+	@echo "[BIN] Generating string representation of binary object $(notdir $<)..."
 	@bin2s -a 32 $< | $(AS) -o $(@)
 
 #---------------------------------------------------------------------------------
 %.ogg.o : %.ogg
-	@echo "[BIN] String-ifying $(notdir $<)..."
+	@echo "[BIN] Generating string representation of binary object $(notdir $<)..."
 	@bin2s -a 32 $< | $(AS) -o $(@)
 
 -include $(DEPENDS)

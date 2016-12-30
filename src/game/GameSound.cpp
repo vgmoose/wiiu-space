@@ -31,140 +31,140 @@ GameSound::GameSound(const u8 * snd, int length)
 
 GameSound::~GameSound()
 {
-    if(voice >= 0)
-    {
-        SoundHandler::instance()->RemoveDecoder(voice);
-    }
+	if(voice >= 0)
+	{
+		SoundHandler::instance()->RemoveDecoder(voice);
+	}
 }
 
 
 bool GameSound::Load(const char * filepath)
 {
-    if(voice >= 0)
-    {
-        SoundHandler::instance()->RemoveDecoder(voice);
-        voice = -1;
-    }
+	if(voice >= 0)
+	{
+		SoundHandler::instance()->RemoveDecoder(voice);
+		voice = -1;
+	}
 
-    //! find next free decoder
-    for(int i = 0; i < MAX_DECODERS; i++)
-    {
-        SoundDecoder * decoder = SoundHandler::instance()->getDecoder(i);
-        if(decoder == NULL)
-        {
-            SoundHandler::instance()->AddDecoder(i, filepath);
-            decoder = SoundHandler::instance()->getDecoder(i);
-            if(decoder)
-            {
-                voice = i;
-                SoundHandler::instance()->ThreadSignal();
-            }
-            break;
-        }
-    }
+	//! find next free decoder
+	for(int i = 0; i < MAX_DECODERS; i++)
+	{
+		SoundDecoder * decoder = SoundHandler::instance()->getDecoder(i);
+		if(decoder == NULL)
+		{
+			SoundHandler::instance()->AddDecoder(i, filepath);
+			decoder = SoundHandler::instance()->getDecoder(i);
+			if(decoder)
+			{
+				voice = i;
+				SoundHandler::instance()->ThreadSignal();
+			}
+			break;
+		}
+	}
 
-    if(voice < 0) {
-        return false;
-    }
+	if(voice < 0) {
+		return false;
+	}
 
 	return true;
 }
 
 bool GameSound::Load(const u8 * snd, s32 len)
 {
-    if(voice >= 0)
-    {
-        SoundHandler::instance()->RemoveDecoder(voice);
-        voice = -1;
-    }
+	if(voice >= 0)
+	{
+		SoundHandler::instance()->RemoveDecoder(voice);
+		voice = -1;
+	}
 
-    if(!snd)
-        return false;
+	if(!snd)
+		return false;
 
-    //! find next free decoder
-    for(int i = 0; i < MAX_DECODERS; i++)
-    {
-        SoundDecoder * decoder = SoundHandler::instance()->getDecoder(i);
-        if(decoder == NULL)
-        {
-            SoundHandler::instance()->AddDecoder(i, snd, len);
-            decoder = SoundHandler::instance()->getDecoder(i);
-            if(decoder)
-            {
-                voice = i;
-                SoundHandler::instance()->ThreadSignal();
-            }
-            break;
-        }
-    }
+	//! find next free decoder
+	for(int i = 0; i < MAX_DECODERS; i++)
+	{
+		SoundDecoder * decoder = SoundHandler::instance()->getDecoder(i);
+		if(decoder == NULL)
+		{
+			SoundHandler::instance()->AddDecoder(i, snd, len);
+			decoder = SoundHandler::instance()->getDecoder(i);
+			if(decoder)
+			{
+				voice = i;
+				SoundHandler::instance()->ThreadSignal();
+			}
+			break;
+		}
+	}
 
-    if(voice < 0) {
-        return false;
-    }
+	if(voice < 0) {
+		return false;
+	}
 
 	return true;
 }
 
 void GameSound::Play()
 {
-    Stop();
+	Stop();
 
-    Voice * v = SoundHandler::instance()->getVoice(voice);
-    if(v)
-        v->setState(Voice::STATE_START);
+	Voice * v = SoundHandler::instance()->getVoice(voice);
+	if(v)
+		v->setState(Voice::STATE_START);
 
 
 }
 
 void GameSound::Stop()
 {
-    Voice * v = SoundHandler::instance()->getVoice(voice);
-    if(v)
-    {
-        if((v->getState() != Voice::STATE_STOP) && (v->getState() != Voice::STATE_STOPPED))
-            v->setState(Voice::STATE_STOP);
+	Voice * v = SoundHandler::instance()->getVoice(voice);
+	if(v)
+	{
+		if((v->getState() != Voice::STATE_STOP) && (v->getState() != Voice::STATE_STOPPED))
+			v->setState(Voice::STATE_STOP);
 
-        while(v->getState() != Voice::STATE_STOPPED)
-            usleep(1000);
-    }
+		while(v->getState() != Voice::STATE_STOPPED)
+			usleep(1000);
+	}
 
-    SoundDecoder * decoder = SoundHandler::instance()->getDecoder(voice);
-    if(decoder)
-    {
-        decoder->Lock();
-        decoder->Rewind();
-        decoder->ClearBuffer();
-        SoundHandler::instance()->ThreadSignal();
-        decoder->Unlock();
-    }
+	SoundDecoder * decoder = SoundHandler::instance()->getDecoder(voice);
+	if(decoder)
+	{
+		decoder->Lock();
+		decoder->Rewind();
+		decoder->ClearBuffer();
+		SoundHandler::instance()->ThreadSignal();
+		decoder->Unlock();
+	}
 }
 
 void GameSound::Pause()
 {
-    if(!IsPlaying())
-        return;
+	if(!IsPlaying())
+		return;
 
-    Voice * v = SoundHandler::instance()->getVoice(voice);
-    if(v)
-        v->setState(Voice::STATE_STOP);
+	Voice * v = SoundHandler::instance()->getVoice(voice);
+	if(v)
+		v->setState(Voice::STATE_STOP);
 }
 
 void GameSound::Resume()
 {
-    if(IsPlaying())
-        return;
+	if(IsPlaying())
+		return;
 
-    Voice * v = SoundHandler::instance()->getVoice(voice);
-    if(v)
-        v->setState(Voice::STATE_START);
+	Voice * v = SoundHandler::instance()->getVoice(voice);
+	if(v)
+		v->setState(Voice::STATE_START);
 }
 
 bool GameSound::IsPlaying()
 {
-    Voice * v = SoundHandler::instance()->getVoice(voice);
-    if(v) {
-        return v->getState() == Voice::STATE_PLAYING;
-    }
+	Voice * v = SoundHandler::instance()->getVoice(voice);
+	if(v) {
+		return v->getState() == Voice::STATE_PLAYING;
+	}
 
 	return false;
 
@@ -172,24 +172,24 @@ bool GameSound::IsPlaying()
 
 void GameSound::SetVolume(u32 vol)
 {
-    if(vol > 100)
-        vol = 100;
+	if(vol > 100)
+		vol = 100;
 
-    u32 volumeConv = ( (0x8000 * vol) / 100 ) << 16;
+	u32 volumeConv = ( (0x8000 * vol) / 100 ) << 16;
 
-    Voice * v = SoundHandler::instance()->getVoice(voice);
-    if(v)
-        v->setVolume(volumeConv);
+	Voice * v = SoundHandler::instance()->getVoice(voice);
+	if(v)
+		v->setVolume(volumeConv);
 }
 
 void GameSound::SetLoop(bool l)
 {
-    SoundDecoder * decoder = SoundHandler::instance()->getDecoder(voice);
-    if(decoder)
-        decoder->SetLoop(l);
+	SoundDecoder * decoder = SoundHandler::instance()->getDecoder(voice);
+	if(decoder)
+		decoder->SetLoop(l);
 }
 
 void GameSound::Rewind()
 {
-    Stop();
+	Stop();
 }

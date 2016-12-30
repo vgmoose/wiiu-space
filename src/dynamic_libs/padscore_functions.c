@@ -33,18 +33,18 @@ EXPORT_DECL(s32, KPADRead, s32 chan, void * data, u32 size);
 
 void InitPadScoreFunctionPointers(void)
 {
-    unsigned int *funcPointer = 0;
-    OSDynLoadModule padscore_handle;
-    OSDynLoad_Acquire("padscore.rpl", &padscore_handle);
+	unsigned int *funcPointer = 0;
+	OSDynLoadModule padscore_handle;
+	OSDynLoad_Acquire("padscore.rpl", &padscore_handle);
 
-    OS_FIND_EXPORT(padscore_handle, KPADInit);
-    OS_FIND_EXPORT(padscore_handle, WPADProbe);
-    OS_FIND_EXPORT(padscore_handle, WPADSetDataFormat);
-    OS_FIND_EXPORT(padscore_handle, WPADEnableURCC);
-    OS_FIND_EXPORT(padscore_handle, WPADRead);
-    OS_FIND_EXPORT(padscore_handle, KPADRead);
+	OS_FIND_EXPORT(padscore_handle, KPADInit);
+	OS_FIND_EXPORT(padscore_handle, WPADProbe);
+	OS_FIND_EXPORT(padscore_handle, WPADSetDataFormat);
+	OS_FIND_EXPORT(padscore_handle, WPADEnableURCC);
+	OS_FIND_EXPORT(padscore_handle, WPADRead);
+	OS_FIND_EXPORT(padscore_handle, KPADRead);
 
-    KPADInit();
-    WPADEnableURCC(1);
+	KPADInit();
+	WPADEnableURCC(1);
 }
 

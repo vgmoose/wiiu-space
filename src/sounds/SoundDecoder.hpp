@@ -62,22 +62,22 @@ public:
 
 	enum SoundFormats
 	{
-	    FORMAT_PCM_16_BIT   = 0x0A,
-	    FORMAT_PCM_8_BIT    = 0x19,
+		FORMAT_PCM_16_BIT   = 0x0A,
+		FORMAT_PCM_8_BIT    = 0x19,
 	};
 	enum SoundChannels
 	{
-	    CHANNELS_MONO       = 0x100,
-	    CHANNELS_STEREO     = 0x200
+		CHANNELS_MONO       = 0x100,
+		CHANNELS_STEREO     = 0x200
 	};
 
-    enum SoundType
-    {
-        SOUND_RAW = 0,
-        SOUND_MP3,
-        SOUND_OGG,
-        SOUND_WAV
-    };
+	enum SoundType
+	{
+		SOUND_RAW = 0,
+		SOUND_MP3,
+		SOUND_OGG,
+		SOUND_WAV
+	};
 protected:
 	void Init();
 	void Upsample(s16 *src, s16 *dst, u32 nr_src_samples, u32 nr_dst_samples);

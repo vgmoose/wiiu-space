@@ -14,10 +14,10 @@ class CFile
 	public:
 		enum eOpenTypes
 		{
-		    ReadOnly,
-		    WriteOnly,
-		    ReadWrite,
-		    Append
+			ReadOnly,
+			WriteOnly,
+			ReadWrite,
+			Append
 		};
 
 		CFile();
@@ -29,13 +29,13 @@ class CFile
 		int open(const u8 * memory, int memsize);
 
 		bool isOpen() const {
-            if(iFd >= 0)
-                return true;
+			if(iFd >= 0)
+				return true;
 
-            if(mem_file)
-                return true;
+			if(mem_file)
+				return true;
 
-            return false;
+			return false;
 		}
 
 		void close();

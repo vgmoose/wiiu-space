@@ -49,64 +49,64 @@ EXPORT_DECL(void, AXSetVoiceLoopOffset, void *v, u32 offset);
 */
 void InitAXFunctionPointers(void)
 {
-    /*
-    unsigned int sound_handle = 0;
-    unsigned int *funcPointer = 0;
+	/*
+	unsigned int sound_handle = 0;
+	unsigned int *funcPointer = 0;
 
-    if(OS_FIRMWARE >= 400)
-    {
-        AXInit = 0;
+	if(OS_FIRMWARE >= 400)
+	{
+		AXInit = 0;
 
-        OSDynLoad_Acquire("sndcore2.rpl", &sound_handle);
-        OS_FIND_EXPORT(sound_handle, AXInitWithParams);
-        OS_FIND_EXPORT(sound_handle, AXGetInputSamplesPerSec);
-    }
-    else
-    {
-        AXInitWithParams = 0;
-        AXGetInputSamplesPerSec = 0;
+		OSDynLoad_Acquire("sndcore2.rpl", &sound_handle);
+		OS_FIND_EXPORT(sound_handle, AXInitWithParams);
+		OS_FIND_EXPORT(sound_handle, AXGetInputSamplesPerSec);
+	}
+	else
+	{
+		AXInitWithParams = 0;
+		AXGetInputSamplesPerSec = 0;
 
-        OSDynLoad_Acquire("snd_core.rpl", &sound_handle);
-        OS_FIND_EXPORT(sound_handle, AXInit);
-    }
+		OSDynLoad_Acquire("snd_core.rpl", &sound_handle);
+		OS_FIND_EXPORT(sound_handle, AXInit);
+	}
 
-    OS_FIND_EXPORT(sound_handle, AXQuit);
-    OS_FIND_EXPORT(sound_handle, AXVoiceBegin);
-    OS_FIND_EXPORT(sound_handle, AXVoiceEnd);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceType);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceOffsets);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceSrcType);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceVe);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceDeviceMix);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceState);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceSrc);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceSrcRatio);
-    OS_FIND_EXPORT(sound_handle, AXAcquireVoice);
-    OS_FIND_EXPORT(sound_handle, AXFreeVoice);
-    OS_FIND_EXPORT(sound_handle, AXRegisterFrameCallback);
-    OS_FIND_EXPORT(sound_handle, AXGetVoiceLoopCount);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceEndOffset);
-    OS_FIND_EXPORT(sound_handle, AXSetVoiceLoopOffset);
-    */
+	OS_FIND_EXPORT(sound_handle, AXQuit);
+	OS_FIND_EXPORT(sound_handle, AXVoiceBegin);
+	OS_FIND_EXPORT(sound_handle, AXVoiceEnd);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceType);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceOffsets);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceSrcType);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceVe);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceDeviceMix);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceState);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceSrc);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceSrcRatio);
+	OS_FIND_EXPORT(sound_handle, AXAcquireVoice);
+	OS_FIND_EXPORT(sound_handle, AXFreeVoice);
+	OS_FIND_EXPORT(sound_handle, AXRegisterFrameCallback);
+	OS_FIND_EXPORT(sound_handle, AXGetVoiceLoopCount);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceEndOffset);
+	OS_FIND_EXPORT(sound_handle, AXSetVoiceLoopOffset);
+	*/
 }
 
 void ProperlyEndTransitionAudio(void)
 {
-    bool (* check_os_audio_transition_flag_old)(void);
-    void (* AXInit_old)(void);
-    void (* AXQuit_old)(void);
+	bool (* check_os_audio_transition_flag_old)(void);
+	void (* AXInit_old)(void);
+	void (* AXQuit_old)(void);
 
-    unsigned int *funcPointer = 0;
-    OSDynLoadModule sound_handle;
-    OSDynLoad_Acquire("snd_core.rpl", &sound_handle);
+	unsigned int *funcPointer = 0;
+	OSDynLoadModule sound_handle;
+	OSDynLoad_Acquire("snd_core.rpl", &sound_handle);
 
-    OS_FIND_EXPORT_EX(sound_handle, check_os_audio_transition_flag, check_os_audio_transition_flag_old);
-    OS_FIND_EXPORT_EX(sound_handle, AXInit, AXInit_old);
-    OS_FIND_EXPORT_EX(sound_handle, AXQuit, AXQuit_old);
+	OS_FIND_EXPORT_EX(sound_handle, check_os_audio_transition_flag, check_os_audio_transition_flag_old);
+	OS_FIND_EXPORT_EX(sound_handle, AXInit, AXInit_old);
+	OS_FIND_EXPORT_EX(sound_handle, AXQuit, AXQuit_old);
 
-    if (check_os_audio_transition_flag_old())
-    {
-        AXInit_old();
-        AXQuit_old();
-    }
+	if (check_os_audio_transition_flag_old())
+	{
+		AXInit_old();
+		AXQuit_old();
+	}
 }

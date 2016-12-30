@@ -145,7 +145,7 @@ void SoundDecoder::Decode()
 	u16 whichPlaying = SoundBuffer.Which();
 	if(	   ((whichPlaying == 0) && (whichLoad == SoundBuffer.Size()-2))
 		|| ((whichPlaying == 1) && (whichLoad == SoundBuffer.Size()-1))
-        || (whichLoad == (whichPlaying-2)))
+		|| (whichLoad == (whichPlaying-2)))
 	{
 		return;
 	}
@@ -202,14 +202,14 @@ void SoundDecoder::Decode()
 		//! TODO: remove this later and add STEREO support with two voices, for now we convert to MONO
 		if(IsStereo())
 		{
-            s16* monoBuf = (s16*)write_buf;
+			s16* monoBuf = (s16*)write_buf;
 			done = done >> 1;
 
-            for(int i = 0; i < done; i++)
-                monoBuf[i] = monoBuf[i << 1];
+			for(int i = 0; i < done; i++)
+				monoBuf[i] = monoBuf[i << 1];
 		}
 
-        DCFlushRange(write_buf, done);
+		DCFlushRange(write_buf, done);
 		SoundBuffer.SetBufferSize(whichLoad, done);
 		SoundBuffer.SetBufferReady(whichLoad, true);
 		if(++whichLoad >= SoundBuffer.Size())

@@ -1,7 +1,9 @@
 #include <coreinit/filesystem.h>
 #include <coreinit/screen.h>
+#include <nsysnet/socket.h>
 #include <sysapp/launch.h>
 #include <vpad/input.h>
+#include <unistd.h>
 
 #include "program.h"
 #include "trigmath.h"
@@ -17,6 +19,8 @@
 #include "utils/utils.h"
 #include "common/common.h"
 
+#include <coreinit/title.h>
+
 extern "C" void cleanSlate()
 {
 	// clear both buffers
@@ -31,44 +35,39 @@ extern "C" void cleanSlate()
 /* Entry point */
 extern "C" int main(int argc, char **argv)
 {
+	socket_lib_init();
+	log_init("192.168.0.101");
+	log_print(".pylogu.command.startProgram Space Game");
+	log_print("Starting Space Game...\n");
+	
+	log_print("Initializing MEM1...\n");
 	memoryInitialize();
 
-  mount_sd_fat("sd");
+	log_print("Mounting SD Card...\n");
+	mount_sd_fat("sd");
 
-  VPADInit();
+	log_print("Initializing GamePad...\n");
+	VPADInit();
+	
+	log_print("Launching main thread...\n");
+	int returnCode = Application::instance()->exec();
+	
+	log_print("Main thread exited. Cleaning up after it...\n");
+	Application::destroyInstance();
 
-	//Call the Screen initilzation function.
-	OSScreenInit();
+	log_print("Unmounting SD Card...\n");
+	unmount_sd_fat("sd");
+	
+	log_print("Freeing MEM1...\n");
+	memoryRelease();
 
-	//Grab the buffer size for each screen (TV and gamepad)
-	int buf0_size = OSScreenGetBufferSizeEx(SCREEN_TV);
-	int buf1_size = OSScreenGetBufferSizeEx(SCREEN_DRC);
-	//Set the buffer area.
-  void * screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x100);
-	OSScreenSetBufferEx(SCREEN_TV, screenBuffer);
-	OSScreenSetBufferEx(SCREEN_DRC, screenBuffer + buf0_size);
+	log_print("Thanks for playing! See ya later.\n");
+	log_print(".pylogu.command.endProgram");
+	log_deinit();
 
-	OSScreenEnableEx(SCREEN_TV, 1);
-  OSScreenEnableEx(SCREEN_DRC, 1);
-
-	cleanSlate();
-
-  int returnCode = Application::instance()->exec();
-
-  Application::destroyInstance();
-
-	cleanSlate();
-
-  unmount_sd_fat("sd");
-
-  memoryRelease();
-
-  // This is required because HBL will not automatically relaunch after an RPX is finished executing.
-  // A check should be added so that this only happens underneath Mii Maker/HBL titles, because we do not
-  // want to reload the game if it is running under its own title ID, that will keep you trapped in an
-  // infinite loop of the program finishing and starting.
-  // Also TODO: Add support for ProcUI and move this to the AppRunning function.
-  SYSRelaunchTitle(0,0);
+	// This is required because HBL will not automatically relaunch after an RPX is finished executing.
+	if(OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A200 /*|| OSGetTitleID() == 0x0005000013374842*/)
+		SYSRelaunchTitle(0,0);
 
 	return returnCode;
 }

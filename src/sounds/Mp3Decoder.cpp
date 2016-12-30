@@ -196,8 +196,8 @@ int Mp3Decoder::Read(u8 * buffer, int buffer_size, int pos)
 		{
 			if(MAD_RECOVERABLE(Stream.error))
 			{
-			  if(Stream.error != MAD_ERROR_LOSTSYNC || !GuardPtr)
-				continue;
+				if(Stream.error != MAD_ERROR_LOSTSYNC || !GuardPtr)
+					continue;
 			}
 			else
 			{

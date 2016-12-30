@@ -38,10 +38,10 @@ class SoundHandler : public CThread
 {
 public:
 	static SoundHandler * instance() {
-	    if (!handlerInstance)
-            handlerInstance = new SoundHandler();
-        return handlerInstance;
-    }
+		if (!handlerInstance)
+			handlerInstance = new SoundHandler();
+		return handlerInstance;
+	}
 
 	static void DestroyInstance() { delete handlerInstance; handlerInstance = NULL; }
 
@@ -58,9 +58,9 @@ protected:
 	SoundHandler();
 	~SoundHandler();
 
-    static void axFrameCallback(void);
+	static void axFrameCallback(void);
 
-    void executeThread(void);
+	void executeThread(void);
 	void ClearDecoderList();
 
 	SoundDecoder * GetSoundDecoder(const char * filepath);

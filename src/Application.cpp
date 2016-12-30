@@ -1,5 +1,6 @@
 #include <coreinit/core.h>
 #include <coreinit/foreground.h>
+#include <coreinit/screen.h>
 #include <coreinit/time.h>
 #include <proc_ui/procui.h>
 #include <sysapp/launch.h>
@@ -9,11 +10,17 @@
 #include "common/common.h"
 #include "resources/Resources.h"
 #include "sounds/SoundHandler.hpp"
+#include "system/memory.h"
 #include "utils/logger.h"
 #include "trigmath.h"
 #include "draw.h"
 #include "images.h"
 #include "space.h"
+
+#include <coreinit/filesystem.h>
+#include <coreinit/title.h>
+#include "fs/sd_fat_devoptab.h"
+#include "fs/fs_utils.h"
 
 Application *Application::applicationInstance = NULL;
 bool Application::exitApplication = false;
@@ -21,46 +28,142 @@ bool Application::exitApplication = false;
 Application::Application()
 	: CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x20000)
 	, bgMusic(NULL)
-    , exitCode(EXIT_SUCCESS)
+	, exitCode(EXIT_SUCCESS)
 {
-    //! load resources
-    Resources::LoadFiles("sd:/wiiu/apps/spacegame/media");
+	log_print("[Main Thread Init] Loading resources from SD Card...\n");
+	//! load resources
+	Resources::LoadFiles("sd:/wiiu/apps/spacegame/media");
 
-    //! create bgMusic
-    bgMusic = new GameSound(Resources::GetFile("spacegame.mp3"), Resources::GetFileSize("spacegame.mp3"));
-    bgMusic->SetLoop(true);
-    bgMusic->SetVolume(50);
-    bgMusic->Play();
+	log_print("[Main Thread Init] Creating sound thread...\n");
+	//! create bgMusic
+	bgMusic = new GameSound(Resources::GetFile("spacegame.mp3"), Resources::GetFileSize("spacegame.mp3"));
+	bgMusic->SetLoop(true);
+	bgMusic->SetVolume(50);
+	bgMusic->Play();
 
-	exitApplication = false;
+	log_print("[Main thread init] Determining if we are running under HBL...\n");
+	if(OSGetTitleID() != 0x000500101004A000 && OSGetTitleID() != 0x000500101004A100 && OSGetTitleID() != 0x000500101004A200 /*&& OSGetTitleID() != 0x0005000013374842*/)
+		useProcUI = true;
+	else
+		useProcUI = false;
+	
+	if(useProcUI) {
+		log_print("[Main Thread Init] Not running in HBL. Initializing ProcUI...\n");
+		exitApplication = false;
+		ProcUIInit(OSSavesDone_ReadyToRelease);
+	}
 }
 
 Application::~Application()
 {
-    delete bgMusic;
+	// This hangs the system for some unknown reason.
+	// Commenting it out does not do anything feature-wise, because
+	// deleting bgMusic removes the one and only decoder registered in
+	// the sound thread, but SoundHandler::DestroyInstance() below does
+	// exactly the same thing, clears all the registered decoders.
+	// I'm no expert on C++, but this may or may not cause issues down
+	// the line, but its the only way I could find to allow the program
+	// to exit correctly. -CreeperMario.
+	//log_print("[Main Thread Deinit] Unloading background music...\n");
+	//delete bgMusic;
 
+	log_print("[Main Thread Deinit] Stopping AsyncDeleter...\n");
 	AsyncDeleter::destroyInstance();
 
-    Resources::Clear();
+	log_print("[Main Thread Deinit] Unloading resources...\n");
+	Resources::Clear();
 
+	log_print("[Main Thread Deinit] Stopping sound thread...\n");
 	SoundHandler::DestroyInstance();
+	
+	if(useProcUI) {
+		log_print("[Main Thread Deinit] Stopping ProcUI...\n");
+		ProcUIShutdown();
+	}
+}
+
+void Application::screenInit(void)
+{
+	log_print("[OSScreen] Initializing...\n");
+	//Call the Screen initilzation function.
+	OSScreenInit();
+	
+	//Grab the buffer size for each screen (TV and gamepad)
+	int buf0_size = OSScreenGetBufferSizeEx(SCREEN_TV);
+	int buf1_size = OSScreenGetBufferSizeEx(SCREEN_DRC);
+	//Set the buffer area.
+	screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x100);
+	OSScreenSetBufferEx(SCREEN_TV, screenBuffer);
+	OSScreenSetBufferEx(SCREEN_DRC, screenBuffer + buf0_size);
+	
+	OSScreenEnableEx(SCREEN_TV, 1);
+	OSScreenEnableEx(SCREEN_DRC, 1);
+	
+	cleanSlate();
+}
+
+void Application::screenDeinit(void)
+{
+	log_print("[OSScreen] Deinitializing...\n");
+	cleanSlate();
+	MEM1_free(screenBuffer);
+}
+
+bool Application::AppRunning(void)
+{
+	if(useProcUI) {
+		switch(ProcUIProcessMessages(true))
+		{
+			case PROCUI_STATUS_EXITING:
+				log_print("[ProcUI] Program is closing...\n");
+				exitApplication = true;
+				break;
+			case PROCUI_STATUS_RELEASE_FOREGROUND:
+				log_print("[ProcUI] Foreground lost. Halting...\n");
+				if(isForegroundApp) {
+					isForegroundApp = false;
+					screenDeinit();
+					memoryRelease();
+				}
+				ProcUIDrawDoneRelease();
+				break;
+			case PROCUI_STATUS_IN_FOREGROUND:
+				if(!isForegroundApp)
+				{
+					log_print("[ProcUI] Foreground gained. Returning to game...\n");
+					isForegroundApp = true;
+					memoryInitialize();
+					screenInit();
+					break;
+				}
+			case PROCUI_STATUS_IN_BACKGROUND:
+			default:
+				break;
+		}
+		return isForegroundApp;
+	}
+	else {
+		return true;
+	}
 }
 
 void Application::playBGM()
 {
-    bgMusic->SetVolume(50);
+	log_print("[Sound] Playing background music...\n");
+	bgMusic->SetVolume(50);
 }
 
 void Application::stopBGM()
 {
+	log_print("[Sound] Stopping background music...\n");
 	bgMusic->SetVolume(0);
 }
 
 int Application::exec()
 {
-    //! start main GX2 thread
-    resumeThread();
-    //! now wait for thread to finish
+	//! start main GX2 thread
+	resumeThread();
+	//! now wait for thread to finish
 	shutdownThread();
 
 	return exitCode;
@@ -68,7 +171,10 @@ int Application::exec()
 
 void Application::executeThread(void)
 {
-	/****************************>             Globals             <****************************/
+	log_print("[Main Thread] Main function running...\n");
+	screenInit();
+	isForegroundApp = true;
+	/****************************>			 Globals			 <****************************/
 	struct SpaceGlobals mySpaceGlobals = {};
 	//Flag for restarting the entire game.
 	mySpaceGlobals.restart = 1;
@@ -90,7 +196,7 @@ void Application::executeThread(void)
 	// set the starting time
 	mySpaceGlobals.seed = OSGetTime();
 
-	/****************************>            VPAD Loop            <****************************/
+	/****************************>			VPAD Loop			<****************************/
 	VPADReadError error;
 	VPADStatus vpad_data;
 
@@ -103,15 +209,23 @@ void Application::executeThread(void)
 	mySpaceGlobals.curPalette = ship_palette;
 	mySpaceGlobals.transIndex = 14;
 
-    mySpaceGlobals.passwordEntered = 0;
+	mySpaceGlobals.passwordEntered = 0;
 
 	// initialize starfield for this game
 	initStars(&mySpaceGlobals);
 
 	mySpaceGlobals.invalid = 1;
 
+	log_print("[Main Thread] Starting game loop...");
 	while(!exitApplication)
 	{
+		if(AppRunning() == false)
+		{
+			log_print("[Main Thread] Not in foreground. Skipping iteration...\n");
+			mySpaceGlobals.invalid = true;
+			continue;
+		}
+		
 		VPADRead(0, &vpad_data, 1, &error);
 
 		//Get the status of the gamepad
@@ -181,11 +295,15 @@ void Application::executeThread(void)
 			checkPause(&mySpaceGlobals);
 		}
 		//To exit the game
-		if (mySpaceGlobals.button&VPAD_BUTTON_HOME)
-		{
-			break;
+		if(!useProcUI) {
+			if (mySpaceGlobals.button&VPAD_BUTTON_HOME)
+			{
+				exitApplication = true;
+			}
 		}
 
-        AsyncDeleter::triggerDeleteProcess();
+		AsyncDeleter::triggerDeleteProcess();
 	}
+	log_print("[Main Thread] Game loop finished. Beginning deinitialization...\n");
+	if(!useProcUI) screenDeinit();
 }

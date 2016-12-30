@@ -24,43 +24,50 @@
 class Application : public CThread
 {
 public:
-    static Application * instance() {
-        if(!applicationInstance)
-            applicationInstance = new Application();
-        return applicationInstance;
-    }
-    static void destroyInstance() {
-        if(applicationInstance) {
-            delete applicationInstance;
-            applicationInstance = NULL;
-        }
-    }
+	static Application * instance() {
+		if(!applicationInstance)
+			applicationInstance = new Application();
+		return applicationInstance;
+	}
+	static void destroyInstance() {
+		if(applicationInstance) {
+			delete applicationInstance;
+			applicationInstance = NULL;
+		}
+	}
 
-    GameSound *getBgMusic(void) const {
-        return bgMusic;
-    }
-
+	GameSound *getBgMusic(void) const {
+		return bgMusic;
+	}
+	
 	void playBGM(void);
 	void stopBGM(void);
 
-    int exec(void);
+	int exec(void);
 
-    void quit(int code) {
-        exitCode = code;
-        exitApplication = true;
-    }
+	void quit(int code) {
+		exitCode = code;
+		exitApplication = true;
+	}
 
 private:
-    Application();
-    virtual ~Application();
+	Application();
+	virtual ~Application();
+	
+	bool useProcUI;
+	void * screenBuffer;
+	void screenInit(void);
+	void screenDeinit(void);
+	bool AppRunning(void);
 
-    static Application *applicationInstance;
-    static bool exitApplication;
+	static Application *applicationInstance;
+	static bool exitApplication;
+	bool isForegroundApp = true;
 
-    void executeThread(void);
+	void executeThread(void);
 
-    GameSound *bgMusic;
-    int exitCode;
+	GameSound *bgMusic;
+	int exitCode;
 };
 
 #endif //_APPLICATION_H

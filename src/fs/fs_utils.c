@@ -10,82 +10,82 @@
 
 int MountFS(void *pClient, void *pCmd, char **mount_path)
 {
-    int result = -1;
+	int result = -1;
 
-    void *mountSrc = malloc(sizeof(FSMountSource));
-    if(!mountSrc)
-        return -3;
+	void *mountSrc = malloc(sizeof(FSMountSource));
+	if(!mountSrc)
+		return -3;
 
-    char* mountPath = (char*) malloc(FS_MAX_MOUNTPATH_SIZE);
-    if(!mountPath) {
-        free(mountSrc);
-        return -4;
-    }
+	char* mountPath = (char*) malloc(FS_MAX_MOUNTPATH_SIZE);
+	if(!mountPath) {
+		free(mountSrc);
+		return -4;
+	}
 
-    memset(mountSrc, 0, sizeof(FSMountSource));
-    memset(mountPath, 0, FS_MAX_MOUNTPATH_SIZE);
+	memset(mountSrc, 0, sizeof(FSMountSource));
+	memset(mountPath, 0, FS_MAX_MOUNTPATH_SIZE);
 
-    // Mount sdcard
-    if (FSGetMountSource(pClient, pCmd, FS_MOUNT_SOURCE_SD, mountSrc, -1) == 0)
-    {
-        result = FSMount(pClient, pCmd, mountSrc, mountPath, FS_MAX_MOUNTPATH_SIZE, -1);
-        if((result == 0) && mount_path) {
-            *mount_path = (char*)malloc(strlen(mountPath) + 1);
-            if(*mount_path)
-                strcpy(*mount_path, mountPath);
-        }
-    }
+	// Mount sdcard
+	if (FSGetMountSource(pClient, pCmd, FS_MOUNT_SOURCE_SD, mountSrc, -1) == 0)
+	{
+		result = FSMount(pClient, pCmd, mountSrc, mountPath, FS_MAX_MOUNTPATH_SIZE, -1);
+		if((result == 0) && mount_path) {
+			*mount_path = (char*)malloc(strlen(mountPath) + 1);
+			if(*mount_path)
+				strcpy(*mount_path, mountPath);
+		}
+	}
 
-    free(mountPath);
-    free(mountSrc);
-    return result;
+	free(mountPath);
+	free(mountSrc);
+	return result;
 }
 
 int UmountFS(void *pClient, void *pCmd, const char *mountPath)
 {
-    int result = -1;
-    result = FSUnmount(pClient, pCmd, mountPath, -1);
+	int result = -1;
+	result = FSUnmount(pClient, pCmd, mountPath, -1);
 
-    return result;
+	return result;
 }
 
 int LoadFileToMem(const char *filepath, u8 **inbuffer, u32 *size)
 {
-    //! always initialze input
+	//! always initialze input
 	*inbuffer = NULL;
-    if(size)
-        *size = 0;
+	if(size)
+		*size = 0;
 
-    int iFd = open(filepath, O_RDONLY);
+	int iFd = open(filepath, O_RDONLY);
 	if (iFd < 0)
 		return -1;
 
 	u32 filesize = lseek(iFd, 0, SEEK_END);
-    lseek(iFd, 0, SEEK_SET);
+	lseek(iFd, 0, SEEK_SET);
 
 	u8 *buffer = (u8 *) malloc(filesize);
 	if (buffer == NULL)
 	{
-        close(iFd);
+		close(iFd);
 		return -2;
 	}
 
-    u32 blocksize = 0x4000;
-    u32 done = 0;
-    int readBytes = 0;
+	u32 blocksize = 0x4000;
+	u32 done = 0;
+	int readBytes = 0;
 
 	while(done < filesize)
-    {
-        if(done + blocksize > filesize) {
-            blocksize = filesize - done;
-        }
-        readBytes = read(iFd, buffer + done, blocksize);
-        if(readBytes <= 0)
-            break;
-        done += readBytes;
-    }
+	{
+		if(done + blocksize > filesize) {
+			blocksize = filesize - done;
+		}
+		readBytes = read(iFd, buffer + done, blocksize);
+		if(readBytes <= 0)
+			break;
+		done += readBytes;
+	}
 
-    close(iFd);
+	close(iFd);
 
 	if (done != filesize)
 	{
@@ -95,10 +95,10 @@ int LoadFileToMem(const char *filepath, u8 **inbuffer, u32 *size)
 
 	*inbuffer = buffer;
 
-    //! sign is optional input
-    if(size) {
-        *size = filesize;
-    }
+	//! sign is optional input
+	if(size) {
+		*size = filesize;
+	}
 
 	return filesize;
 }

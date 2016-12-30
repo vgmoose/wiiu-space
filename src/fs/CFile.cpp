@@ -35,25 +35,25 @@ int CFile::open(const std::string & filepath, eOpenTypes mode)
 
 	switch(mode)
 	{
-    default:
-    case ReadOnly:
-        openMode = O_RDONLY;
-        break;
-    case WriteOnly:
-        openMode = O_WRONLY;
-        break;
-    case ReadWrite:
-        openMode = O_RDWR;
-        break;
-    case Append:
-        openMode = O_APPEND | O_WRONLY;
-        break;
+		default:
+		case ReadOnly:
+				openMode = O_RDONLY;
+				break;
+		case WriteOnly:
+				openMode = O_WRONLY;
+				break;
+		case ReadWrite:
+				openMode = O_RDWR;
+				break;
+		case Append:
+				openMode = O_APPEND | O_WRONLY;
+				break;
 	}
 
-    //! Using fopen works only on the first launch as expected
-    //! on the second launch it causes issues because we don't overwrite
-    //! the .data sections which is needed for a normal application to re-init
-    //! this will be added with launching as RPX
+		//! Using fopen works only on the first launch as expected
+		//! on the second launch it causes issues because we don't overwrite
+		//! the .data sections which is needed for a normal application to re-init
+		//! this will be added with launching as RPX
 	iFd = ::open(filepath.c_str(), openMode);
 	if(iFd < 0)
 		return iFd;
@@ -118,17 +118,17 @@ int CFile::write(const u8 * ptr, size_t size)
 {
 	if(iFd >= 0)
 	{
-	    size_t done = 0;
-	    while(done < size)
-        {
-            int ret = ::write(iFd, ptr, size - done);
-            if(ret <= 0)
-                return ret;
+			size_t done = 0;
+			while(done < size)
+				{
+						int ret = ::write(iFd, ptr, size - done);
+						if(ret <= 0)
+								return ret;
 
-            ptr += ret;
-            done += ret;
-            pos += ret;
-        }
+						ptr += ret;
+						done += ret;
+						pos += ret;
+				}
 		return done;
 	}
 
@@ -158,7 +158,7 @@ int CFile::seek(long int offset, int origin)
 		pos = 0;
 	}
 	else {
-        pos = newPos;
+				pos = newPos;
 	}
 
 	if(iFd >= 0)
@@ -177,21 +177,21 @@ int CFile::seek(long int offset, int origin)
 
 int CFile::fwrite(const char *format, ...)
 {
-    int result = -1;
+		int result = -1;
 	char * tmp = NULL;
 
 	va_list va;
 	va_start(va, format);
 	if((vasprintf(&tmp, format, va) >= 0) && tmp)
 	{
-        result = this->write((u8 *)tmp, strlen(tmp));
+				result = this->write((u8 *)tmp, strlen(tmp));
 	}
 	va_end(va);
 
 	if(tmp)
 		free(tmp);
 
-    return result;
+	return result;
 }
 
 

@@ -23,47 +23,47 @@
 class CMutex
 {
 public:
-    CMutex() {
-        pMutex = (OSMutex*)malloc(sizeof(OSMutex));
-        if(!pMutex)
-            return;
+	CMutex() {
+		pMutex = (OSMutex*)malloc(sizeof(OSMutex));
+		if(!pMutex)
+			return;
 
-        OSInitMutex(pMutex);
-    }
-    virtual ~CMutex() {
-        if(pMutex)
-            free(pMutex);
-    }
+		OSInitMutex(pMutex);
+	}
+	virtual ~CMutex() {
+		if(pMutex)
+			free(pMutex);
+	}
 
-    void lock(void) {
-        if(pMutex)
-            OSLockMutex(pMutex);
-    }
-    void unlock(void) {
-        if(pMutex)
-            OSUnlockMutex(pMutex);
-    }
-    bool tryLock(void) {
-        if(!pMutex)
-            return false;
+	void lock(void) {
+		if(pMutex)
+			OSLockMutex(pMutex);
+	}
+	void unlock(void) {
+		if(pMutex)
+			OSUnlockMutex(pMutex);
+	}
+	bool tryLock(void) {
+		if(!pMutex)
+			return false;
 
-        return (OSTryLockMutex(pMutex) != 0);
-    }
+		return (OSTryLockMutex(pMutex) != 0);
+	}
 private:
-    OSMutex *pMutex;
+	OSMutex *pMutex;
 };
 
 class CMutexLock
 {
 public:
-    CMutexLock() {
-        mutex.lock();
-    }
-    virtual ~CMutexLock() {
-        mutex.unlock();
-    }
+	CMutexLock() {
+		mutex.lock();
+	}
+	virtual ~CMutexLock() {
+		mutex.unlock();
+	}
 private:
-    CMutex mutex;
+	CMutex mutex;
 };
 
 #endif // _CMUTEX_H_

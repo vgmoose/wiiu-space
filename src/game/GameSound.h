@@ -27,7 +27,7 @@ class GameSound : public AsyncDeleter::Element
 		//!\param sound Pointer to the sound data
 		//!\param filesize Length of sound data
 		GameSound(const char * filepath);
-	  GameSound(const u8 * sound, int length);
+		GameSound(const u8 * sound, int length);
 		//!Destructor
 		virtual ~GameSound();
 		//!Load a file and replace the old one

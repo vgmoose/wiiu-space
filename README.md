@@ -1,12 +1,15 @@
-## Space Game
-This is a Wii U homebrew game. You can run the [latest release](https://gbatemp.net/threads/release-space-game.414342/) via Homebrew Launcher. To see the original, non-HBL version (libwiiu only) of the code, see the [master branch](https://github.com/vgmoose/space/tree/master). Watch a video of the gameplay in action [here](https://www.youtube.com/watch?v=KMuicPmOIHw)!
+# Space Game
+This is a Wii U homebrew game. You can run the [latest release](https://gbatemp.net/threads/release-space-game.414342/) via Homebrew Launcher or from the Wii U Menu. To see the original, non-HBL version (libwiiu only) of the code, see the [master branch](https://github.com/vgmoose/space/tree/master). Watch a video of the gameplay in action [here](https://www.youtube.com/watch?v=KMuicPmOIHw)!
 
 ![Logo](http://vgmoose.com/posts/24261201%20-%20[release]%20Space%20Game!%20(for%20Wii%20U).post/title.png)
 
-Space game is a graphical shooter game on the Wii U! Since it was originally designed to be executed via the .mp4 exploit in 5.5.x, there were several challenges that were imposed on its development in terms of efficiency and storage.
+Space game is a simplistic graphical shooter game that runs natively on the Wii U!
+
+## Documentation
+Since it was originally designed to be executed via the browser exploit in firmware versions 5.5.0 and 5.5.1, there were several challenges that were imposed on its development in terms of efficiency and storage.
 
 ### Binary Size Tricks
-A main issue with the webkit exploit is that binaries that can be executed in the browser are capped at a certain file size. I hit issues when my binary (code550.bin) exceeded 21,400 bytes. It may not seem like it, but that's not much! I employed a couple of tricks to keep the binary size small:
+A main issue with this webkit exploit is that binaries that can be executed in the browser are capped at a certain file size. I hit issues when my binary (code550.bin) exceeded 21,400 bytes. It may not seem like it, but that's not much! I employed a couple of tricks to keep the binary size small:
 
 #### Compiling with -O1 as a CFLAG
 If you look at my Makefile and compare it to other ones for the libwiiu examples, you'll notice a few differences near the top of the file. The most important of these differences is the addition of the -O1 parameter to the CFLAGS variable. This sets the compiler's [optimization level](http://www.rapidtables.com/code/linux/gcc/gcc-o.htm) and can usually shave off up to 6,000 bytes!
@@ -16,27 +19,21 @@ There was one big issue though: I found that, whenever I compiled with -O1, very
 **Note**: I also compiled the [https://github.com/wiiudev/libwiiu](https://github.com/wiiudev/libwiiu) repo with the -O1 flag.
 
 #### Compressing Bitmaps
-A fair amount of the filesize, even after compression, is due to the bitmap image storing that is employed. Images are stored directly in images.c, with the assistance of [this script](https://gist.github.com/vgmoose/1a6810aacc46c28344ab) that converts a bitmap to a compressed C char array. The bitmap is then drawn via modifications to the draw.c library. It does not use GX2 at this time.
+A fair amount of the file size, even after compression, is due to the bitmap image storing that is employed. Images are stored directly in images.c, with the assistance of [this script](https://gist.github.com/vgmoose/1a6810aacc46c28344ab) that converts a bitmap to a compressed C char array. The bitmap is then drawn via modifications to the draw.c library. It does not use GX2 at this time.
 
-My compresion algorithm is a little complicated, but it is detailed at the top of images.c. It tries to store information about streaks of pixels as efficiently as possible. The way I did it only allows for 125 total colors in a palette. The algorithm can also be used to compress arrays, the trick is storing sequences of similar numbers as instructions, such as: {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1} becomes {8, 1, 3, 0, 10, 1} (eight ones, three zeroes, ten ones).
+My compression algorithm is a little complicated, but it is detailed at the top of images.c. It tries to store information about streaks of pixels as efficiently as possible. The way I did it only allows for 125 total colors in a palette. The algorithm can also be used to compress arrays, the trick is storing sequences of similar numbers as instructions, such as: {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1} becomes {8, 1, 3, 0, 10, 1} (eight ones, three zeroes, ten ones).
 
 ### Speedup Tricks
 Drawing was a pain here, but I found I was able to greatly increase my drawing speed by moving all of the coreinit.rpl function pointers into a struct and passing that around to the drawing library. This is possible because the pointers do not change, so looking them up every time a pixel is drawn is, as far as I can tell, just extra time that could be spent drawing!
 
-I also had to wrap my head around the concept of using flipBuffers. From what I gather, calling "flipBuffers" acts as a sort of "commit" for everything you've previously drawn to appear on screne. Then the next calls you make to draw will be put into the next upcoming buffer that you then flip to again. This is done so that a seamless gameplay can be presented without flickering, despite the entire screen being redrawn every frame.
+I also had to wrap my head around the concept of using flipBuffers. From what I gather, calling "flipBuffers" acts as a sort of "commit" for everything you've previously drawn to appear on screen. Then the next calls you make to draw will be put into the next upcoming buffer that you then flip to again. This is done so that a seamless gameplay can be presented without flickering, despite the entire screen being redrawn every frame.
 
 ![In game](http://vgmoose.com/posts/24261201%20-%20[release]%20Space%20Game!%20(for%20Wii%20U).post/gameplay.png)
-
-
-### Issues
-If you have any issues with the code here when you try to use it in your own app, feel free to contact me!
-
-If you have any filesize issues when trying to run this app, I suggest you try commenting out the giant logo byte array in images.c.
 
 ### Misc Math
 
 #### Trig functions
-A big issue I had using this program was with not using the standard math library. I was not able to get it working without the file size shooting way up. As such, I implemented estimations for sin, cos, and arctan in math.h. These are primarly used to calculate angles and spin the spaceship. I found myself drawing many right traingles on paper and reciting SOHCAHTOA over and over again before I finally managed to get it right!
+A big issue I had using this program was with not using the standard math library. I was not able to get it working without the file size shooting way up. As such, I implemented estimations for sin, cos, and arctan in math.h. These are primarily used to calculate angles and spin the spaceship. I found myself drawing many right triangles on paper and reciting SOHCAHTOA over and over again before I finally managed to get it right!
 
 #### (Pseudo-)Random numbers
 This was another area that I struggled with. Fortunately, there's a method to get the current time, so that can be used as a seed. The implementation I ended up going with is based on an older version of [glibc's rand()](http://stackoverflow.com/questions/1026327/what-common-algorithms-are-used-for-cs-rand).
@@ -47,9 +44,14 @@ In order to rotate the bitmap to the angle calculated by the trig functions, I h
 I also make use of a scaling matrix for explosions, which similarly gets multiplied by the bitmap when it's time to blow up
 
 ### Creating bitmaps
-I created my bitmaps in Photoshop using Mode -> Index color. I extracted the palettes manually by using a hex editor. I've provided the three bitmaps that I used in this repo, although the actual image files are not used by the game. There are other ways to create bitmaps like this (I believe older mspaint supports it)
+I created my bitmaps in Photoshop using Mode -> Index color. I extracted the palettes manually by using a hex editor. I've provided the three bitmaps that I used in this repo, although the actual image files are not used by the game. There are other ways to create bitmaps like this (I believe older versions of Microsoft Paint support it)
 
-### Credits and License
+## Issues
+If you have any issues with the code here when you try to use it in your own app, feel free to contact me!
+
+If you have any filesize issues when trying to run this app, I suggest you try commenting out the giant logo byte array in images.c.
+
+## Credits and License
 This program is licensed under [the MIT license](https://opensource.org/licenses/MIT), which grants anyone permission to do pretty much whatever they want as long as the copyright notice stays intact.*
  - Programmed by [VGMoose](http://vgmoose.com)
  - Based on Pong by [Relys](https://github.com/Relys)
@@ -60,20 +62,18 @@ This program is licensed under [the MIT license](https://opensource.org/licenses
 
 *While the game is free software, the song [~\*cruise\*~ is copyright ©2015 by the band (T-T)b](https://t-tb.bandcamp.com/track/cruise). This license does not permit redistribution or reuse of this song, unless it is embedded within an authorized Space Game binary.
 
-### How to Compile and Run
+## How to Compile and Run
 See [building the Homebrew Launcher](https://github.com/dimok789/homebrew_launcher#building-the-homebrew-launcher) 	
 
-### Porting to RPX
+## Porting to RPX
 This is the RPX version of the game, the final format revision of Space Game. This format can be launched from HBL v1.4 and up, from the Wii U Menu if you can compile the program correctly, and theoretically from within Decaf.
 
-At this point in time, it is based on v1.6 of the game which has the screen rendering modifications by xhp-creations and CreeperMario. None of the improvements from the current version of the Space Game v2.0 development branch are present in this build, though they will come soon.
+At this point in time, it is based on v1.6 of the game which has the screen rendering modifications by [xhp-creations](https://github.com/xhp-creations) and [CreeperMario](https://github.com/CreeperMario). None of the improvements from the current version of the Space Game v2.0 development branch are present in this build, though they will come soon.
 
-Just a note, to build this, you will need devkitPPC (or another correctly configured PPC compiler), WUT and the PPC portlibs. Unlike HBL, libOGC is not necessary to build Space Game.
+At this point in time, the code for an official RPX release is done. If you are running it from HBL, it functions just as before, though if you run it from its own title, you have the added power of the HOME Menu. You can open the web browser or the eShop mid-game and return to the game with no trouble (trust me, I've tried). However, while the code is complete, I am having trouble packaging it into a format that can be installed on the console via [WUPInstaller](https://github.com/Yardape8000/wupinstaller).
 
-There are a couple of things that do still need to be done before this RPX version can be officially released into the wild. I've done all the hard work of actually changing over from the dynamic_libs to WUT's libs and . ProcUI needs to be implemented, so that the HOME Menu can be used to exit the program. When the program finishes (the user presses the HOME Button) it executes SYSRelaunchTitle to reload Mii Maker, because HBL does not automatically relaunch itself after RPX files have finished, which then results in a hang. This SYSRelaunchTitle is a good idea when running under Mii Maker and HBL titles, but for when we eventually get Space Game into its own package with its own title ID, this will result in an infinite loop which causes the program to restart itself when the user wants to exit it. We also need to test loading a custom soundtrack from the SD card, as I haven't yet tested that. I had issues porting the sd_fat_devoptab, so this may or may not work.
+The current build still relies of some of the [dynamic_libs](https://github.com/Maschell/dynamic_libs), mostly because of mismatches in WUT and how HBL software use certain functions. There are also things missing in WUT, like padscore, so dynamic_libs are necessary for this.
 
-The current build still relies of some of the dynamic_libs, mostly because of mismatches in WUT and how HBL software use certain functions. There are also things missing in WUT, like padscore, so dynamic_libs are necessary for this.
-
-Though, unlike previous RPX builds of Space Game, this one actually has working sound. And just like the HBL ELF version, the soundtrack is embedded into the RPX file, so that the user cannot screw up the game by deleting the soundtrack accidentally.
+Though, unlike previous attempted RPX builds of Space Game, this one actually has working sound. And just like the HBL ELF version, the soundtrack is embedded into the RPX file, so that the user cannot screw up the game by deleting the soundtrack accidentally.
 
 Other than that, enjoy! -CreeperMario

@@ -7,10 +7,10 @@
 
 void usleep(unsigned int microsecs)
 {
-    OSSleepTicks(MICROSECS_TO_TICKS(microsecs));
+	OSSleepTicks(MICROSECS_TO_TICKS(microsecs));
 }
 
 void sleep(unsigned int secs)
 {
-    OSSleepTicks(SECS_TO_TICKS(secs));
+	OSSleepTicks(SECS_TO_TICKS(secs));
 }

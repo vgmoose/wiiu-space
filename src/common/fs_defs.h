@@ -34,23 +34,23 @@ extern "C" {
 
 typedef struct
 {
-    uint32_t flag;
-    uint32_t permission;
-    uint32_t owner_id;
-    uint32_t group_id;
-    uint32_t size;
-    uint32_t alloc_size;
-    uint64_t quota_size;
-    uint32_t ent_id;
-    uint64_t ctime;
-    uint64_t mtime;
-    uint8_t attributes[48];
+	uint32_t flag;
+	uint32_t permission;
+	uint32_t owner_id;
+	uint32_t group_id;
+	uint32_t size;
+	uint32_t alloc_size;
+	uint64_t quota_size;
+	uint32_t ent_id;
+	uint64_t ctime;
+	uint64_t mtime;
+	uint8_t attributes[48];
 } __attribute__((packed)) FSStat_alt;
 
 typedef struct
 {
-    FSStat_alt      stat;
-    char        name[FS_MAX_ENTNAME_SIZE];
+	FSStat_alt      stat;
+	char        name[FS_MAX_ENTNAME_SIZE];
 } FSDirEntry;
 
 

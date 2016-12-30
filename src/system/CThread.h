@@ -18,8 +18,8 @@
 #define CTHREAD_H_
 
 #include <malloc.h>
+#include <unistd.h>
 #include <coreinit/thread.h>
-#include "utils/utils.h"
 
 class CThread
 {
@@ -33,15 +33,15 @@ public:
 		, pCallback(callback)
 		, pCallbackArg(callbackArg)
 	{
-	    //! save attribute assignment
-	    iAttributes = iAttr;
+		//! save attribute assignment
+		iAttributes = iAttr;
 		//! allocate the thread
 		pThread = (OSThread*)memalign(8, 0x1000);
 		//! allocate the stack
 		pThreadStack = (u8 *) memalign(0x20, iStackSize);
-        //! create the thread
+		//! create the thread
 		if(pThread && pThreadStack)
-            OSCreateThread(pThread, &CThread::threadCallback, 1, (char*)this, pThreadStack+iStackSize, iStackSize, iPriority, iAttributes);
+			OSCreateThread(pThread, &CThread::threadCallback, 1, (char*)this, pThreadStack+iStackSize, iStackSize, iPriority, iAttributes);
 	}
 
 	//! destructor
@@ -49,7 +49,7 @@ public:
 
 	static CThread *create(CThread::Callback callback, void *callbackArg, int iAttr = eAttributeNone, int iPriority = 16, int iStackSize = 0x8000)
 	{
-	    return ( new CThread(iAttr, iPriority, iStackSize, callback, callbackArg) );
+		return ( new CThread(iAttr, iPriority, iStackSize, callback, callbackArg) );
 	}
 
 	//! Get thread ID
@@ -57,8 +57,8 @@ public:
 	//! Thread entry function
 	virtual void executeThread(void)
 	{
-	    if(pCallback)
-            pCallback(this, pCallbackArg);
+		if(pCallback)
+			pCallback(this, pCallbackArg);
 	}
 	//! Suspend thread
 	virtual void suspendThread(void) { if(isThreadSuspended()) return; if(pThread) OSSuspendThread(pThread); }
@@ -78,8 +78,8 @@ public:
 		//! wait for thread to finish
 		if(pThread && !(iAttributes & eAttributeDetach))
 		{
-		    if(isThreadSuspended())
-                resumeThread();
+			if(isThreadSuspended())
+				resumeThread();
 
 			OSJoinThread(pThread, NULL);
 		}
@@ -92,15 +92,15 @@ public:
 		pThread = NULL;
 		pThreadStack = NULL;
 	}
-    //! Thread attributes
+	//! Thread attributes
 	enum eCThreadAttributes
 	{
-	    eAttributeNone              = 0x07,
-	    eAttributeAffCore0          = 0x01,
-	    eAttributeAffCore1          = 0x02,
-	    eAttributeAffCore2          = 0x04,
-	    eAttributeDetach            = 0x08,
-	    eAttributePinnedAff         = 0x10
+		eAttributeNone              = 0x07,
+		eAttributeAffCore0          = 0x01,
+		eAttributeAffCore1          = 0x02,
+		eAttributeAffCore2          = 0x04,
+		eAttributeDetach            = 0x08,
+		eAttributePinnedAff         = 0x10
 	};
 private:
 	static int threadCallback(int argc, const char **arg)
@@ -109,7 +109,7 @@ private:
 		((CThread *) arg)->executeThread();
 		return 0;
 	}
-    int iAttributes;
+	int iAttributes;
 	OSThread *pThread;
 	u8 *pThreadStack;
 	Callback pCallback;

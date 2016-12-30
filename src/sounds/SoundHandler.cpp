@@ -36,21 +36,21 @@
 SoundHandler * SoundHandler::handlerInstance = NULL;
 
 SoundHandler::SoundHandler()
-    : CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x8000)
+	: CThread(CThread::eAttributeAffCore1 | CThread::eAttributePinnedAff, 0, 0x8000)
 {
 	Decoding = false;
 	ExitRequested = false;
 	for(u32 i = 0; i < MAX_DECODERS; ++i)
-    {
+	{
 		DecoderList[i] = NULL;
-        voiceList[i] = NULL;
-    }
+		voiceList[i] = NULL;
+	}
 
-    resumeThread();
+	resumeThread();
 
-    //! wait for initialization
-    while(!isThreadSuspended())
-        usleep(1000);
+	//! wait for initialization
+	while(!isThreadSuspended())
+		usleep(1000);
 }
 
 SoundHandler::~SoundHandler()
@@ -89,21 +89,21 @@ void SoundHandler::RemoveDecoder(int voice)
 		return;
 
 	if(DecoderList[voice] != NULL)
-    {
-        if(voiceList[voice] && voiceList[voice]->getState() != Voice::STATE_STOPPED)
-        {
-            if(voiceList[voice]->getState() != Voice::STATE_STOP)
-                voiceList[voice]->setState(Voice::STATE_STOP);
+	{
+		if(voiceList[voice] && voiceList[voice]->getState() != Voice::STATE_STOPPED)
+		{
+			if(voiceList[voice]->getState() != Voice::STATE_STOP)
+				voiceList[voice]->setState(Voice::STATE_STOP);
 
-            while(voiceList[voice]->getState() != Voice::STATE_STOPPED)
-                usleep(1000);
-        }
-        SoundDecoder *decoder = DecoderList[voice];
-        decoder->Lock();
-        DecoderList[voice] = NULL;
-        decoder->Unlock();
+			while(voiceList[voice]->getState() != Voice::STATE_STOPPED)
+				usleep(1000);
+		}
+		SoundDecoder *decoder = DecoderList[voice];
+		decoder->Lock();
+		DecoderList[voice] = NULL;
+		decoder->Unlock();
 		delete decoder;
-    }
+	}
 }
 
 void SoundHandler::ClearDecoderList()
@@ -168,7 +168,7 @@ SoundDecoder * SoundHandler::GetSoundDecoder(const char * filepath)
 
 	if(magic == 0x4f676753) // 'OggS'
 	{
-	    return new OggDecoder(filepath);
+		return new OggDecoder(filepath);
 	}
 	else if(magic == 0x52494646) // 'RIFF'
 	{
@@ -200,7 +200,7 @@ SoundDecoder * SoundHandler::GetSoundDecoder(const u8 * sound, int length)
 
 	if(magic[0] == 0x4f676753) // 'OggS'
 	{
-	    return new OggDecoder(sound, length);
+		return new OggDecoder(sound, length);
 	}
 	else if(magic[0] == 0x52494646) // 'RIFF'
 	{
@@ -216,29 +216,29 @@ SoundDecoder * SoundHandler::GetSoundDecoder(const u8 * sound, int length)
 
 void SoundHandler::executeThread()
 {
-    // v2 sound lib can not properly end transition audio on old firmwares
-    if (OS_FIRMWARE >= 400 && OS_FIRMWARE <= 410)
-    {
-        ProperlyEndTransitionAudio();
-    }
+	// v2 sound lib can not properly end transition audio on old firmwares
+	if (OS_FIRMWARE >= 400 && OS_FIRMWARE <= 410)
+	{
+		ProperlyEndTransitionAudio();
+	}
 
-    //! initialize 48 kHz renderer
-    AXInitParams params;
-    memset(&params, 0, sizeof(params));
-    params.renderer = AX_INIT_RENDERER_48KHZ;
+	//! initialize 48 kHz renderer
+	AXInitParams params;
+	memset(&params, 0, sizeof(params));
+	params.renderer = AX_INIT_RENDERER_48KHZ;
 
-    AXInitWithParams(&params);
+	AXInitWithParams(&params);
 
-    // The problem with last voice on 500 was caused by it having priority 0
-    // We would need to change this priority distribution if for some reason
-    // we would need MAX_DECODERS > Voice::PRIO_MAX
-    for(u32 i = 0; i < MAX_DECODERS; ++i)
-    {
-        int priority = (MAX_DECODERS - i) * Voice::PRIO_MAX  / MAX_DECODERS;
-        voiceList[i] = new Voice(priority); // allocate voice 0 with highest priority
-    }
+	// The problem with last voice on 500 was caused by it having priority 0
+	// We would need to change this priority distribution if for some reason
+	// we would need MAX_DECODERS > Voice::PRIO_MAX
+	for(u32 i = 0; i < MAX_DECODERS; ++i)
+	{
+		int priority = (MAX_DECODERS - i) * Voice::PRIO_MAX  / MAX_DECODERS;
+		voiceList[i] = new Voice(priority); // allocate voice 0 with highest priority
+	}
 
-    AXRegisterAppFrameCallback(SoundHandler::axFrameCallback);
+	AXRegisterAppFrameCallback(SoundHandler::axFrameCallback);
 
 
 	u16 i = 0;
@@ -253,98 +253,98 @@ void SoundHandler::executeThread()
 
 			Decoding = true;
 			if(DecoderList[i])
-                DecoderList[i]->Lock();
+				DecoderList[i]->Lock();
 			if(DecoderList[i])
-                DecoderList[i]->Decode();
+				DecoderList[i]->Decode();
 			if(DecoderList[i])
-                DecoderList[i]->Unlock();
+				DecoderList[i]->Unlock();
 		}
 		Decoding = false;
 	}
 
 	for(u32 i = 0; i < MAX_DECODERS; ++i)
-        voiceList[i]->stop();
+		voiceList[i]->stop();
 
-    AXRegisterAppFrameCallback(NULL);
-    AXQuit();
+	AXRegisterAppFrameCallback(NULL);
+	AXQuit();
 
-    for(u32 i = 0; i < MAX_DECODERS; ++i)
-    {
-        delete voiceList[i];
-        voiceList[i] = NULL;
-    }
+	for(u32 i = 0; i < MAX_DECODERS; ++i)
+	{
+		delete voiceList[i];
+		voiceList[i] = NULL;
+	}
 }
 
 void SoundHandler::axFrameCallback(void)
 {
-    for (u32 i = 0; i < MAX_DECODERS; i++)
-    {
-        Voice *voice = handlerInstance->getVoice(i);
+	for (u32 i = 0; i < MAX_DECODERS; i++)
+	{
+		Voice *voice = handlerInstance->getVoice(i);
 
-        switch (voice->getState())
-        {
-            default:
-            case Voice::STATE_STOPPED:
-                break;
+		switch (voice->getState())
+		{
+			default:
+			case Voice::STATE_STOPPED:
+				break;
 
-            case Voice::STATE_START: {
-                SoundDecoder * decoder = handlerInstance->getDecoder(i);
-                decoder->Lock();
-                if(decoder->IsBufferReady())
-                {
-                    const u8 *buffer = decoder->GetBuffer();
-                    const u32 bufferSize = decoder->GetBufferSize();
-                    decoder->LoadNext();
+			case Voice::STATE_START: {
+				SoundDecoder * decoder = handlerInstance->getDecoder(i);
+				decoder->Lock();
+				if(decoder->IsBufferReady())
+				{
+					const u8 *buffer = decoder->GetBuffer();
+					const u32 bufferSize = decoder->GetBufferSize();
+					decoder->LoadNext();
 
-                    const u8 *nextBuffer = NULL;
-                    u32 nextBufferSize = 0;
+					const u8 *nextBuffer = NULL;
+					u32 nextBufferSize = 0;
 
-                    if(decoder->IsBufferReady())
-                    {
-                        nextBuffer = decoder->GetBuffer();
-                        nextBufferSize = decoder->GetBufferSize();
-                        decoder->LoadNext();
-                    }
+					if(decoder->IsBufferReady())
+					{
+						nextBuffer = decoder->GetBuffer();
+						nextBufferSize = decoder->GetBufferSize();
+						decoder->LoadNext();
+					}
 
-                    voice->play(buffer, bufferSize, nextBuffer, nextBufferSize, decoder->GetFormat() & 0xff, decoder->GetSampleRate());
+					voice->play(buffer, bufferSize, nextBuffer, nextBufferSize, decoder->GetFormat() & 0xff, decoder->GetSampleRate());
 
-                    handlerInstance->ThreadSignal();
+					handlerInstance->ThreadSignal();
 
-                    voice->setState(Voice::STATE_PLAYING);
-                }
-                decoder->Unlock();
-                break;
-            }
-            case Voice::STATE_PLAYING:
-                if(voice->getInternState() == 1)
-                {
-                    if(voice->isBufferSwitched())
-                    {
-                        SoundDecoder * decoder = handlerInstance->getDecoder(i);
-                        decoder->Lock();
-                        if(decoder->IsBufferReady())
-                        {
-                            voice->setNextBuffer(decoder->GetBuffer(), decoder->GetBufferSize());
-                            decoder->LoadNext();
-                            handlerInstance->ThreadSignal();
-                        }
-                        else if(decoder->IsEOF())
-                        {
-                            voice->setState(Voice::STATE_STOP);
-                        }
-                        decoder->Unlock();
-                    }
-                }
-                else
-                {
-                    voice->setState(Voice::STATE_STOPPED);
-                }
-                break;
-            case Voice::STATE_STOP:
-                if(voice->getInternState() != 0)
-                    voice->stop();
-                voice->setState(Voice::STATE_STOPPED);
-                break;
-        }
-    }
+					voice->setState(Voice::STATE_PLAYING);
+				}
+				decoder->Unlock();
+				break;
+			}
+			case Voice::STATE_PLAYING:
+				if(voice->getInternState() == 1)
+				{
+					if(voice->isBufferSwitched())
+					{
+						SoundDecoder * decoder = handlerInstance->getDecoder(i);
+						decoder->Lock();
+						if(decoder->IsBufferReady())
+						{
+							voice->setNextBuffer(decoder->GetBuffer(), decoder->GetBufferSize());
+							decoder->LoadNext();
+							handlerInstance->ThreadSignal();
+						}
+						else if(decoder->IsEOF())
+						{
+							voice->setState(Voice::STATE_STOP);
+						}
+						decoder->Unlock();
+					}
+				}
+				else
+				{
+					voice->setState(Voice::STATE_STOPPED);
+				}
+				break;
+			case Voice::STATE_STOP:
+				if(voice->getInternState() != 0)
+					voice->stop();
+				voice->setState(Voice::STATE_STOPPED);
+				break;
+		}
+	}
 }

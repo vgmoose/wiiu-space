@@ -101,6 +101,7 @@ extern "C" {
 
 //! C wrapper for our C++ functions
 int _entryPoint();
+void cleanSlate();
 
 #ifdef __cplusplus
 }

@@ -23,9 +23,9 @@ void Resources::Clear()
 	}
 
 	if(instance)
-        delete instance;
+		delete instance;
 
-    instance = NULL;
+	instance = NULL;
 }
 
 bool Resources::LoadFiles(const char * path)
@@ -38,18 +38,18 @@ bool Resources::LoadFiles(const char * path)
 
 	for(int i = 0; RecourceList[i].filename != NULL; ++i)
 	{
-        std::string fullpath(path);
-        fullpath += "/";
-        fullpath += RecourceList[i].filename;
+		std::string fullpath(path);
+		fullpath += "/";
+		fullpath += RecourceList[i].filename;
 
-        u8 * buffer = NULL;
-        u32 filesize = 0;
+		u8 * buffer = NULL;
+		u32 filesize = 0;
 
-        LoadFileToMem(fullpath.c_str(), &buffer, &filesize);
+		LoadFileToMem(fullpath.c_str(), &buffer, &filesize);
 
-        RecourceList[i].CustomFile = buffer;
-        RecourceList[i].CustomFileSize = (u32) filesize;
-        result |= (buffer != 0);
+		RecourceList[i].CustomFile = buffer;
+		RecourceList[i].CustomFileSize = (u32) filesize;
+		result |= (buffer != 0);
 	}
 
 	return result;
@@ -82,15 +82,15 @@ u32 Resources::GetFileSize(const char * filename)
 
 GameSound * Resources::GetSound(const char * filename)
 {
-    if(!instance)
-        instance = new Resources;
+	if(!instance)
+		instance = new Resources;
 
-    std::map<std::string, std::pair<unsigned int, GameSound *> >::iterator itr = instance->soundDataMap.find(std::string(filename));
-    if(itr != instance->soundDataMap.end())
-    {
-        itr->second.first++;
-        return itr->second.second;
-    }
+	std::map<std::string, std::pair<unsigned int, GameSound *> >::iterator itr = instance->soundDataMap.find(std::string(filename));
+	if(itr != instance->soundDataMap.end())
+	{
+		itr->second.first++;
+		return itr->second.second;
+	}
 
 	for(int i = 0; RecourceList[i].filename != NULL; ++i)
 	{
@@ -100,13 +100,13 @@ GameSound * Resources::GetSound(const char * filename)
 			const u32 size = RecourceList[i].CustomFile ? RecourceList[i].CustomFileSize : RecourceList[i].DefaultFileSize;
 
 			if(buff == NULL)
-                return NULL;
+				return NULL;
 
-            GameSound * sound = new GameSound(buff, size);
-            instance->soundDataMap[std::string(filename)].first = 1;
-            instance->soundDataMap[std::string(filename)].second = sound;
+			GameSound * sound = new GameSound(buff, size);
+			instance->soundDataMap[std::string(filename)].first = 1;
+			instance->soundDataMap[std::string(filename)].second = sound;
 
-            return sound;
+			return sound;
 		}
 	}
 
@@ -115,20 +115,20 @@ GameSound * Resources::GetSound(const char * filename)
 
 void Resources::RemoveSound(GameSound * sound)
 {
-    std::map<std::string, std::pair<unsigned int, GameSound *> >::iterator itr;
+	std::map<std::string, std::pair<unsigned int, GameSound *> >::iterator itr;
 
-    for(itr = instance->soundDataMap.begin(); itr != instance->soundDataMap.end(); itr++)
-    {
-        if(itr->second.second == sound)
-        {
-            itr->second.first--;
+	for(itr = instance->soundDataMap.begin(); itr != instance->soundDataMap.end(); itr++)
+	{
+		if(itr->second.second == sound)
+		{
+			itr->second.first--;
 
-            if(itr->second.first == 0)
-            {
-                AsyncDeleter::pushForDelete( itr->second.second );
-                instance->soundDataMap.erase(itr);
-            }
-            break;
-        }
-    }
+			if(itr->second.first == 0)
+			{
+				AsyncDeleter::pushForDelete( itr->second.second );
+				instance->soundDataMap.erase(itr);
+			}
+			break;
+		}
+	}
 }
