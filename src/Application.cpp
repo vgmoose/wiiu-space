@@ -93,8 +93,12 @@ void Application::screenInit(void)
 	int buf1_size = OSScreenGetBufferSizeEx(SCREEN_DRC);
 	//Set the buffer area.
 	screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x100);
-	OSScreenSetBufferEx(SCREEN_TV, screenBuffer);
-	OSScreenSetBufferEx(SCREEN_DRC, screenBuffer + buf0_size);
+	
+	// Normally, we would not typecast this to an int*, but if we don't,
+	// the compiler will complain "use of void* in arithmetic."
+	// Functionality-wise, this does nothing. -CreeperMario
+	OSScreenSetBufferEx(SCREEN_TV, (int*)screenBuffer);
+	OSScreenSetBufferEx(SCREEN_DRC, (int*)screenBuffer + buf0_size);
 	
 	OSScreenEnableEx(SCREEN_TV, 1);
 	OSScreenEnableEx(SCREEN_DRC, 1);

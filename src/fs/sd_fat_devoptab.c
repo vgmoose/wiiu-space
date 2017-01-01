@@ -32,7 +32,6 @@
 #include <coreinit/filesystem.h>
 #include <coreinit/mutex.h>
 
-#include "common/fs_defs.h"
 #include "fs_utils.h"
 
 #define FS_ALIGNMENT            0x40
@@ -164,7 +163,7 @@ static int sd_fat_open_r (struct _reent *r, void *fileStruct, const char *path, 
 
 	if(result == 0)
 	{
-		FSStat_alt stats;
+		FSStat stats;
 		result = FSGetStatFile(dev->pClient, dev->pCmd, fd, &stats, -1);
 		if(result != 0) {
 			FSCloseFile(dev->pClient, dev->pCmd, fd, -1);
@@ -375,7 +374,7 @@ static int sd_fat_fstat_r (struct _reent *r, int fd, struct stat *st)
 	// Zero out the stat buffer
 	memset(st, 0, sizeof(struct stat));
 
-	FSStat_alt stats;
+	FSStat stats;
 	int result = FSGetStatFile(file->dev->pClient, file->dev->pCmd, file->fd, &stats, -1);
 	if(result != 0) {
 		r->_errno = result;
@@ -389,13 +388,13 @@ static int sd_fat_fstat_r (struct _reent *r, int fd, struct stat *st)
 	st->st_nlink = 1;
 
 	// Fill in the generic entry stats
-	st->st_dev = stats.ent_id;
-	st->st_uid = stats.owner_id;
-	st->st_gid = stats.group_id;
-	st->st_ino = stats.ent_id;
-	st->st_atime = stats.mtime;
-	st->st_ctime = stats.ctime;
-	st->st_mtime = stats.mtime;
+	st->st_dev = stats.ent;
+	st->st_uid = stats.owner;
+	st->st_gid = stats.group;
+	st->st_ino = stats.ent;
+	st->st_atime = stats.modified;
+	st->st_ctime = stats.created;
+	st->st_mtime = stats.modified;
 	OSUnlockMutex(file->dev->pMutex);
 	return 0;
 }
@@ -464,7 +463,7 @@ static int sd_fat_stat_r (struct _reent *r, const char *path, struct stat *st)
 		return -1;
 	}
 
-	FSStat_alt stats;
+	FSStat stats;
 
 	int result = FSGetStat(dev->pClient, dev->pCmd, real_path, &stats, -1);
 
@@ -477,18 +476,18 @@ static int sd_fat_stat_r (struct _reent *r, const char *path, struct stat *st)
 	}
 
 	// mark root also as directory
-	st->st_mode = ((stats.flag & 0x80000000) || (strlen(dev->mount_path) + 1 == strlen(real_path)))? S_IFDIR : S_IFREG;
+	st->st_mode = ((stats.flags & 0x80000000) || (strlen(dev->mount_path) + 1 == strlen(real_path)))? S_IFDIR : S_IFREG;
 	st->st_nlink = 1;
 	st->st_size = stats.size;
 	st->st_blocks = (stats.size + 511) >> 9;
 	// Fill in the generic entry stats
-	st->st_dev = stats.ent_id;
-	st->st_uid = stats.owner_id;
-	st->st_gid = stats.group_id;
-	st->st_ino = stats.ent_id;
-	st->st_atime = stats.mtime;
-	st->st_ctime = stats.ctime;
-	st->st_mtime = stats.mtime;
+	st->st_dev = stats.ent;
+	st->st_uid = stats.owner;
+	st->st_gid = stats.group;
+	st->st_ino = stats.ent;
+	st->st_atime = stats.modified;
+	st->st_ctime = stats.created;
+	st->st_mtime = stats.modified;
 
 	OSUnlockMutex(dev->pMutex);
 
@@ -792,7 +791,7 @@ static int sd_fat_dirnext_r (struct _reent *r, DIR_ITER *dirState, char *filenam
 
 	OSLockMutex(dirIter->dev->pMutex);
 
-	FSDirEntry * dir_entry = malloc(sizeof(FSDirectoryEntry));
+	FSDirectoryEntry * dir_entry = malloc(sizeof(FSDirectoryEntry));
 
 	int result = FSReadDir(dirIter->dev->pClient, dirIter->dev->pCmd, dirIter->dirHandle, dir_entry, -1);
 	if(result < 0)
@@ -808,18 +807,18 @@ static int sd_fat_dirnext_r (struct _reent *r, DIR_ITER *dirState, char *filenam
 
 	if(st)
 	{
-		memset(st, 0, sizeof(dir_entry->stat));
-		st->st_mode = (dir_entry->stat.flag & 0x80000000) ? S_IFDIR : S_IFREG;
+		memset(st, 0, sizeof(dir_entry->info));
+		st->st_mode = (dir_entry->info.flags & 0x80000000) ? S_IFDIR : S_IFREG;
 		st->st_nlink = 1;
-		st->st_size = dir_entry->stat.size;
-		st->st_blocks = (dir_entry->stat.size + 511) >> 9;
-		st->st_dev = dir_entry->stat.ent_id;
-		st->st_uid = dir_entry->stat.owner_id;
-		st->st_gid = dir_entry->stat.group_id;
-		st->st_ino = dir_entry->stat.ent_id;
-		st->st_atime = dir_entry->stat.mtime;
-		st->st_ctime = dir_entry->stat.ctime;
-		st->st_mtime = dir_entry->stat.mtime;
+		st->st_size = dir_entry->info.size;
+		st->st_blocks = (dir_entry->info.size + 511) >> 9;
+		st->st_dev = dir_entry->info.ent;
+		st->st_uid = dir_entry->info.owner;
+		st->st_gid = dir_entry->info.group;
+		st->st_ino = dir_entry->info.ent;
+		st->st_atime = dir_entry->info.modified;
+		st->st_ctime = dir_entry->info.created;
+		st->st_mtime = dir_entry->info.modified;
 	}
 
 	free(dir_entry);
