@@ -78,6 +78,9 @@ public:
 		SOUND_OGG,
 		SOUND_WAV
 	};
+	
+	virtual char * getTrackName() { return "Unknown Track"; }
+	virtual char * getArtistName() { return "Unknown Aritst"; }
 protected:
 	void Init();
 	void Upsample(s16 *src, s16 *dst, u32 nr_src_samples, u32 nr_dst_samples);

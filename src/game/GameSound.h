@@ -52,6 +52,9 @@ class GameSound : public AsyncDeleter::Element
 		void SetVolume(u32 v);
 		//!\param l Loop (true to loop)
 		void SetLoop(bool l);
+		// The name and author of the song, retrieved from ID3 tags in the case an MP3 file is loaded.
+		char * getTrackName();
+		char * getArtistName();
 	protected:
 		s32 voice; //!< Currently assigned ASND voice channel
 };

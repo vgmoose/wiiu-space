@@ -24,6 +24,7 @@
  * for WiiXplorer 2010
  ***************************************************************************/
 #include <mad.h>
+#include <id3tag.h>
 
 #include "SoundDecoder.hpp"
 
@@ -35,6 +36,9 @@ class Mp3Decoder : public SoundDecoder
 		virtual ~Mp3Decoder();
 		int Rewind();
 		int Read(u8 * buffer, int buffer_size, int pos);
+		
+		char * getTrackName() { return trackName; }
+		char * getArtistName() { return artistName; }
 	protected:
 		void OpenFile();
 		struct mad_stream Stream;
@@ -44,4 +48,8 @@ class Mp3Decoder : public SoundDecoder
 		u8 * GuardPtr;
 		u8 * ReadBuffer;
 		u32 SynthPos;
+	
+		char * trackName = "Unknown Track";
+		char * artistName = "Unknown Artist";
+		void fetchID3Tags();
 };

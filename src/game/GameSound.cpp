@@ -193,3 +193,13 @@ void GameSound::Rewind()
 {
 	Stop();
 }
+
+char * GameSound::getTrackName()
+{
+	return SoundHandler::instance()->getDecoder(voice)->getTrackName();
+}
+
+char * GameSound::getArtistName()
+{
+	return SoundHandler::instance()->getDecoder(voice)->getArtistName();
+}

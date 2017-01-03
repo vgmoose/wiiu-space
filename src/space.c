@@ -3,6 +3,7 @@
 #include <coreinit/debug.h>
 #include <coreinit/internal.h>
 #include <vpad/input.h>
+#include <string.h>
 
 /**
 This class is a bit of a mess, but it basically does "everything else" in the game.
@@ -603,7 +604,7 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		__os_snprintf(credits, 255, "by vgmoose");
 
 		char musiccredits[255];
-		__os_snprintf(musiccredits, 255, "~*cruise*~ by (T-T)b");
+		__os_snprintf(musiccredits, 255, "%s by %s", mySpaceGlobals->trackName, mySpaceGlobals->artistName);
 
 		char license[255];
 		__os_snprintf(license, 255, "MIT License");
@@ -621,10 +622,14 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		drawString(26, 13, password);
 		drawStringTv(45, 18, password);
 
-		drawString(45, 17, musiccredits);
-		drawStringTv(80, 27, musiccredits);
 		drawString(-2, 17, license);
 		drawStringTv(-2, 27, license);
+		
+		// The music credits must be drawn in a special way, because
+		// we don't know how long the title and artist strings will be.
+		int length = strlen(mySpaceGlobals->trackName) + strlen(mySpaceGlobals->artistName) + 4;
+		drawString(65 - length, 17, musiccredits);
+		drawStringTv(101 - length, 27, musiccredits);
 
 		drawMenuCursor(mySpaceGlobals);
 

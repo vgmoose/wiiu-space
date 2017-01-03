@@ -66,7 +66,7 @@ extern "C" int main(int argc, char **argv)
 	log_deinit();
 
 	// This is required because HBL will not automatically relaunch after an RPX is finished executing.
-	if(OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A200 /*|| OSGetTitleID() == 0x0005000013374842*/)
+	if(OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A200 || OSGetTitleID() == 0x0005000013374842)
 		SYSRelaunchTitle(0,0);
 
 	return returnCode;

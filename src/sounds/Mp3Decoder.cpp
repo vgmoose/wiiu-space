@@ -30,6 +30,8 @@
 #include <math.h>
 #include "common/types.h"
 #include "Mp3Decoder.hpp"
+#include "system/memory.h"
+#include "utils/logger.h"
 
 Mp3Decoder::Mp3Decoder(const char * filepath)
 	: SoundDecoder(filepath)
@@ -45,6 +47,8 @@ Mp3Decoder::Mp3Decoder(const char * filepath)
 		return;
 
 	OpenFile();
+	
+	fetchID3Tags();
 }
 
 Mp3Decoder::Mp3Decoder(const u8 * snd, int len)
@@ -61,6 +65,8 @@ Mp3Decoder::Mp3Decoder(const u8 * snd, int len)
 		return;
 
 	OpenFile();
+	
+	fetchID3Tags();
 }
 
 Mp3Decoder::~Mp3Decoder()
@@ -213,4 +219,61 @@ int Mp3Decoder::Read(u8 * buffer, int buffer_size, int pos)
 		SynthPos = 0;
 	}
 	return 0;
+}
+
+void Mp3Decoder::fetchID3Tags()
+{
+	if(!file_fd) return;
+	
+	log_print("[DEBUG] Allocating query buffer...");
+	unsigned char * inputQuery = (unsigned char *)malloc(10);
+	file_fd->seek(0, SEEK_SET);
+	file_fd->read(inputQuery, 10);
+	log_printf("[DEBUG] Buffer contents: %d %d %d %d %d %d %d %d %d %d", inputQuery[0], inputQuery[1], inputQuery[2], inputQuery[3], inputQuery[4], inputQuery[5], inputQuery[6], inputQuery[7], inputQuery[8], inputQuery[9]);
+	
+	log_print("[DEBUG] Querying buffer...");
+	long id3Length = id3_tag_query(inputQuery, 10);
+	MEM2_free(inputQuery);
+	
+	if(id3Length > 0)
+	{
+		log_print("[DEBUG] Allocating entire ID3 header...");
+		unsigned char * inputBuffer = (unsigned char *)malloc(id3Length);
+		file_fd->seek(0, SEEK_SET);
+		file_fd->read(inputBuffer, id3Length);
+		
+		log_print("[DEBUG] Parsing ID3 header...");
+		id3_tag * id3Tag = id3_tag_parse(inputBuffer, id3Length);
+		
+		log_print("[DEBUG] Finding song title...");
+		id3_frame * id3FrameTitle = id3_tag_findframe(id3Tag, "TIT2", 0);
+		if(id3FrameTitle)
+		{
+			log_print("[DEBUG] Found song title. Parsing string count...");
+			unsigned int frameStringCount = id3_field_getnstrings(&id3FrameTitle->fields[1]);
+			if(frameStringCount > 0)
+			{
+				log_print("[DEBUG] Converting Unicode title to ASCII...");
+				const id3_ucs4_t * frameUnicodeString = id3_field_getstrings(&id3FrameTitle->fields[1], 0);
+				unsigned char * frameString = id3_ucs4_latin1duplicate(frameUnicodeString);
+				trackName = (char*)frameString;
+			}
+		}
+		
+		id3FrameTitle = id3_tag_findframe(id3Tag, "TPE1", 0);
+		if(id3FrameTitle)
+		{
+			log_print("[DEBUG] Found song artist. Parsing string count...");
+			unsigned int frameStringCount = id3_field_getnstrings(&id3FrameTitle->fields[1]);
+			if(frameStringCount > 0)
+			{
+				log_print("[DEBUG] Converting Unicode title to ASCII...");
+				const id3_ucs4_t * frameUnicodeString = id3_field_getstrings(&id3FrameTitle->fields[1], 0);
+				unsigned char * frameString = id3_ucs4_latin1duplicate(frameUnicodeString);
+				artistName = (char*)frameString;
+			}
+		}
+		
+		free(inputBuffer);
+	}
 }

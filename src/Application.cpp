@@ -42,7 +42,7 @@ Application::Application()
 	bgMusic->Play();
 
 	log_print("[Main thread init] Determining if we are running under HBL...\n");
-	if(OSGetTitleID() != 0x000500101004A000 && OSGetTitleID() != 0x000500101004A100 && OSGetTitleID() != 0x000500101004A200 /*&& OSGetTitleID() != 0x0005000013374842*/)
+	if(OSGetTitleID() != 0x000500101004A000 && OSGetTitleID() != 0x000500101004A100 && OSGetTitleID() != 0x000500101004A200 && OSGetTitleID() != 0x0005000013374842)
 		useProcUI = true;
 	else
 		useProcUI = false;
@@ -219,6 +219,10 @@ void Application::executeThread(void)
 	initStars(&mySpaceGlobals);
 
 	mySpaceGlobals.invalid = 1;
+	
+	// Before we begin, get the soundtrack's name and artist.
+	mySpaceGlobals.trackName = bgMusic->getTrackName();
+	mySpaceGlobals.artistName = bgMusic->getArtistName();
 
 	log_print("[Main Thread] Starting game loop...");
 	while(!exitApplication)

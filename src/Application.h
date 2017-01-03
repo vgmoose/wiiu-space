@@ -67,6 +67,7 @@ private:
 	void executeThread(void);
 
 	GameSound *bgMusic;
+	
 	int exitCode;
 };
 

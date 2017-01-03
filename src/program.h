@@ -91,6 +91,9 @@ struct SpaceGlobals{
 
 	int displayHowToPlay;
 	int firstShotFired;
+	
+	char * trackName;
+	char * artistName;
 
 };
 
