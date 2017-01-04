@@ -36,8 +36,15 @@ class OggDecoder : public SoundDecoder
 		virtual ~OggDecoder();
 		int Rewind();
 		int Read(u8 * buffer, int buffer_size, int pos);
+	
+		char * getTrackName() { return trackName; }
+		char * getArtistName() { return artistName; }
 	protected:
 		void OpenFile();
 		OggVorbis_File ogg_file;
 		vorbis_info *ogg_info;
+	
+		char * trackName = "Unknown Track";
+		char * artistName = "Unknown Artist";
+		void fetchVorbisComments();
 };

@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include "OggDecoder.hpp"
 #include "utils/utils.h"
+#include "utils/logger.h"
 
 static int ogg_read(void * punt, int bytes, int blocks, int *f)
 {
@@ -64,6 +65,8 @@ OggDecoder::OggDecoder(const char * filepath)
 		return;
 
 	OpenFile();
+	
+	fetchVorbisComments();
 }
 
 OggDecoder::OggDecoder(const u8 * snd, int len)
@@ -75,6 +78,8 @@ OggDecoder::OggDecoder(const u8 * snd, int len)
 		return;
 
 	OpenFile();
+	
+	fetchVorbisComments();
 }
 
 OggDecoder::~OggDecoder()
@@ -134,4 +139,16 @@ int OggDecoder::Read(u8 * buffer, int buffer_size, int pos)
 		CurPos += read;
 
 	return read;
+}
+
+void OggDecoder::fetchVorbisComments()
+{
+	vorbis_comment * vorbisComment = ov_comment(&ogg_file, -1);
+	int numberOfComments = vorbisComment->comments;
+	
+	char * title = vorbis_comment_query(vorbisComment, "TITLE", 0);
+	if(title) trackName = title;
+	
+	char * artist = vorbis_comment_query(vorbisComment, "ARTIST", 0);
+	if(artist) artistName = artist;
 }
