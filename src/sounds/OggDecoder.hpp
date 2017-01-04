@@ -39,12 +39,9 @@ class OggDecoder : public SoundDecoder
 	
 		char * getTrackName() { return trackName; }
 		char * getArtistName() { return artistName; }
+		void fetchMetadata();
 	protected:
 		void OpenFile();
 		OggVorbis_File ogg_file;
 		vorbis_info *ogg_info;
-	
-		char * trackName = "Unknown Track";
-		char * artistName = "Unknown Artist";
-		void fetchVorbisComments();
 };

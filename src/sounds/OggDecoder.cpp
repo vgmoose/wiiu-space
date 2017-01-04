@@ -65,8 +65,6 @@ OggDecoder::OggDecoder(const char * filepath)
 		return;
 
 	OpenFile();
-	
-	fetchVorbisComments();
 }
 
 OggDecoder::OggDecoder(const u8 * snd, int len)
@@ -78,8 +76,6 @@ OggDecoder::OggDecoder(const u8 * snd, int len)
 		return;
 
 	OpenFile();
-	
-	fetchVorbisComments();
 }
 
 OggDecoder::~OggDecoder()
@@ -141,14 +137,13 @@ int OggDecoder::Read(u8 * buffer, int buffer_size, int pos)
 	return read;
 }
 
-void OggDecoder::fetchVorbisComments()
+void OggDecoder::fetchMetadata()
 {
 	vorbis_comment * vorbisComment = ov_comment(&ogg_file, -1);
-	int numberOfComments = vorbisComment->comments;
 	
-	char * title = vorbis_comment_query(vorbisComment, "TITLE", 0);
+	char * title = vorbis_comment_query(vorbisComment, (char*)"TITLE", 0);
 	if(title) trackName = title;
 	
-	char * artist = vorbis_comment_query(vorbisComment, "ARTIST", 0);
+	char * artist = vorbis_comment_query(vorbisComment, (char*)"ARTIST", 0);
 	if(artist) artistName = artist;
 }

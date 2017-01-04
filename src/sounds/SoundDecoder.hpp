@@ -79,8 +79,9 @@ public:
 		SOUND_WAV
 	};
 	
-	virtual char * getTrackName() { return "Unknown Track"; }
-	virtual char * getArtistName() { return "Unknown Aritst"; }
+	virtual char * getTrackName() { return trackName; }
+	virtual char * getArtistName() { return artistName; }
+	virtual void fetchMetadata();
 protected:
 	void Init();
 	void Upsample(s16 *src, s16 *dst, u32 nr_src_samples, u32 nr_dst_samples);
@@ -102,6 +103,9 @@ protected:
 	u8 *ResampleBuffer;
 	u32 ResampleRatio;
 	CMutex mutex;
+	
+	char * trackName = (char*)"Unknown Track";
+	char * artistName = (char*)"Unknown Artist";
 };
 
 

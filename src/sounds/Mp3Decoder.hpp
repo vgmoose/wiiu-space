@@ -39,6 +39,7 @@ class Mp3Decoder : public SoundDecoder
 		
 		char * getTrackName() { return trackName; }
 		char * getArtistName() { return artistName; }
+		void fetchMetadata();
 	protected:
 		void OpenFile();
 		struct mad_stream Stream;
@@ -48,8 +49,4 @@ class Mp3Decoder : public SoundDecoder
 		u8 * GuardPtr;
 		u8 * ReadBuffer;
 		u32 SynthPos;
-	
-		char * trackName = "Unknown Track";
-		char * artistName = "Unknown Artist";
-		void fetchID3Tags();
 };

@@ -222,3 +222,9 @@ void SoundDecoder::Decode()
 
 	Decoding = false;
 }
+
+void SoundDecoder::fetchMetadata()
+{
+	// This is a dummy function so that MP3 and OGG classes can extend upon it, but I can call it from GameSound no matter what.
+	return;
+}

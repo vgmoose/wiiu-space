@@ -37,6 +37,7 @@ Application::Application()
 	log_print("[Main Thread Init] Creating sound thread...\n");
 	//! create bgMusic
 	bgMusic = new GameSound(Resources::GetFile("spacegame.mp3"), Resources::GetFileSize("spacegame.mp3"));
+	bgMusic->fetchMetadata();
 	bgMusic->SetLoop(true);
 	bgMusic->SetVolume(50);
 	bgMusic->Play();
@@ -65,7 +66,7 @@ Application::~Application()
 	// the line, but its the only way I could find to allow the program
 	// to exit correctly. -CreeperMario.
 	//log_print("[Main Thread Deinit] Unloading background music...\n");
-	//delete bgMusic;
+	delete bgMusic;
 
 	log_print("[Main Thread Deinit] Stopping AsyncDeleter...\n");
 	AsyncDeleter::destroyInstance();

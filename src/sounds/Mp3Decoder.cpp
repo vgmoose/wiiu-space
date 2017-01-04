@@ -46,8 +46,6 @@ Mp3Decoder::Mp3Decoder(const char * filepath)
 		return;
 
 	OpenFile();
-	
-	fetchID3Tags();
 }
 
 Mp3Decoder::Mp3Decoder(const u8 * snd, int len)
@@ -64,8 +62,6 @@ Mp3Decoder::Mp3Decoder(const u8 * snd, int len)
 		return;
 
 	OpenFile();
-	
-	fetchID3Tags();
 }
 
 Mp3Decoder::~Mp3Decoder()
@@ -220,7 +216,7 @@ int Mp3Decoder::Read(u8 * buffer, int buffer_size, int pos)
 	return 0;
 }
 
-void Mp3Decoder::fetchID3Tags()
+void Mp3Decoder::fetchMetadata()
 {
 	if(!file_fd) return;
 	

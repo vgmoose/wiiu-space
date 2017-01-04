@@ -194,6 +194,11 @@ void GameSound::Rewind()
 	Stop();
 }
 
+void GameSound::fetchMetadata()
+{
+	SoundHandler::instance()->getDecoder(voice)->fetchMetadata();
+}
+
 char * GameSound::getTrackName()
 {
 	return SoundHandler::instance()->getDecoder(voice)->getTrackName();

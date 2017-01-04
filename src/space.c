@@ -4,6 +4,7 @@
 #include <coreinit/internal.h>
 #include <vpad/input.h>
 #include <string.h>
+#include "utils/logger.h"
 
 /**
 This class is a bit of a mess, but it basically does "everything else" in the game.
@@ -627,9 +628,27 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		
 		// The music credits must be drawn in a special way, because
 		// we don't know how long the title and artist strings will be.
+		// Though any string longer than 54 characters will be cut off,
+		// with "..." added to the end. The same will happen on the TV
+		// if the string is longer than 90 characters.
 		int length = strlen(mySpaceGlobals->trackName) + strlen(mySpaceGlobals->artistName) + 4;
-		drawString(65 - length, 17, musiccredits);
+		if(length > 90) {
+			length = 90;
+			musiccredits[87] = '.';
+			musiccredits[88] = '.';
+			musiccredits[89] = '.';
+			musiccredits[90] = 0;
+		}
 		drawStringTv(101 - length, 27, musiccredits);
+		if(length > 53)
+		{
+			length = 53;
+			musiccredits[50] = '.';
+			musiccredits[51] = '.';
+			musiccredits[52] = '.';
+			musiccredits[53] = 0;
+		}
+		drawString(65 - length, 17, musiccredits);
 
 		drawMenuCursor(mySpaceGlobals);
 
