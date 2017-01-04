@@ -32,6 +32,7 @@
 #include "Mp3Decoder.hpp"
 #include "OggDecoder.hpp"
 #include "utils/utils.h"
+#include <coreinit/title.h>
 
 SoundHandler * SoundHandler::handlerInstance = NULL;
 
@@ -217,9 +218,16 @@ SoundDecoder * SoundHandler::GetSoundDecoder(const u8 * sound, int length)
 void SoundHandler::executeThread()
 {
 	// v2 sound lib can not properly end transition audio on old firmwares
-	if (OS_FIRMWARE >= 400 && OS_FIRMWARE <= 410)
+	// This is probably necessary underneath HBL, so that Space Game can
+	// continue to work on firmwares below 4.1.0, however this command
+	// breaks the installable package because OS_FIRMWARE is not
+	// initialized without HBL. -CreeperMario
+	if(OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A200 || OSGetTitleID() == 0x0005000013374842)
 	{
-		ProperlyEndTransitionAudio();
+		if (OS_FIRMWARE >= 400 && OS_FIRMWARE <= 410)
+		{
+			ProperlyEndTransitionAudio();
+		}
 	}
 
 	//! initialize 48 kHz renderer
