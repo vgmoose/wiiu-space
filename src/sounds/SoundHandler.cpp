@@ -33,6 +33,7 @@
 #include "OggDecoder.hpp"
 #include "utils/utils.h"
 #include <coreinit/title.h>
+#include "program.h"
 
 SoundHandler * SoundHandler::handlerInstance = NULL;
 
@@ -96,8 +97,19 @@ void SoundHandler::RemoveDecoder(int voice)
 			if(voiceList[voice]->getState() != Voice::STATE_STOP)
 				voiceList[voice]->setState(Voice::STATE_STOP);
 
-			while(voiceList[voice]->getState() != Voice::STATE_STOPPED)
-				usleep(1000);
+			if(isRunningInHBL())
+			{
+				while(voiceList[voice]->getState() != Voice::STATE_STOPPED)
+					usleep(1000);
+			}
+			else
+			{
+				// on application quit the AX frame callback is not called anymore
+				// therefore this would end in endless loop if no timeout is defined. -dimok
+				int timeOut = 20;
+				while(--timeOut && (voiceList[voice]->getState() != Voice::STATE_STOPPED))
+					usleep(1000);
+			}
 		}
 		SoundDecoder *decoder = DecoderList[voice];
 		decoder->Lock();

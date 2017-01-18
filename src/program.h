@@ -94,6 +94,11 @@ struct SpaceGlobals{
 	
 	char * trackName;
 	char * artistName;
+	
+	// I'm sorry about the complicated way to handle sounds, but we can only handle sound
+	// in Application.cpp, which is a problem because all of our logic is in space.c
+	bool shootSoundEffect;
+	bool explosionSoundEffect;
 
 };
 
@@ -105,6 +110,7 @@ extern "C" {
 //! C wrapper for our C++ functions
 int _entryPoint();
 void cleanSlate();
+bool isRunningInHBL();
 
 #ifdef __cplusplus
 }

@@ -91,6 +91,7 @@ void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 				break;
 			}
 		}
+		mySpaceGlobals->shootSoundEffect = true;
 	}
 
 	moveBullets(mySpaceGlobals);
@@ -190,6 +191,7 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 						// player was hit
 						mySpaceGlobals->playerExplodeFrame = 2;
 						initGameState(mySpaceGlobals);
+						mySpaceGlobals->explosionSoundEffect = true;
 					}
 				}
 
@@ -207,6 +209,7 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 							// enemy was hit, active = 2 is explode
 							increaseScore(mySpaceGlobals, 100); // 100 points for killing enemy
 							mySpaceGlobals->enemies[x].position.active = 2;
+							mySpaceGlobals->explosionSoundEffect = true;
 
 							// bullet is destroyed with enemy
 							mySpaceGlobals->bullets[y].active = 0;
@@ -256,7 +259,7 @@ void makeScaleMatrix(int frame, int width, void *orig, void *targ, int transInde
 }
 
 void handleExplosions(struct SpaceGlobals* mySpaceGlobals)
-{
+{	
 	int x;
 	for (x=0; x<100; x++)
 	{
@@ -289,6 +292,7 @@ void handleExplosions(struct SpaceGlobals* mySpaceGlobals)
 			else
 				mySpaceGlobals->renderResetFlag = 1;
 		}
+		
 	}
 }
 

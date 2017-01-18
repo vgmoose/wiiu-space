@@ -34,22 +34,24 @@ bool Resources::LoadFiles(const char * path)
 		return false;
 
 	bool result = false;
-	Clear();
+	//Clear();
 
 	for(int i = 0; RecourceList[i].filename != NULL; ++i)
 	{
-		std::string fullpath(path);
-		fullpath += "/";
-		fullpath += RecourceList[i].filename;
+		if(!RecourceList[i].CustomFile) {
+			std::string fullpath(path);
+			fullpath += "/";
+			fullpath += RecourceList[i].filename;
 
-		u8 * buffer = NULL;
-		u32 filesize = 0;
+			u8 * buffer = NULL;
+			u32 filesize = 0;
 
-		LoadFileToMem(fullpath.c_str(), &buffer, &filesize);
+			LoadFileToMem(fullpath.c_str(), &buffer, &filesize);
 
-		RecourceList[i].CustomFile = buffer;
-		RecourceList[i].CustomFileSize = (u32) filesize;
-		result |= (buffer != 0);
+			RecourceList[i].CustomFile = buffer;
+			RecourceList[i].CustomFileSize = (u32) filesize;
+			result |= (buffer != 0);
+		}
 	}
 
 	return result;

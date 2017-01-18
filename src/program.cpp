@@ -13,7 +13,6 @@
 
 #include "Application.h"
 #include "fs/fs_utils.h"
-#include "fs/sd_fat_devoptab.h"
 #include "system/memory.h"
 #include "utils/logger.h"
 #include "utils/utils.h"
@@ -32,6 +31,16 @@ extern "C" void cleanSlate()
 	}
 }
 
+extern "C" bool isRunningInHBL()
+{
+	// Mii Maker JPN || Mii Maker USA || Mii Maker PAL || Homebrew Launcher
+	if(OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A200 || OSGetTitleID() == 0x0005000013374842)
+	{
+		return true;
+	}
+	return false;
+}
+
 /* Entry point */
 extern "C" int main(int argc, char **argv)
 {
@@ -43,8 +52,9 @@ extern "C" int main(int argc, char **argv)
 	log_print("Initializing MEM1...\n");
 	memoryInitialize();
 
-	log_print("Mounting SD Card...\n");
-	mount_sd_fat("sd");
+	// Not necessary, we can use WUT's devoptab instead.
+	//log_print("Mounting SD Card...\n");
+	//mount_sd_fat("sd");
 
 	log_print("Initializing GamePad...\n");
 	VPADInit();
@@ -55,8 +65,8 @@ extern "C" int main(int argc, char **argv)
 	log_print("Main thread exited. Cleaning up after it...\n");
 	Application::destroyInstance();
 
-	log_print("Unmounting SD Card...\n");
-	unmount_sd_fat("sd");
+	//log_print("Unmounting SD Card...\n");
+	//unmount_sd_fat("sd");
 	
 	log_print("Freeing MEM1...\n");
 	memoryRelease();
@@ -66,7 +76,7 @@ extern "C" int main(int argc, char **argv)
 	log_deinit();
 
 	// This is required because HBL will not automatically relaunch after an RPX is finished executing.
-	if(OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A200 || OSGetTitleID() == 0x0005000013374842)
+	if(isRunningInHBL())
 		SYSRelaunchTitle(0,0);
 
 	return returnCode;

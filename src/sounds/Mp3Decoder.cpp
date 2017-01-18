@@ -225,7 +225,7 @@ void Mp3Decoder::fetchMetadata()
 	file_fd->read(inputQuery, 10);
 	
 	long id3Length = id3_tag_query(inputQuery, 10);
-	MEM2_free(inputQuery);
+	free(inputQuery);
 	
 	if(id3Length > 0)
 	{

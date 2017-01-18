@@ -19,7 +19,6 @@
 
 #include <coreinit/filesystem.h>
 #include <coreinit/title.h>
-#include "fs/sd_fat_devoptab.h"
 #include "fs/fs_utils.h"
 
 Application *Application::applicationInstance = NULL;
@@ -30,23 +29,42 @@ Application::Application()
 	, bgMusic(NULL)
 	, exitCode(EXIT_SUCCESS)
 {
-	log_print("[Main Thread Init] Loading resources from SD Card...\n");
 	//! load resources
-	Resources::LoadFiles("sd:/wiiu/apps/spacegame/media");
+	// external01 is the SD Card, and is used under all versions of the program
+	// content is provided by Cafe OS, and is only used under the dedicated Wii U Menu version
+	// Files on the SD card take precedence over those in content,
+	// if a file is present on the SD card, it won't be loaded from content,
+	// and if it isn't on the SD card, it will be checked for in content.
+	log_print("[Main Thread Init] Loading resources from SD card...\n");
+	Resources::LoadFiles("fs:/vol/external01/wiiu/apps/spacegame/media");
+	if(!isRunningInHBL()) {
+		log_print("[Main Thread Init] Not running in HBL. Loading resources from NAND...\n");
+		Resources::LoadFiles("fs:/vol/content");
+	}
 
-	log_print("[Main Thread Init] Creating sound thread...\n");
+	log_print("[Main Thread Init] Creating background music thread...\n");
 	//! create bgMusic
 	bgMusic = new GameSound(Resources::GetFile("spacegame.mp3"), Resources::GetFileSize("spacegame.mp3"));
 	bgMusic->fetchMetadata();
 	bgMusic->SetLoop(true);
 	bgMusic->SetVolume(50);
 	bgMusic->Play();
+	
+	//! Create sound effects
+	log_print("[Main Thread Init] Creating \"Pew\" sound effect thread...\n");
+	pewSound = new GameSound(Resources::GetFile("pew.wav"), Resources::GetFileSize("pew.wav"));
+	pewSound->SetLoop(false);
+	pewSound->SetVolume(15);
+	
+	log_print("[Main Thread Init] Creating \"Boom\" sound effect thread...\n");
+	boomSound = new GameSound(Resources::GetFile("boom.wav"), Resources::GetFileSize("boom.wav"));
+	boomSound->SetLoop(false);
+	boomSound->SetVolume(15);
 
-	log_print("[Main thread init] Determining if we are running under HBL...\n");
-	if(OSGetTitleID() != 0x000500101004A000 && OSGetTitleID() != 0x000500101004A100 && OSGetTitleID() != 0x000500101004A200 && OSGetTitleID() != 0x0005000013374842)
-		useProcUI = true;
-	else
+	if(isRunningInHBL())
 		useProcUI = false;
+	else
+		useProcUI = true;
 	
 	if(useProcUI) {
 		log_print("[Main Thread Init] Not running in HBL. Initializing ProcUI...\n");
@@ -57,16 +75,10 @@ Application::Application()
 
 Application::~Application()
 {
-	// This hangs the system for some unknown reason.
-	// Commenting it out does not do anything feature-wise, because
-	// deleting bgMusic removes the one and only decoder registered in
-	// the sound thread, but SoundHandler::DestroyInstance() below does
-	// exactly the same thing, clears all the registered decoders.
-	// I'm no expert on C++, but this may or may not cause issues down
-	// the line, but its the only way I could find to allow the program
-	// to exit correctly. -CreeperMario.
-	//log_print("[Main Thread Deinit] Unloading background music...\n");
+	log_print("[Main Thread Deinit] Unloading sound threads...\n");
 	delete bgMusic;
+	delete pewSound;
+	delete boomSound;
 
 	log_print("[Main Thread Deinit] Stopping AsyncDeleter...\n");
 	AsyncDeleter::destroyInstance();
@@ -74,7 +86,7 @@ Application::~Application()
 	log_print("[Main Thread Deinit] Unloading resources...\n");
 	Resources::Clear();
 
-	log_print("[Main Thread Deinit] Stopping sound thread...\n");
+	log_print("[Main Thread Deinit] Stopping sound handler thread...\n");
 	SoundHandler::DestroyInstance();
 	
 	if(useProcUI) {
@@ -283,12 +295,21 @@ void Application::executeThread(void)
 
 			// perform any shooting
 			p1Shoot(&mySpaceGlobals);
+			if(mySpaceGlobals.shootSoundEffect) {
+				if(!pewSound->IsPlaying()) pewSound->Play();
+				mySpaceGlobals.shootSoundEffect = false;
+			}
 
 			// handle any collisions
 			handleCollisions(&mySpaceGlobals);
 
 			// do explosions
 			handleExplosions(&mySpaceGlobals);
+			if(mySpaceGlobals.explosionSoundEffect) {
+				boomSound->Stop();
+				boomSound->Play();
+				mySpaceGlobals.explosionSoundEffect = false;
+			}
 
 			// if we're out of lives, break
 			if (mySpaceGlobals.lives <= 0 && mySpaceGlobals.state == 4)
