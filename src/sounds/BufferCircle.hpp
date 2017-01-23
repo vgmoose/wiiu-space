@@ -28,7 +28,7 @@
 
 #include <unistd.h>
 #include <vector>
-#include "common/types.h"
+#include <wut_types.h>
 
 class BufferCircle
 {

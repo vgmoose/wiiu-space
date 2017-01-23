@@ -1,25 +1,18 @@
-#include <coreinit/core.h>
+#include <coreinit/dynload.h>
 #include <coreinit/foreground.h>
 #include <coreinit/screen.h>
 #include <coreinit/time.h>
 #include <proc_ui/procui.h>
-#include <sysapp/launch.h>
 #include <vpad/input.h>
-#include "program.h"
+
 #include "Application.h"
-#include "common/common.h"
+#include "images.h"
+#include "program.h"
 #include "resources/Resources.h"
 #include "sounds/SoundHandler.hpp"
+#include "space.h"
 #include "system/memory.h"
 #include "utils/logger.h"
-#include "trigmath.h"
-#include "draw.h"
-#include "images.h"
-#include "space.h"
-
-#include <coreinit/filesystem.h>
-#include <coreinit/title.h>
-#include "fs/fs_utils.h"
 
 Application *Application::applicationInstance = NULL;
 bool Application::exitApplication = false;
@@ -97,6 +90,9 @@ Application::~Application()
 
 void Application::screenInit(void)
 {
+	log_print("[OSScreen] Setting up MEM1 heap...\n");
+	memoryInitialize();
+	
 	log_print("[OSScreen] Initializing...\n");
 	//Call the Screen initilzation function.
 	OSScreenInit();
@@ -124,6 +120,9 @@ void Application::screenDeinit(void)
 	log_print("[OSScreen] Deinitializing...\n");
 	cleanSlate();
 	MEM1_free(screenBuffer);
+	
+	log_print("[OSScreen] Freeing MEM1 heap...\n");
+	memoryRelease();
 }
 
 bool Application::AppRunning(void)
@@ -214,6 +213,8 @@ void Application::executeThread(void)
 	mySpaceGlobals.seed = OSGetTime();
 
 	/****************************>			VPAD Loop			<****************************/
+	log_print("[Main Thread] Initializing GamePad...\n");
+	VPADInit();
 	VPADReadError error;
 	VPADStatus vpad_data;
 
@@ -236,6 +237,9 @@ void Application::executeThread(void)
 	// Before we begin, get the soundtrack's name and artist.
 	mySpaceGlobals.trackName = bgMusic->getTrackName();
 	mySpaceGlobals.artistName = bgMusic->getArtistName();
+	
+	// Mount the game's save data directories. (Only if launched from the Wii U Menu)
+	//if(!isRunningInHBL()) MountSaveData();
 
 	log_print("[Main Thread] Starting game loop...");
 	while(!exitApplication)

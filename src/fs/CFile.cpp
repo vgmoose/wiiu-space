@@ -1,5 +1,8 @@
-#include <stdarg.h>
-#include <stdlib.h>
+#include <cstdarg>
+#include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
+
 #include "CFile.hpp"
 
 CFile::CFile()

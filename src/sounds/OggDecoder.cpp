@@ -23,10 +23,8 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
-#include <malloc.h>
+
 #include "OggDecoder.hpp"
-#include "utils/utils.h"
-#include "utils/logger.h"
 
 static int ogg_read(void * punt, int bytes, int blocks, int *f)
 {

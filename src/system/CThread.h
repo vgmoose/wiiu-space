@@ -17,9 +17,8 @@
 #ifndef CTHREAD_H_
 #define CTHREAD_H_
 
-#include <malloc.h>
-#include <unistd.h>
 #include <coreinit/thread.h>
+#include <malloc.h>
 
 class CThread
 {

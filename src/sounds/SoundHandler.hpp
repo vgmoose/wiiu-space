@@ -26,10 +26,8 @@
 #ifndef SOUNDHANDLER_H_
 #define SOUNDHANDLER_H_
 
-#include <vector>
-#include "common/types.h"
-#include "system/CThread.h"
 #include "SoundDecoder.hpp"
+#include "system/CThread.h"
 #include "Voice.h"
 
 #define MAX_DECODERS	16  // can be increased up to 96

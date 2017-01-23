@@ -18,6 +18,7 @@
 #define _ASYNC_DELETER_H
 
 #include <queue>
+
 #include "CThread.h"
 #include "CMutex.h"
 

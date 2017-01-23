@@ -1,8 +1,8 @@
 #ifndef __EXPORTS_H_
 #define __EXPORTS_H_
 
-#include <coreinit/dynload.h>
 #include <coreinit/debug.h>
+#include <coreinit/dynload.h>
 
 #define EXPORT_DECL(res, func, ...)     res (* func)(__VA_ARGS__) __attribute__((section(".data"))) = 0;
 #define EXPORT_VAR(type, var)           type var __attribute__((section(".data")));

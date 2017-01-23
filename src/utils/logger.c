@@ -1,11 +1,8 @@
+#include <malloc.h>
+#include <nsysnet/socket.h>
 #include <stdarg.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
-#include "common/common.h"
-#include <nsysnet/socket.h>
-#include "logger.h"
 #include <unistd.h>
 
 #ifdef DEBUG_LOGGER

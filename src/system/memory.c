@@ -14,14 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#include <malloc.h>
+/*#include <malloc.h>
 #include <string.h>
 #include <coreinit/memheap.h>
 #include <coreinit/baseheap.h>
 #include <coreinit/expandedheap.h>
 #include <coreinit/frameheap.h>
-#include "common/common.h"
-#include "memory.h"
+#include "memory.h"*/
+
+#include <coreinit/memheap.h> // This needs to go first - add to faulty classes in WUT and PR
+#include <coreinit/baseheap.h>
+#include <coreinit/expandedheap.h>
+#include <coreinit/frameheap.h>
+#include <malloc.h>
 
 #define MEMORY_ARENA_1          0
 #define MEMORY_ARENA_2          1

@@ -17,7 +17,6 @@
 #ifndef _CMUTEX_H_
 #define _CMUTEX_H_
 
-#include <malloc.h>
 #include <coreinit/mutex.h>
 
 class CMutex

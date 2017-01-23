@@ -1,10 +1,11 @@
-#include <malloc.h>
-#include <string.h>
-#include "Resources.h"
+#include <cstring>
+#include <wut_types.h>
+
 #include "filelist.h"
-#include "system/AsyncDeleter.h"
 #include "fs/fs_utils.h"
 #include "game/GameSound.h"
+#include "Resources.h"
+#include "system/AsyncDeleter.h"
 
 Resources * Resources::instance = NULL;
 

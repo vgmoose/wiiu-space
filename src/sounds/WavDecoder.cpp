@@ -23,9 +23,10 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
-#include <string.h>
-#include "WavDecoder.hpp"
+
+#include <cstring>
 #include "utils/utils.h"
+#include "WavDecoder.hpp"
 
 WavDecoder::WavDecoder(const char * filepath)
 	: SoundDecoder(filepath)

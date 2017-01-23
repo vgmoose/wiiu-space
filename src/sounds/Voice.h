@@ -17,6 +17,7 @@
 #ifndef _AXSOUND_H_
 #define _AXSOUND_H_
 
+#include <cstring>
 #include <sndcore2/core.h>
 #include <sndcore2/voice.h>
 

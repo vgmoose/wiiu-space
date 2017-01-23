@@ -1,13 +1,8 @@
 #ifndef CFILE_HPP_
 #define CFILE_HPP_
 
-#include <stdio.h>
 #include <string>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include "common/types.h"
-#include "utils/utils.h"
+#include <wut_types.h>
 
 class CFile
 {

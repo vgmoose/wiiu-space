@@ -23,17 +23,16 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
-#include <malloc.h>
-#include "common/common.h"
+
 #include "dynamic_libs/ax_functions.h"
-#include "fs/CFile.hpp"
-#include "SoundHandler.hpp"
-#include "WavDecoder.hpp"
 #include "Mp3Decoder.hpp"
 #include "OggDecoder.hpp"
-#include "utils/utils.h"
-#include <coreinit/title.h>
 #include "program.h"
+#include "SoundHandler.hpp"
+#include "WavDecoder.hpp"
+
+#define MEM_BASE    (0x00800000)
+#define OS_FIRMWARE (*(volatile unsigned int*)(MEM_BASE + 0x1400 + 0x04))
 
 SoundHandler * SoundHandler::handlerInstance = NULL;
 
@@ -234,7 +233,7 @@ void SoundHandler::executeThread()
 	// continue to work on firmwares below 4.1.0, however this command
 	// breaks the installable package because OS_FIRMWARE is not
 	// initialized without HBL. -CreeperMario
-	if(OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A000 || OSGetTitleID() == 0x000500101004A200 || OSGetTitleID() == 0x0005000013374842)
+	if(!isRunningInHBL())
 	{
 		if (OS_FIRMWARE >= 400 && OS_FIRMWARE <= 410)
 		{

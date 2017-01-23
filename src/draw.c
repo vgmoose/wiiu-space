@@ -1,8 +1,7 @@
-#include "draw.h"
-#include "space.h"
-#include "program.h"
 #include <coreinit/cache.h>
 #include <coreinit/screen.h>
+
+#include "program.h"
 
 void flipBuffers()
 {

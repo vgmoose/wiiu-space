@@ -1,5 +1,3 @@
-#include "trigmath.h"
-#include "space.h"
 ///** Modified Math.h to include sin, cos, and tan **/
 #define M_PI   3.14159265f
 #define M_2_PI 6.28318531f

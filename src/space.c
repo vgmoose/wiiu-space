@@ -1,10 +1,17 @@
-#include "space.h"
+/*#include "space.h"
 #include "trigmath.h"
 #include <coreinit/debug.h>
 #include <coreinit/internal.h>
 #include <vpad/input.h>
 #include <string.h>
-#include "utils/logger.h"
+#include "utils/logger.h"*/
+
+#include <coreinit/debug.h>
+#include <coreinit/internal.h>
+#include <string.h>
+
+#include "draw.h"
+#include "space.h"
 
 /**
 This class is a bit of a mess, but it basically does "everything else" in the game.

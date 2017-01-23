@@ -1,10 +1,11 @@
 #ifndef DRAW_H
 #define DRAW_H
-#include "program.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+	
+#include "program.h"
 
 // //! C wrapper for out C++ functions
 //Function declarations for my graphics library

@@ -23,14 +23,14 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
-#include <string>
-#include <string.h>
-#include <limits.h>
+
+#include <climits>
+#include <cstring>
+#include <id3tag.h>
 #include <malloc.h>
-#include <math.h>
-#include "common/types.h"
+#include <wut_types.h>
+
 #include "Mp3Decoder.hpp"
-#include "system/memory.h"
 
 Mp3Decoder::Mp3Decoder(const char * filepath)
 	: SoundDecoder(filepath)

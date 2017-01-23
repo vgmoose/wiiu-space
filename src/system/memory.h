@@ -21,8 +21,6 @@
 extern "C" {
 #endif
 
-#include <malloc.h>
-
 void memoryInitialize(void);
 void memoryRelease(void);
 

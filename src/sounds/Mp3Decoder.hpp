@@ -23,8 +23,8 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
+
 #include <mad.h>
-#include <id3tag.h>
 
 #include "SoundDecoder.hpp"
 

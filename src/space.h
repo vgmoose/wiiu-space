@@ -1,10 +1,14 @@
 #ifndef SPACE_H
 #define SPACE_H
 // This math has added trig function approximations
-#include "trigmath.h"
+/*#include "trigmath.h"
 #include "program.h"
 #include "images.h"
-#include "draw.h"
+#include "draw.h"*/
+
+#include "images.h"
+#include "program.h"
+#include "trigmath.h"
 
 #ifdef __cplusplus
 extern "C" {

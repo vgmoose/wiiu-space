@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-#include "common/types.h"
+#include <wut_types.h>
 
 void InitAXFunctionPointers(void);
 void ProperlyEndTransitionAudio(void);

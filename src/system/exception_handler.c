@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "common/types.h"
+#include <wut_types.h>
+
 #include "exception_handler.h"
 
 #define OS_EXCEPTION_MODE_GLOBAL_ALL_CORES      4

@@ -17,9 +17,8 @@
 #ifndef _APPLICATION_H
 #define _APPLICATION_H
 
-#include "system/CThread.h"
 #include "game/GameSound.h"
-#include "trigmath.h"
+#include "system/CThread.h"
 
 class Application : public CThread
 {
@@ -65,6 +64,9 @@ private:
 	bool isForegroundApp = true;
 
 	void executeThread(void);
+	
+	void MountSaveData(void);
+	void GetConfiguration(void);
 
 	GameSound *bgMusic;
 	GameSound *pewSound;

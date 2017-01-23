@@ -21,9 +21,10 @@
  * 3. This notice may not be removed or altered from any source
  * distribution.
  ***************************************************************************/
-#include "common/common.h"
-#include "exports.h"
+
 #include "ax_functions.h"
+#include "exports.h"
+
 /*
 EXPORT_DECL(void, AXInitWithParams, u32 * params);
 EXPORT_DECL(void, AXInit, void);

@@ -23,9 +23,10 @@
  *
  * for WiiXplorer 2010
  ***************************************************************************/
+
 #include <malloc.h>
-#include "utils/utils.h"
 #include "BufferCircle.hpp"
+#include "utils/utils.h"
 
 BufferCircle::BufferCircle()
 {
