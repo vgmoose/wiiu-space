@@ -383,7 +383,7 @@ void render(struct SpaceGlobals *mySpaceGlobals)
 // see the notes in images.c for more info on how this works
 void decompress_sprite(int arraysize, int width, int height, const signed char* input, void *targ, char transIndex)
 {
-    return;
+//    return;
     unsigned char (*target)[width] = (unsigned char (*)[width])(targ);
 
     int cx = 0, cy = 0;

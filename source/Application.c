@@ -4,6 +4,7 @@
 #include "draw.h"
 #include "images.h"
 #include "space.h"
+#include <string.h>
 
 void executeThread(u8* screen)
 {
@@ -35,12 +36,16 @@ void executeThread(u8* screen)
 	mySpaceGlobals.seed = (unsigned int)(svcGetSystemTick() / 446872);;
 	
 	/****************************>            VPAD Loop            <****************************/
-        
+    
 	// decompress compressed things into their arrays, final argument is the transparent color in their palette
+    mySpaceGlobals.title = malloc(100*200);
+    mySpaceGlobals.rotated_ship = malloc(36*36);
+    mySpaceGlobals.orig_ship = malloc(36*36);
+    mySpaceGlobals.enemy = malloc(23*23);
+    
 	decompress_sprite(3061, 200, 100, compressed_title, mySpaceGlobals.title, 39);
-//	decompress_sprite(511, 36, 36, compressed_ship, mySpaceGlobals.orig_ship, 14);
-//	decompress_sprite(206, 23, 23, compressed_enemy, mySpaceGlobals.enemy, 9);
-    return;
+	decompress_sprite(511, 36, 36, compressed_ship, mySpaceGlobals.orig_ship, 14);
+	decompress_sprite(206, 23, 23, compressed_enemy, mySpaceGlobals.enemy, 9);
     
 	// setup palette and transparent index
 	mySpaceGlobals.curPalette = ship_palette;

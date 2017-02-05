@@ -42,11 +42,11 @@ struct SpaceGlobals{
 	
 	unsigned int seed;
 	
-	unsigned char rotated_ship[36][36];
-	unsigned char orig_ship[36][36];
+	unsigned char *rotated_ship;
+	unsigned char *orig_ship;
 	const unsigned char (*curPalette)[3];
-	unsigned char enemy[23][23];
-	unsigned char title[100][200];
+	unsigned char *enemy;
+	unsigned char *title;
     int * test;
 	
 	int passwordList[100];
