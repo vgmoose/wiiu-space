@@ -7,6 +7,101 @@
 #include "draw.h"
 #include "ascii64.h"
 
+
+void flipBuffers()
+{
+    gfxFlushBuffers();
+    gfxSwapBuffers();
+}
+
+void fillScreen(char r,char g,char b,char a, u8* screen)
+{
+    uint32_t num = (r << 24) | (g << 16) | (b << 8) | a;
+//    
+//    OSScreenClearBufferEx(0, num);
+//    OSScreenClearBufferEx(1, num);
+}
+
+
+
+// draw black rect all at once
+void fillRect(int ox, int oy, int width, int height, int r, int g, int b, u8* screen)
+{
+    
+    int rx;
+    for (rx=0; rx<width; rx++)
+    {
+        int ry;
+        for (ry=0; ry<height; ry++)
+        {
+            int x = ox + rx;
+            int y = oy + ry;
+            
+            // do actual pixel drawing logic
+            drawPixel(x, y, r, g, b, screen);
+        }
+    }
+}
+
+
+/**
+ This is primarly used for drawing the stars, and takes in a pixel map. It is similar to bitmap, but now
+ it takes the whole pixel map as well as which portion of it to actually draw. At the beginning, all of the stars
+ are drawn, but whenever the ship moves, only the stars underneath the ship need to be redrawn.
+ **/
+void drawPixels(struct Pixel pixels[200], u8* screen)
+{
+    int rx;
+    for (rx=0; rx<200; rx++)
+    {
+        int x = pixels[rx].x;
+        int y = pixels[rx].y;
+        
+        drawPixel(x, y, pixels[rx].r, pixels[rx].g, pixels[rx].b, screen);
+    }
+}
+
+
+
+
+
+/**
+ This function draws a "bitmap" in a very particular fashion: it takes as input the matrix of chars to draw.
+ In this matrix, each char represents the index to look it up in the palette variable which is also passed.
+ Alpha isn't used here, and instead allows the "magic color" of 0x272727 to be "skipped" when drawing.
+ By looking up the color in the palette, the bitmap can be smaller. Before compression was implemented, this was
+ more important. A potential speedup may be to integrate the three pixel colors into a matrix prior to this function.
+ **/
+void drawBitmap(int ox, int oy, int width, int height, void *inp, void *pal, u8* screen)
+{
+    unsigned char (*input)[width] = (unsigned char (*)[width])(inp);
+    unsigned const char (*palette)[3] = (unsigned const char (*)[3])(pal);
+    int rx;
+    for (rx=0; rx<width; rx++)
+    {
+        int ry;
+        for (ry=0; ry<height; ry++)
+        {
+            const unsigned char* color = palette[input[ry][rx]];
+            char r = color[2];
+            char g = color[1];
+            char b = color[0];
+            
+            //			// transparent pixels
+            if (r == 0x27 && g == 0x27 && b == 0x27)
+            {
+                continue;
+            }
+            
+            int x = ox + rx;
+            int y = oy + ry;
+            
+            // do actual pixel drawing logic
+            drawPixel(x, y, r, g, b, screen);
+        }
+    }
+}
+
 void clearScreen(u8* screen,gfxScreen_t screenPos)
 {
 	int width;
@@ -59,22 +154,14 @@ void drawChar(char letter,int x,int y, char r, char g, char b, u8* screen)
 	}
 }
 
-void drawString(char* word, int x,int y, char r, char g, char b, u8* screen,gfxScreen_t screenPos)
+void drawString(int x,int y, char* word, u8* screen)
 {
+    char r = 255, g = 255, b = 255;
 	int tmp_x =x;
 	int i;
 	int line = 0;
 
-	int width;
-
-	switch(screenPos){
-	case GFX_BOTTOM:
-		width=BOTTOM_WIDTH;
-		break;
-	default:
-		width=TOP_WIDTH;
-		break;
-	}
+	int width=BOTTOM_WIDTH;
 
 	for (i = 0; i < (signed)strlen(word); i++){
 
@@ -229,28 +316,7 @@ int drawCharacter(u8* fb, font_s* f, char c, s16 x, s16 y, u16 w, u16 h)
 	return cd->xa;
 }
 
-void drawString2(u8* fb, font_s* f, char* str, s16 x, s16 y, u16 w, u16 h)
-{
-	if(!f || !fb || !str)return;
-	int k; int dx=0, dy=0;
-	int length=strlen(str);
-	for(k=0;k<length;k++)
-	{
-		dx+=drawCharacter(fb,f,str[k],x+dx,y+dy,w,h);
-		if(str[k]=='\n'){dx=0;dy-=f->height;}
-	}
-}
 
-void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, font_s* f, char* str, s16 x, s16 y)
-{
-	if(!str)return;
-	if(!f)f=&fontDefault;
-
-	u16 fbWidth, fbHeight;
-	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
-
-	drawString2(fbAdr, f, str, y, x, fbHeight, fbWidth);
-}
 void gfxDrawSprite(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
 {
 	if(!spriteData)return;

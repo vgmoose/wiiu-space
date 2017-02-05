@@ -9,7 +9,6 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-void reset(void);
 void drawPaddle(int x, int y, u8 ai);
 void drawBall(int x, int y);
 void drawStuff(void);
