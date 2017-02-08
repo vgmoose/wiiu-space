@@ -49,7 +49,7 @@ struct SpaceGlobals{
 	unsigned char *title;
     int * test;
 	
-	int passwordList[100];
+	int* passwordList;
 	int playerExplodeFrame;
     
     u8* screen;
@@ -70,13 +70,13 @@ struct SpaceGlobals{
 //	Vec2D rstick;
 	
 	// only 20 bullets can be onscreen at a time
-	struct Bullet bullets[20];
+	struct Bullet* bullets;
 	
 	// the locations of the 200 random stars
-	struct Pixel stars[200];
+	struct Pixel* stars;
 	
 	// the location of enemies
-	struct Enemy enemies[100];
+	struct Enemy* enemies;
 
 	int renderResetFlag;
 	int invalid;

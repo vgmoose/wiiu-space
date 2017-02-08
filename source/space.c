@@ -383,7 +383,6 @@ void render(struct SpaceGlobals *mySpaceGlobals)
 // see the notes in images.c for more info on how this works
 void decompress_sprite(int arraysize, int width, int height, const signed char* input, void *targ, char transIndex)
 {
-//    return;
     unsigned char (*target)[width] = (unsigned char (*)[width])(targ);
 
     int cx = 0, cy = 0;
@@ -596,7 +595,7 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		renderStars(mySpaceGlobals);
 
 		// display the bitmap in upper center screen
-		drawBitmap(107, 30, 200, 100, mySpaceGlobals->title, title_palette, mySpaceGlobals->screen);
+		drawBitmap(59, 30, 200, 100, mySpaceGlobals->title, title_palette, mySpaceGlobals->screen);
 
 		char credits[255];
 		snprintf(credits, 255, "by vgmoose");
@@ -622,7 +621,7 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		
 		drawString(45, 17, musiccredits, mySpaceGlobals->screen);
 		
-		drawString(-2, 17, license, mySpaceGlobals->screen);
+		drawString(1, 17, license, mySpaceGlobals->screen);
 		
 		
 		drawMenuCursor(mySpaceGlobals);

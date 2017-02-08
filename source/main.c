@@ -26,8 +26,14 @@ int main()
 
 	// Main loop
     u8* screenBottom = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+    drawString(5, 5, "Hello it's a test!", screenBottom);
+////    flipBuffers();
+//    gfxFlushBuffers();
+//    gfxSwapBuffers();
+
+
     executeThread(screenBottom);
-    
+
 	// Exit services
 	fsExit();
 	gfxExit();

@@ -21,6 +21,8 @@ void executeThread(u8* screen)
 	mySpaceGlobals.renderResetFlag = 0;
 	mySpaceGlobals.menuChoice = 0; // 0 is play, 1 is password
 	
+    mySpaceGlobals.passwordList = malloc(100);
+    
 	// setup the password list
 	unsigned int pwSeed = 27;
 	int x;
@@ -43,6 +45,10 @@ void executeThread(u8* screen)
     mySpaceGlobals.orig_ship = malloc(36*36);
     mySpaceGlobals.enemy = malloc(23*23);
     
+    mySpaceGlobals.stars = malloc(200);
+    mySpaceGlobals.enemies = malloc(100);
+    mySpaceGlobals.bullets = malloc(20);
+    
 	decompress_sprite(3061, 200, 100, compressed_title, mySpaceGlobals.title, 39);
 	decompress_sprite(511, 36, 36, compressed_ship, mySpaceGlobals.orig_ship, 14);
 	decompress_sprite(206, 23, 23, compressed_enemy, mySpaceGlobals.enemy, 9);
@@ -52,6 +58,7 @@ void executeThread(u8* screen)
 	mySpaceGlobals.transIndex = 14;
     
     mySpaceGlobals.passwordEntered = 0;
+
 	
 	// initialize starfield for this game
 	initStars(&mySpaceGlobals);
@@ -59,10 +66,12 @@ void executeThread(u8* screen)
 	mySpaceGlobals.invalid = 1;
     
     int exitApplication = 0;
+    
 		
 	while(!exitApplication)
 	{
         gspWaitForVBlank();
+        clearScreen(screen, GFX_BOTTOM);
 
         hidScanInput();
         mySpaceGlobals.button = hidKeysDown();

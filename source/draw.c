@@ -160,6 +160,9 @@ void drawString(int x,int y, char* word, u8* screen)
 	int tmp_x =x;
 	int i;
 	int line = 0;
+    
+    x *= 10;
+    y *= 10;
 
 	int width=BOTTOM_WIDTH;
 
