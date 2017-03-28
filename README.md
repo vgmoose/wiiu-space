@@ -5,7 +5,7 @@ Through different iterations of Space Game, several branches on this repository 
  - **[master](https://github.com/vgmoose/space/tree/master)** - The original userland exploit-based branch of Space Game, which uses libwiiu
  - **[hbl_elf](https://github.com/vgmoose/space/tree/hbl_elf)** (default) - A branch designed for HBL to be executed as an elf that uses dimok's dynamic libraries
  - **[wut_working](https://github.com/vgmoose/space/tree/wut_working)** - The future branch, which uses WUT to generate an RPX (see branch's readme)
- - **[hbl_elf_v2_beta](https://github.com/vgmoose/space/tree/hbl_elf_v2_beta)** - The development branch that is currently based off hbl_elf, soon to be integrated with wut_working
+ - **[hbl_elf_v2beta](https://github.com/vgmoose/space/tree/hbl_elf_v2beta)** - The development branch that is currently based off hbl_elf, soon to be integrated with wut_working
 
 ![Logo](http://vgmoose.com/posts/24261201%20-%20[release]%20Space%20Game!%20(for%20Wii%20U).post/title.png)
 
