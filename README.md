@@ -1,10 +1,10 @@
 ## Space Game
 This is a Wii U homebrew game. You can run the [latest release](https://gbatemp.net/threads/release-space-game.414342/) via Homebrew Launcher. Watch a video of the gameplay in action [here](https://www.youtube.com/watch?v=KMuicPmOIHw)!
 
-Through different iterations of Space Game, several branches on this repository have emerged. The three primarily interesting ones are:
+Through different iterations of Space Game, several branches on this repository have emerged. The four primarily interesting ones are:
  - **[master](https://github.com/vgmoose/space/tree/master)** - The original userland exploit-based branch of Space Game, which uses libwiiu
  - **[hbl_elf](https://github.com/vgmoose/space/tree/hbl_elf)** (default) - A branch designed for HBL to be executed as an elf that uses dimok's dynamic libraries
- - **[wut_working](https://github.com/vgmoose/space/tree/wut_working)** - The future and current branch, which uses WUT to generate an RPX (see branch's readme)
+ - **[wut_working](https://github.com/vgmoose/space/tree/wut_working)** - The future branch, which uses WUT to generate an RPX (see branch's readme)
  - **[hbl_elf_v2_beta](https://github.com/vgmoose/space/tree/hbl_elf_v2_beta)** - The development branch that is currently based off hbl_elf, soon to be integrated with wut_working
 
 ![Logo](http://vgmoose.com/posts/24261201%20-%20[release]%20Space%20Game!%20(for%20Wii%20U).post/title.png)
