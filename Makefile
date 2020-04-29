@@ -1,71 +1,112 @@
-.SUFFIXES:
+# default this environment variable
+DEVKITPRO ?= /opt/devkitpro
+DEVKITPPC ?= $(DEVKITPRO)/devkitPPC
+WUT_ROOT ?= $(DEVKITPRO)/wut
+export DEVKITPRO
+export DEVKITPPC
+export WUT_ROOT
 
-ifeq ($(strip $(WUT_ROOT)),)
-$(error "Please ensure WUT_ROOT is in your environment.")
-endif
+TOPDIR ?= $(CURDIR)
+include $(DEVKITPRO)/wut/share/wut_rules
 
-#ifeq ($(shell uname -o),Cygwin)
-ifeq ($(findstring CYGWIN,$(shell uname -s)),CYGWIN)
-ROOT := $(shell cygpath -w ${CURDIR})
-WUT_ROOT := $(shell cygpath -w ${WUT_ROOT})
-else
-ROOT := $(CURDIR)
-endif
+TARGET		:=	$(notdir $(CURDIR))
+BUILD		:=	build
+SOURCES		:=	src
+INCLUDES	:=	include
 
-include $(WUT_ROOT)/rules/rpl.mk
+#-------------------------------------------------------------------------------
+# options for code generation
+#-------------------------------------------------------------------------------
+CFLAGS		:=	-Wall -O2 -std=c11 \
+			-ffast-math \
+			$(MACHDEP)
 
-TARGET   := $(notdir $(CURDIR))
-BUILD    := build
-SOURCE   := src
-INCLUDE  := include
-DATA     := data
-LIBS     := -lgcc -lcrt -lcoreinit -lvpad -lproc_ui
+CFLAGS		+=	$(INCLUDE) -D__WIIU__ -D__WUT__
 
-CFLAGS   += -O2 -Wall -std=c11
-CXXFLAGS += -O2 -Wall
-ASFLAGS	 += -mregnames
+CXXFLAGS	:=	$(CFLAGS)
 
+ASFLAGS		:=	-g $(MACHDEP)
+LDFLAGS		:=	-g $(MACHDEP) $(RPXSPECS) -Wl,-Map,$(notdir $*.map)
+
+LIBS		:=	-lwut -lm
+
+#-------------------------------------------------------------------------------
+# list of directories containing libraries, this must be the top level
+# containing include and lib
+#-------------------------------------------------------------------------------
+LIBDIRS		:=	$(PORTLIBS) $(WUT_ROOT)
+
+
+#-------------------------------------------------------------------------------
+# no real need to edit anything past this point unless you need to add additional
+# rules for different file extensions
+#-------------------------------------------------------------------------------
 ifneq ($(BUILD),$(notdir $(CURDIR)))
+#-------------------------------------------------------------------------------
 
-export OUTPUT   := $(ROOT)/$(TARGET)
-export VPATH    := $(foreach dir,$(SOURCE),$(ROOT)/$(dir)) \
-                   $(foreach dir,$(DATA),$(ROOT)/$(dir))
-export BUILDDIR := $(ROOT)
-export DEPSDIR  := $(BUILDDIR)
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export TOPDIR	:=	$(CURDIR)
 
-CFILES    := $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.c)))
-CXXFILES  := $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
-SFILES    := $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.S)))
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
-ifeq ($(strip $(CXXFILES)),)
-export LD := $(CC)
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+
+#-------------------------------------------------------------------------------
+# use CXX for linking C++ projects, CC for standard C
+#-------------------------------------------------------------------------------
+ifeq ($(strip $(CPPFILES)),)
+#-------------------------------------------------------------------------------
+	export LD	:=	$(CC)
+#-------------------------------------------------------------------------------
 else
-export LD := $(CXX)
+#-------------------------------------------------------------------------------
+	export LD	:=	$(CXX)
+#-------------------------------------------------------------------------------
 endif
+#-------------------------------------------------------------------------------
 
-export OFILES := $(CFILES:.c=.o) \
-                 $(CXXFILES:.cpp=.o) \
-                 $(SFILES:.S=.o)
-export INCLUDES := $(foreach dir,$(INCLUDE),-I$(ROOT)/$(dir)) \
-                   -I$(ROOT)/$(BUILD)
+export SRCFILES		:=	$(CPPFILES) $(CFILES) $(SFILES)
+export OFILES		:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+export INCLUDE		:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+				$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+				-I$(CURDIR)/$(BUILD)
 
-.PHONY: $(BUILD) clean
+export LIBPATHS		:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
-$(BUILD):
+.PHONY: $(BUILD) clean all
+
+#-------------------------------------------------------------------------------
+all: $(BUILD)
+
+$(BUILD): $(SRCFILES)
 	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(ROOT)/Makefile
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
+#-------------------------------------------------------------------------------
 clean:
-	@echo "[RM]  $(notdir $(OUTPUT))"
-	@rm -rf $(BUILD) $(OUTPUT).elf $(OUTPUT).rpx $(OUTPUT).a
+	@echo clean ...
+	@rm -fr $(BUILD) $(TARGET).rpx $(TARGET).elf
 
+#-------------------------------------------------------------------------------
 else
+.PHONY:	all
 
-DEPENDS	:= $(OFILES:.o=.d)
+DEPENDS		:=	$(OFILES:.o=.d)
 
-$(OUTPUT).rpx: $(OUTPUT).elf
-$(OUTPUT).elf: $(OFILES)
+#-------------------------------------------------------------------------------
+# main targets
+#-------------------------------------------------------------------------------
+all		:	$(OUTPUT).rpx
+
+$(OUTPUT).rpx	:	$(OUTPUT).elf
+
+$(OUTPUT).elf	:	$(OFILES)
 
 -include $(DEPENDS)
 
+#-------------------------------------------------------------------------------
 endif
+#-------------------------------------------------------------------------------
