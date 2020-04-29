@@ -9,10 +9,13 @@
 #include "memory.h"
 
 #include "program.h"
-#include "trigmath.h"
+//#include "trigmath.h"
 #include "draw.h"
 #include "images.h"
 #include "space.h"
+#include <stdbool.h>
+#include <stdlib.h>
+#include <math.h>
 
 char log_buf[0x400];
 
@@ -27,19 +30,19 @@ void screenInit()
 	int buf1_size = OSScreenGetBufferSizeEx(1);
 	/*__os_snprintf(log_buf, 0x400, "Screen sizes %x, %x\n", buf0_size, buf1_size);
 	OSReport(log_buf);*/
-	
+
 	//Set the buffer area.
 	screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x100);
 	/*__os_snprintf(log_buf, 0x400, "Allocated screen buffers at %x\n", screenBuffer);
 	OSReport(log_buf);*/
-	
+
     OSScreenSetBufferEx(0, screenBuffer);
     OSScreenSetBufferEx(1, (screenBuffer + buf0_size));
     //OSReport("Set screen buffers\n");
 
     OSScreenEnableEx(0, 1);
     OSScreenEnableEx(1, 1);
-    
+
     //Clear both framebuffers.
 	for (int ii = 0; ii < 2; ii++)
 	{
@@ -55,7 +58,7 @@ void screenDeinit()
 		fillScreen(0,0,0,0);
 		flipBuffers();
 	}
-    
+
     MEM1_free(screenBuffer);
 }
 
@@ -73,12 +76,12 @@ bool AppRunning()
    else
    {
       ProcUIStatus status = ProcUIProcessMessages(true);
-    
+
       if(status == PROCUI_STATUS_EXITING)
       {
           // Being closed, deinit things and prepare to exit
           isAppRunning = false;
-          
+
           if(initialized)
           {
               initialized = false;
@@ -91,7 +94,7 @@ bool AppRunning()
       {
           // Free up MEM1 to next foreground app, etc.
           initialized = false;
-          
+
           screenDeinit();
           memoryRelease();
           ProcUIDrawDoneRelease();
@@ -104,7 +107,7 @@ bool AppRunning()
             initialized = true;
             memoryInitialize();
             screenInit();
-            
+
             // redraw the screen upon resume
             mySpaceGlobals.invalid = 1;
          }
@@ -127,7 +130,7 @@ void cleanSlate()
 
 int main(int argc, char **argv)
 {
-	OSDynLoadModule avm_handle = 0;
+	OSDynLoad_Module avm_handle = 0;
 	OSDynLoad_Acquire("avm.rpl", &avm_handle);
 	bool(*AVMSetTVScale)(int width, int height);
 	OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", (void **)&AVMSetTVScale);
@@ -148,56 +151,55 @@ int main(int argc, char **argv)
 	//Flags for render states
 	mySpaceGlobals.renderResetFlag = 0;
 	mySpaceGlobals.menuChoice = 0; // 0 is play, 1 is password
-	
+
 	// setup the password list
-	unsigned int pwSeed = 27;
 	int x;
 	for (x=0; x<100; x++)
-		mySpaceGlobals.passwordList[x] = (int)(prand(&pwSeed)*100000);
-	
+		mySpaceGlobals.passwordList[x] = (int)(rand()*100000);
+
 	mySpaceGlobals.seed = OSGetTime();
-	
+
 	/****************************>            VPAD Loop            <****************************/
 	int error;
 	VPADStatus vpad_data;
-	
+
 	// decompress compressed things into their arrays, final argument is the transparent color in their palette
 	decompress_sprite(3061, 200, 100, compressed_title, mySpaceGlobals.title, 39);
 	decompress_sprite(511, 36, 36, compressed_ship, mySpaceGlobals.orig_ship, 14);
 	decompress_sprite(206, 23, 23, compressed_enemy, mySpaceGlobals.enemy, 9);
-	
+
 	// setup palette and transparent index
 	mySpaceGlobals.curPalette = ship_palette;
 	mySpaceGlobals.transIndex = 14;
-	
+
 	// initialize starfield for this game
 	initStars(&mySpaceGlobals);
-	
+
 	mySpaceGlobals.invalid = 1;
-		
+
 	while (AppRunning())
 	{
 		VPADRead(0, &vpad_data, 1, &error);
-		
+
 		//Get the status of the gamepad
 		mySpaceGlobals.button = vpad_data.hold;
-		
+
 		mySpaceGlobals.rstick = vpad_data.rightStick;
 		mySpaceGlobals.lstick = vpad_data.leftStick;
-		
+
 		mySpaceGlobals.touched = vpad_data.tpNormal.touched;
 		if (mySpaceGlobals.touched == 1)
 		{
 			mySpaceGlobals.touchX = ((vpad_data.tpNormal.x / 9) - 11);
 			mySpaceGlobals.touchY = ((3930 - vpad_data.tpNormal.y) / 16);
 		}
-		
+
 		if (mySpaceGlobals.restart == 1)
 		{
 			reset(&mySpaceGlobals);
 			mySpaceGlobals.restart = 0;
 		}
-		
+
 		if (mySpaceGlobals.state == 1) // title screen
 		{
 			displayTitle(&mySpaceGlobals);
@@ -225,23 +227,23 @@ int main(int argc, char **argv)
 
 			// perform any shooting
 			p1Shoot(&mySpaceGlobals);
-			
+
 			// handle any collisions
 			handleCollisions(&mySpaceGlobals);
-			
+
 			// do explosions
 			handleExplosions(&mySpaceGlobals);
-			
+
 			// if we're out of lives, break
 			if (mySpaceGlobals.lives <= 0 && mySpaceGlobals.state == 4)
 				continue;
-			
+
 			// add any new enemies
 			addNewEnemies(&mySpaceGlobals);
-			
+
 			//Render the scene
 			render(&mySpaceGlobals);
-			
+
 			// check for pausing
 			checkPause(&mySpaceGlobals);
 		}

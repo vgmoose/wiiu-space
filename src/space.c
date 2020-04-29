@@ -1,5 +1,6 @@
 #include "space.h"
-#include "trigmath.h"
+#include <math.h>
+#include <stdlib.h>
 #include <coreinit/internal.h>
 #include <coreinit/debug.h>
 
@@ -14,7 +15,7 @@ Other things it handles:
 	- Status bar drawing (renderTexts)
 	- Decompressing sprites (decompress_bitmap)
 	- Handling the menu at the title screen (doMenuAction)
-	
+
 It relies heavily on a SpaceGlobals struct defined in space.h. This is a carry over from the libwiiu
 pong example, but also I believe necesary since global variables don't seem to be able to be set(?)
 **/
@@ -33,13 +34,13 @@ void increaseScore(struct SpaceGlobals* mySpaceGlobals, int inc)
 {
 	// count the number of 5000s that fit into the score before adding
 	int fiveThousandsBefore = mySpaceGlobals->score / 5000;
-	
+
 	// increase the score
 	mySpaceGlobals->score += inc;
-	
+
 	// count them again
 	int fiveThousandsAfter = mySpaceGlobals->score / 5000;
-	
+
 	// if it increased, levelup
 	if (fiveThousandsAfter > fiveThousandsBefore)
 	{
@@ -51,13 +52,13 @@ void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 {
 	if (mySpaceGlobals->playerExplodeFrame > 1)
 		return;
-	
+
 	if (mySpaceGlobals->touched)
 	{
 		float xdif = mySpaceGlobals->p1X - mySpaceGlobals->touchX + 18;
 		float ydif = mySpaceGlobals->p1Y - mySpaceGlobals->touchY + 18;
 		mySpaceGlobals->angle = atan2(xdif, ydif);
-		
+
 //		activateBullet(mySpaceGlobals, mySpaceGlobals->angle - 3.14159265, mySpaceGlobals->p1X, mySpaceGlobals->p1Y);
 		// shoot a bullet
 		// find an inactive bullet
@@ -69,8 +70,8 @@ void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 			{
 				mySpaceGlobals->bullets[xx].x = mySpaceGlobals->p1X + 18;
 				mySpaceGlobals->bullets[xx].y = mySpaceGlobals->p1Y + 18;
-				mySpaceGlobals->bullets[xx].m_x = 9*sin(theta); // 9 is the desired bullet speed 
-				mySpaceGlobals->bullets[xx].m_y = 9*cos(theta); // we have to solve for the hypotenuese 
+				mySpaceGlobals->bullets[xx].m_x = 9*sin(theta); // 9 is the desired bullet speed
+				mySpaceGlobals->bullets[xx].m_y = 9*cos(theta); // we have to solve for the hypotenuese
 				mySpaceGlobals->bullets[xx].active = 1;
 				mySpaceGlobals->firstShotFired = 1;
 				if (mySpaceGlobals->score >= 1000)
@@ -79,17 +80,17 @@ void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 			}
 		}
 	}
-	
+
 	moveBullets(mySpaceGlobals);
 }
 
 //Updates player1 location
 void p1Move(struct SpaceGlobals *mySpaceGlobals) {
-	
+
 	// can't move while exploding
 	if (mySpaceGlobals->playerExplodeFrame > 1)
 		return;
-		
+
 	// Handle analog stick movements
 	VPADVec2D left = mySpaceGlobals->lstick;
 	VPADVec2D right = mySpaceGlobals->rstick;
@@ -97,33 +98,33 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	// get the differences
 	float xdif = left.x + right.x;
 	float ydif = left.y + right.y;
-	
+
 	// Handle D-pad movements as well
 	// max out speed at 1 or -1 in both directions
 	xdif = (xdif >  1 || mySpaceGlobals->button & VPAD_BUTTON_RIGHT)?  1 : xdif;
 	xdif = (xdif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_LEFT)? -1 : xdif;
 	ydif = (ydif >  1 || mySpaceGlobals->button &    VPAD_BUTTON_UP)?  1 : ydif;
 	ydif = (ydif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_DOWN)? -1 : ydif;
-	
+
 	// don't update angle if both are within -.1 < x < .1
 	// (this is an expenesive check... 128 bytes compared to just ==0)
 	if (xdif < 0.1 && xdif > -0.1 && ydif < 0.1 && ydif > -0.1) return;
-	
+
 	// invalid view
 	mySpaceGlobals->invalid = 1;
-	
+
 	// accept x and y movement from either stick
 	mySpaceGlobals->p1X += xdif*5;
 	mySpaceGlobals->p1Y -= ydif*5;
-		
+
 	// calculate angle to face
 	mySpaceGlobals->angle = atan2(ydif, xdif) - 3.14159265/2;
-	
+
 	// update score if on a frame divisible by 60 (gain 10 points every second)
 	if (mySpaceGlobals->frame % 60 == 0)
 	{
 		increaseScore(mySpaceGlobals, 10);
-		
+
 		// if the score is at least 50 and a shot hasn't been fired yet, display a message about shooting
 		if (mySpaceGlobals->score >= 50 && !mySpaceGlobals->firstShotFired)
 			mySpaceGlobals->displayHowToPlay = 1;
@@ -147,7 +148,7 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 	int playerRight = playerLeft + 36;
 	int playerUp = mySpaceGlobals->p1Y;
 	int playerDown = playerUp + 36;
-	
+
 	// don't let the player go offscreen
 	if (playerLeft < xMinBoundry)
 		mySpaceGlobals->p1X = xMinBoundry;
@@ -157,7 +158,7 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 		mySpaceGlobals->p1Y = yMinBoundry + 20;
 	if (playerDown > yMaxBoundry)
 		mySpaceGlobals->p1Y = yMaxBoundry - 36;
-	
+
 		// check enemies if they collide with the player or any of the 20 active bullets
 		int x;
 		for (x=0; x<100; x++)
@@ -166,20 +167,20 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 			{
 				// collision checkin from here: http://stackoverflow.com/a/1736741/1137828
 				// check player
-								
+
 				int sqMe1 = ((mySpaceGlobals->enemies[x].position.x+7)-(mySpaceGlobals->p1X+9));
 				int sqMe2 = ((mySpaceGlobals->enemies[x].position.y+7)-(mySpaceGlobals->p1Y+9));
-				
+
 				if (sqMe1*sqMe1 + sqMe2*sqMe2 <= (7+9)*(7+9))
 				{
 					if (mySpaceGlobals->playerExplodeFrame < 1)
 					{
 						// player was hit
 						mySpaceGlobals->playerExplodeFrame = 2;
-						initGameState(mySpaceGlobals);						
+						initGameState(mySpaceGlobals);
 					}
 				}
-				
+
 				int y;
 				for (y=0; y<20; y++)
 				{
@@ -188,16 +189,16 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 						// check player's bullets
 						sqMe1 = ((mySpaceGlobals->enemies[x].position.x+7)-(mySpaceGlobals->bullets[y].x+1));
 						sqMe2 = ((mySpaceGlobals->enemies[x].position.y+7)-(mySpaceGlobals->bullets[y].y+1));
-						
+
 						if (sqMe1*sqMe1 + sqMe2*sqMe2 <= (7+1)*(7+1))
 						{
 							// enemy was hit, active = 2 is explode
 							increaseScore(mySpaceGlobals, 100); // 100 points for killing enemy
 							mySpaceGlobals->enemies[x].position.active = 2;
-							
+
 							// bullet is destroyed with enemy
 							mySpaceGlobals->bullets[y].active = 0;
-							
+
 							break;
 						}
 					}
@@ -219,7 +220,7 @@ void makeScaleMatrix(int frame, int width, unsigned char original[][width], unsi
 		}
 	}
 	int woffset = width/2;
-	
+
 	for (x=0; x<width; x++)
 	{
 		int y=0;
@@ -228,16 +229,16 @@ void makeScaleMatrix(int frame, int width, unsigned char original[][width], unsi
 			// rotate the pixel by the angle into a new spot in the rotation matrix
 			int newx = (x-woffset)*frame + woffset;
 			int newy = (y-woffset)*frame + woffset;
-			
+
 			if (original[newx][newy] == transIndex) continue;
-			
+
 			if (newx < 0 || newx >= width) continue;
 			if (newy < 0 || newy >= width) continue;
-			
+
 			target[newx][newy] = original[x][y];
 		}
 	}
-	
+
 }
 
 void handleExplosions(struct SpaceGlobals* mySpaceGlobals)
@@ -249,18 +250,18 @@ void handleExplosions(struct SpaceGlobals* mySpaceGlobals)
 		{
 			makeScaleMatrix(mySpaceGlobals->enemies[x].position.active/2.0, 23, mySpaceGlobals->enemy, mySpaceGlobals->enemies[x].rotated_sprite, 9);
 			mySpaceGlobals->enemies[x].position.active ++;
-			
+
 			if (mySpaceGlobals->enemies[x].position.active > 20)
 				mySpaceGlobals->enemies[x].position.active = 0;
 		}
 	}
-		
+
 	if (mySpaceGlobals->playerExplodeFrame > 1)
 	{
 		makeScaleMatrix(mySpaceGlobals->playerExplodeFrame, 36, mySpaceGlobals->orig_ship, mySpaceGlobals->rotated_ship, mySpaceGlobals->transIndex);
 		mySpaceGlobals->playerExplodeFrame ++;
 		mySpaceGlobals->invalid = 1;
-		
+
 		if (mySpaceGlobals->playerExplodeFrame > 20)
 		{
 			mySpaceGlobals->playerExplodeFrame = 0;
@@ -289,9 +290,9 @@ void makeRotationMatrix(float angle, int width, unsigned char original[][width],
 			target[x][y] = transIndex;
 		}
 	}
-	
+
 	float woffset = width/2.0;
-	
+
 	// go though every pixel in the target bitmap
 	for (x=0; x<width; x++)
 	{
@@ -301,15 +302,15 @@ void makeRotationMatrix(float angle, int width, unsigned char original[][width],
 			// rotate the pixel by the angle into a new spot in the rotation matrix
 			int oldx = (int)((x-woffset)*cos(angle) + (y-woffset)*sin(angle) + woffset);
 			int oldy = (int)((x-woffset)*sin(angle) - (y-woffset)*cos(angle) + woffset);
-			
+
 //			if (oldx < 0) oldx += width;
 //			if (oldy < 0) oldy += width;
-			
+
 			if (original[oldx][oldy] == transIndex) continue;
-			
+
 			if (oldx < 0 || oldx >= width) continue;
 			if (oldy < 0 || oldy >= width) continue;
-			
+
 			target[x][y] = original[oldx][oldy];
 		}
 	}
@@ -323,14 +324,14 @@ void renderEnemies(struct SpaceGlobals *mySpaceGlobals)
 	{
 		if (mySpaceGlobals->bullets[x].active == 1)
 		{
-			
+
 			int z, za;
 			for (z=0; z<4; z++)
 				for (za=0; za<2; za++)
 					drawPixel(mySpaceGlobals->bullets[x].x + z, mySpaceGlobals->bullets[x].y + za, 255, 0, 0);
 		}
 	}
-	
+
 	// for all active enemies, advance them
 	for (x=0; x<100; x++) // up to 100 enemies at once
 	{
@@ -375,7 +376,7 @@ void decompress_sprite(int arraysize, int width, int height, const signed char* 
 		int count = input[x];
 		char value = input[x+1];
 		int z;
-		
+
 		if (count == -120) // full value rows of last index in palette
 		{
 			for (z=0; z<value; z++)
@@ -386,11 +387,11 @@ void decompress_sprite(int arraysize, int width, int height, const signed char* 
 					target[cy+z][cx+za] = transIndex;
 				}
 			}
-			
+
 			cy += value;
 			continue;
 		}
-////		
+////
 		if (count <= 0) // if it's negative, -count is value, and value is meaningless and advance by one
 		{
 			value = -1*count;
@@ -424,43 +425,43 @@ void moveBullets(struct SpaceGlobals *mySpaceGlobals)
 		{
 			mySpaceGlobals->bullets[x].x += mySpaceGlobals->bullets[x].m_x;
 			mySpaceGlobals->bullets[x].y += mySpaceGlobals->bullets[x].m_y;
-						
+
 			if (mySpaceGlobals->bullets[x].x > xMaxBoundry ||
 				mySpaceGlobals->bullets[x].x < xMinBoundry ||
 				mySpaceGlobals->bullets[x].y > yMaxBoundry ||
 				mySpaceGlobals->bullets[x].y < yMinBoundry + 20)
 				mySpaceGlobals->bullets[x].active = 0;
-			
+
 			mySpaceGlobals->invalid = 1;
 		}
-		
+
 	}
-	
+
 	for (x=0; x<100; x++)
 	{
 		if (mySpaceGlobals->enemies[x].position.active == 1)
 		{
 			mySpaceGlobals->enemies[x].position.x += mySpaceGlobals->enemies[x].position.m_x;
 			mySpaceGlobals->enemies[x].position.y += mySpaceGlobals->enemies[x].position.m_y;
-						
+
 			if (mySpaceGlobals->enemies[x].position.x > xMaxBoundry ||
 				mySpaceGlobals->enemies[x].position.x < xMinBoundry ||
 				mySpaceGlobals->enemies[x].position.y > yMaxBoundry ||
 				mySpaceGlobals->enemies[x].position.y < yMinBoundry + 20)
 				mySpaceGlobals->enemies[x].position.active = 0;
-			
+
 			// rotate the enemy slowly
 			mySpaceGlobals->enemies[x].angle += 0.02;
 			if (mySpaceGlobals->enemies[x].angle > 6.28318530)
 				mySpaceGlobals->enemies[x].angle = 0;
-			
+
 			makeRotationMatrix(mySpaceGlobals->enemies[x].angle, 23, mySpaceGlobals->enemy, mySpaceGlobals->enemies[x].rotated_sprite, 9);
-			
+
 			mySpaceGlobals->invalid = 1;
 		}
 	}
 }
-					
+
 void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 {
 	fillRect(0, 0, xMaxBoundry, 20, 0, 0, 0);
@@ -472,7 +473,7 @@ void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 		__os_snprintf(score, 255, "Score: %09d", mySpaceGlobals->score);
 	drawString(0, -1, score);
 	drawStringTv(0, -1, score);
-	
+
 	char level[255];
 	__os_snprintf(level, 255, "Lv %d", mySpaceGlobals->level+1);
 	drawString(30, -1, level);
@@ -482,7 +483,7 @@ void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 	__os_snprintf(lives, 255, "Lives: %d", mySpaceGlobals->lives);
 	drawString(55, -1, lives);
 	drawStringTv(90, -1, lives);
-	
+
 	if (mySpaceGlobals->displayHowToPlay)
 	{
 		char nag[255];
@@ -490,14 +491,14 @@ void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 		drawString(20, 17, nag);
 		drawStringTv(56, 27, nag);
 	}
-			
+
 }
 
-void renderShip(struct SpaceGlobals *mySpaceGlobals) 
+void renderShip(struct SpaceGlobals *mySpaceGlobals)
 {
 	const int posx = (int)mySpaceGlobals->p1X;
 	const int posy = (int)mySpaceGlobals->p1Y;
-	
+
 	if (mySpaceGlobals->playerExplodeFrame < 2)
 		makeRotationMatrix(mySpaceGlobals->angle, 36, mySpaceGlobals->orig_ship, mySpaceGlobals->rotated_ship, mySpaceGlobals->transIndex);
 
@@ -510,7 +511,7 @@ void renderStars(struct SpaceGlobals *mySpaceGlobals)
 	// don't draw stars if the player is on their last life and died
 	if (mySpaceGlobals->lives == 1 && mySpaceGlobals->playerExplodeFrame > 1)
 		return;
-	
+
 	drawPixels(mySpaceGlobals->stars);
 }
 
@@ -531,11 +532,11 @@ void initGameState(struct SpaceGlobals *mySpaceGlobals)
 	{
 		mySpaceGlobals->bullets[x].active = 0;
 	}
-	
+
 	// init x and y pos of player
 //	mySpaceGlobals->p1X =  40;
 //	mySpaceGlobals->p1Y = 150;
-	
+
 	// init enemies
 	for (x=0; x<100; x++)
 	{
@@ -544,16 +545,16 @@ void initGameState(struct SpaceGlobals *mySpaceGlobals)
 
 }
 
-void initStars(struct SpaceGlobals *mySpaceGlobals) 
+void initStars(struct SpaceGlobals *mySpaceGlobals)
 {
 	// create the stars randomly
 	int x;
 	for (x=0; x<200; x++)
 	{
-		mySpaceGlobals->stars[x].x = (int)(prand(&mySpaceGlobals->seed)*xMaxBoundry);
-		mySpaceGlobals->stars[x].y = (int)(prand(&mySpaceGlobals->seed)*yMaxBoundry);
-		int randomNum = (int)(prand(&mySpaceGlobals->seed)*4);
-		
+		mySpaceGlobals->stars[x].x = (int)(rand()*xMaxBoundry);
+		mySpaceGlobals->stars[x].y = (int)(rand()*yMaxBoundry);
+		int randomNum = (int)(rand()*4);
+
 		// half of the time make them white, 1/4 yellow, 1/4 blue
 		mySpaceGlobals->stars[x].r = (randomNum <= 2)? 255 : 0;
 		mySpaceGlobals->stars[x].g = (randomNum <= 2)? 255 : 0;
@@ -566,7 +567,7 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 	if (mySpaceGlobals->invalid == 1)
 	{
 		blackout();
-		
+
 		// draw some stars
 		renderStars(mySpaceGlobals);
 
@@ -588,9 +589,9 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		drawStringTv(44, 17, play);
 		drawString(25, 13, password);
 		drawStringTv(45, 18, password);
-		
+
 		drawMenuCursor(mySpaceGlobals);
-		
+
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
@@ -617,7 +618,7 @@ void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 	{
 		mySpaceGlobals->allowInput = 1;
 	}
-	
+
 	if (mySpaceGlobals->button & VPAD_BUTTON_A && mySpaceGlobals->allowInput)
 	{
 		// if we're on the title menu
@@ -626,7 +627,7 @@ void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 			if (mySpaceGlobals->menuChoice == 0)
 			{
 				totallyRefreshState(mySpaceGlobals);
-				
+
 				// start game chosen
 				mySpaceGlobals->state = 7; // switch to game state
 				mySpaceGlobals->renderResetFlag = 1; // redraw screen
@@ -642,14 +643,14 @@ void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 //		{
 //			// this is handled by the password menu action function
 //		}
-		// pause screen 
+		// pause screen
 		else if (mySpaceGlobals->state == 3)
 		{
 			if (mySpaceGlobals->menuChoice == 0)
 			{
 				// resume chosen
 				mySpaceGlobals->state = 7; // switch to game state
-				
+
 			}
 			else if (mySpaceGlobals->menuChoice == 1)
 			{
@@ -658,18 +659,18 @@ void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 				mySpaceGlobals->state = 1;
 			}
 		}
-		// game over screen 
+		// game over screen
 		else if (mySpaceGlobals->state == 4)
 		{
 			totallyRefreshState(mySpaceGlobals);
-			
+
 			if (mySpaceGlobals->menuChoice == 0)
 			{
 				// try again chosen
-				
-				//player stays on the same level 
+
+				//player stays on the same level
 				mySpaceGlobals->state = 7; // switch to game state
-				
+
 			}
 			else if (mySpaceGlobals->menuChoice == 1)
 			{
@@ -677,25 +678,25 @@ void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 				mySpaceGlobals->state = 1;
 			}
 		}
-		
+
 		// reset the choice
 		mySpaceGlobals->menuChoice = 0;
-		
+
 		// disable menu input after selecting to prevent double selects
 		mySpaceGlobals->allowInput = 0;
 
 		// mark view invalid to redraw
 		mySpaceGlobals->invalid = 1;
 	}
-	
+
 	float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
-	
+
 	if (mySpaceGlobals->button & VPAD_BUTTON_DOWN || stickY < -0.3)
 	{
 		mySpaceGlobals->menuChoice = 1;
 		mySpaceGlobals->invalid = 1;
 	}
-	
+
 	if (mySpaceGlobals->button & VPAD_BUTTON_UP || stickY > 0.3)
 	{
 		mySpaceGlobals->menuChoice = 0;
@@ -714,14 +715,14 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 		__os_snprintf(resume, 255, "Resume");
 		char quit[255];
 		__os_snprintf(quit, 255, "Quit");
-		
+
 		drawString(27, 12, resume);
 		drawStringTv(46, 17, resume);
 		drawString(28, 13, quit);
 		drawStringTv(47, 18, quit);
-		
+
 		drawMenuCursor(mySpaceGlobals);
-		
+
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
@@ -730,7 +731,7 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 {
 	// if we've seen up, down, left, right, and a buttons not being pressed
-	if (!(mySpaceGlobals->button & VPAD_BUTTON_A     || 
+	if (!(mySpaceGlobals->button & VPAD_BUTTON_A     ||
 		  mySpaceGlobals->button & VPAD_BUTTON_UP    ||
 		  mySpaceGlobals->button & VPAD_BUTTON_DOWN  ||
 		  mySpaceGlobals->button & VPAD_BUTTON_LEFT  ||
@@ -738,17 +739,17 @@ void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 	{
 		mySpaceGlobals->allowInput = 1;
 	}
-	
+
 	if (mySpaceGlobals->allowInput)
 	{
 		if (mySpaceGlobals->button & VPAD_BUTTON_B)
 		{
 			// go back to title screen
 			mySpaceGlobals->state = 1;
-			
+
 			// update the menu choice
 			mySpaceGlobals->menuChoice = 0;
-			
+
 			// disable menu input after selecting to prevent double selects
 			mySpaceGlobals->allowInput = 0;
 
@@ -762,33 +763,33 @@ void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 
 			// disable menu input after selecting to prevent double selects
 			mySpaceGlobals->allowInput = 0;
-			
+
 			// update the menu choice
 			mySpaceGlobals->menuChoice = 0;
 
 			// mark view invalid to redraw
 			mySpaceGlobals->invalid = 1;
 		}
-		
+
 		float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
 		float stickX = mySpaceGlobals->lstick.x + mySpaceGlobals->rstick.x;
 		int down  = (mySpaceGlobals->button & VPAD_BUTTON_DOWN  || stickY < -0.3);
 		int up    = (mySpaceGlobals->button & VPAD_BUTTON_UP    || stickY >  0.3);
 		int left  = (mySpaceGlobals->button & VPAD_BUTTON_LEFT  || stickX < -0.3);
 		int right = (mySpaceGlobals->button & VPAD_BUTTON_RIGHT || stickX >  0.3);
-		
+
 		if (up || down)
 		{
 			int offset = 1, x;
 			// keep going up in the 10s place to match current choice
 			for (x=0; x<(4 - mySpaceGlobals->menuChoice); x++)
 				offset *= 10;
-				
+
 			if (up)
 				mySpaceGlobals->passwordEntered += offset;
 			if (down)
 				mySpaceGlobals->passwordEntered -= offset;
-				
+
 			mySpaceGlobals->invalid = 1;
 			mySpaceGlobals->allowInput = 0;
 		}
@@ -799,17 +800,17 @@ void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 				mySpaceGlobals->menuChoice ++;
 			if (left)
 				mySpaceGlobals->menuChoice --;;
-			
+
 			// bound the menu choices
 			if (mySpaceGlobals->menuChoice < 0)
 				mySpaceGlobals->menuChoice = 0;
 			if (mySpaceGlobals->menuChoice > 4)
 				mySpaceGlobals->menuChoice = 4;
-			
+
 			mySpaceGlobals->invalid = 1;
 			mySpaceGlobals->allowInput = 0;
 		}
-		
+
 		// bound the password
 		if (mySpaceGlobals->passwordEntered < 0)
 			mySpaceGlobals->passwordEntered = 0;
@@ -823,7 +824,7 @@ void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 	if (mySpaceGlobals->invalid == 1)
 	{
 		blackout();
-		
+
 //		drawPasswordMenuCursor(mySpaceGlobals);
 		char password[255];
 		__os_snprintf(password, 255, "Password:");
@@ -833,17 +834,17 @@ void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 		__os_snprintf(cur_pw, 255, "%05d", mySpaceGlobals->passwordEntered);
 		char down_cur[255];
 		__os_snprintf(down_cur, 255, "^");
-		
+
 		drawString(22, 8, password);
 		drawStringTv(41, 14, password);
-		
+
 		drawString(32 + mySpaceGlobals->menuChoice, 7, up_cur);
 		drawStringTv(51 + mySpaceGlobals->menuChoice, 13, up_cur);
  		drawString(32, 8, cur_pw);
 		drawStringTv(51, 14, cur_pw);
  		drawString(32 + mySpaceGlobals->menuChoice, 9, down_cur);
 		drawStringTv(51 + mySpaceGlobals->menuChoice, 15, down_cur);
-		
+
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
@@ -853,38 +854,38 @@ void addNewEnemies(struct SpaceGlobals *mySpaceGlobals)
 {
 	if (mySpaceGlobals->noEnemies || mySpaceGlobals->playerExplodeFrame > 1)
 		return;
-	
+
 	// here we make a new enemy with a certain speed based on the level
-		
+
 	// get a random position from one of the sides with a random int 0-3
-	int side = (int)(prand(&mySpaceGlobals->seed)*4);
-	
+	int side = (int)(rand()*4);
+
 //	// randomly decide to set starting angle right for the player
 //	float seekPlayer = prand(&mySpaceGlobals->seed)*2;
-	
+
 	float difficulty = mySpaceGlobals->level/100.0;
-	
-	float randVal = prand(&mySpaceGlobals->seed);
-	
+
+	float randVal = rand();
+
 	// set the enemy count (max enemies on screen at once) based on level
 	int enemyCount = 10 + difficulty*90*randVal;
-	
+
 	if (enemyCount > 100) enemyCount = 100;
-	
+
 	// set speed randomly within difficulty range
 	int speed = 3 + (difficulty)*12*randVal;
-	
+
 	int startx, starty;
-	
-	float theta = prand(&mySpaceGlobals->seed)*3.14159265;
-	randVal = prand(&mySpaceGlobals->seed);
-	
+
+	float theta = rand()*3.14159265;
+	randVal = rand();
+
 	// horiz size
 	if (side < 2)
 	{
 		startx = (side == 0)? 0 : xMaxBoundry;
 		starty = randVal*yMaxBoundry;
-		
+
 		if (startx != 0)
 			theta -= 3.14159265;
 	}
@@ -892,22 +893,22 @@ void addNewEnemies(struct SpaceGlobals *mySpaceGlobals)
 	{
 		starty = (side == 2)? 20 : yMaxBoundry;
 		startx = randVal*xMaxBoundry;
-		
+
 		if (starty == 20)
 			theta -= 3.14159265/2;
 		else
 			theta += 3.14159265/2;
 	}
-	
+
 	// seek directly to the player
 //	if (mySpaceGlobals->enemiesSeekPlayer == 1)
 //	{
 //		float xdif = startx + 11 - (mySpaceGlobals->p1X + 18);
 //		float ydif = starty + 11 - (mySpaceGlobals->p1Y + 18);
-//		
+//
 //		theta = atan2(xdif, ydif) - 3.14159265;
 //	}
-		
+
 	int xx;
 	for (xx=0; xx<enemyCount; xx++)
 	{
@@ -915,8 +916,8 @@ void addNewEnemies(struct SpaceGlobals *mySpaceGlobals)
 		{
 			mySpaceGlobals->enemies[xx].position.x = startx;
 			mySpaceGlobals->enemies[xx].position.y = starty;
-			mySpaceGlobals->enemies[xx].position.m_x = speed*sin(theta); // speed is the desired enemy speed 
-			mySpaceGlobals->enemies[xx].position.m_y = speed*cos(theta); // we have to solve for the hypotenuese 
+			mySpaceGlobals->enemies[xx].position.m_x = speed*sin(theta); // speed is the desired enemy speed
+			mySpaceGlobals->enemies[xx].position.m_y = speed*cos(theta); // we have to solve for the hypotenuese
 			mySpaceGlobals->enemies[xx].position.active = 1;
 			break;
 		}
@@ -942,7 +943,7 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
 	if (mySpaceGlobals->invalid == 1)
 	{
 		blackout();
-				
+
 		char gameover[255];
 		__os_snprintf(gameover, 255, "Game Over!");
 		drawString(25, 5, gameover);
@@ -961,40 +962,40 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
  			drawString(21, 8, pass);
 			drawStringTv(40, 13, pass);
 		}
-	
-		
+
+
 		char resume[255];
 		__os_snprintf(resume, 255, "Try  Again");
 		char quit[255];
 		__os_snprintf(quit, 255, "Quit");
-		
+
 		drawString(25, 12, resume);
 		drawStringTv(44, 17, resume);
 		drawString(28, 13, quit);
 		drawStringTv(47, 18, quit);
-		
+
 		drawMenuCursor(mySpaceGlobals);
-		
+
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
 	blackout();
-	
-	
-	
+
+
+
 }
 
 void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 {
-	// Dear Github Viewer, 
+	// Dear Github Viewer,
 	//
 	// 		Well, here's where you see the passwords I guess!
 	//		With the exception of a few hardcoded ones, the
 	//		level passwords are generated and checked against
 	//		a seeded random list from program.c
-	//	
+	//
 	// Enjoy!
-	
+
 	// Invincibility
 	if (mySpaceGlobals->passwordEntered == 55225)
 	{
@@ -1002,7 +1003,7 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 		mySpaceGlobals->dontKeepTrackOfScore = 1;
 		mySpaceGlobals->state = 7;
 	}
-	
+
 	// 99 Lives
 	if (mySpaceGlobals->passwordEntered == 99499)
 	{
@@ -1010,7 +1011,7 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 		mySpaceGlobals->dontKeepTrackOfScore = 1;
 		mySpaceGlobals->state = 7;
 	}
-	
+
 	// No Enemies (loner mode)
 	if (mySpaceGlobals->passwordEntered == 82571)
 	{
@@ -1018,7 +1019,7 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 		mySpaceGlobals->dontKeepTrackOfScore = 1;
 		mySpaceGlobals->state = 7;
 	}
-	
+
 	// Play as original spaceship (only if changed)
 //	if (mySpaceGlobals->passwordEntered == 00000 && mySpaceGlobals->playerChoice != 0)
 //	{
@@ -1028,7 +1029,7 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 //		mySpaceGlobals->transIndex = 14;
 //		mySpaceGlobals->state = 7;
 //	}
-	
+
 	// Play as galaga ship
 //	if (mySpaceGlobals->passwordEntered == 12345)
 //	{
@@ -1038,7 +1039,7 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 //		mySpaceGlobals->transIndex = 5;
 //		mySpaceGlobals->state = 7;
 //	}
-	
+
 	// Play as JWittz
 //	if (mySpaceGlobals->passwordEntered == 24177)
 //	{
@@ -1058,7 +1059,7 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 //		mySpaceGlobals->transIndex = 39;
 //		mySpaceGlobals->state = 7;
 //	}
-	
+
 	// Enemies come right for you (kamikaze mode)
 //	if (mySpaceGlobals->passwordEntered == 30236)
 //	{
@@ -1066,7 +1067,7 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 //		mySpaceGlobals->dontKeepTrackOfScore = 1;
 //		mySpaceGlobals->state = 7;
 //	}
-	
+
 	// start installer for Hykem's IOSU Exploit
 	// Commented out due to a lack of OSFatal in WUT
 	/*if (mySpaceGlobals->passwordEntered == 41666)
@@ -1074,7 +1075,7 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 		blackout();
 		OSFatal("Installing IOSU Exploit... This may take a while.");
 	}*/
-	
+
 	// 100 passwords, one for each level
 	int x;
 	for (x=0; x<100; x++)
@@ -1084,15 +1085,15 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 			mySpaceGlobals->level = x;
 			break;
 		}
-		
+
 		if (x==99) // no password was right
 			return;
 	}
 
 	// switch to the game state
 	mySpaceGlobals->state = 7;
-	
-	// They are generated 
+
+	// They are generated
 }
 
 void renderReset(struct SpaceGlobals *mySpaceGlobals)
