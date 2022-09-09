@@ -1,2 +1,7 @@
 build/
+.DS_Store
+.vscode
+*.elf
+*.rpx
+*.wuhb
 wiiu-space.*

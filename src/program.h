@@ -93,6 +93,6 @@ struct SpaceGlobals{
 
 };
 
-void* screenBuffer;
+extern void* screenBuffer;
 
 #endif /* PROGRAM_H */

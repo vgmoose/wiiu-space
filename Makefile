@@ -9,6 +9,14 @@ export WUT_ROOT
 TOPDIR ?= $(CURDIR)
 include $(DEVKITPRO)/wut/share/wut_rules
 
+export APP_NAME    ?= Space Game
+export APP_AUTHOR  ?= vgmoose
+export APP_VERSION ?= 2.0
+
+export APP_TV_SPLASH  := $(PWD)/res/bootTvTex.png
+export APP_DRC_SPLASH := $(PWD)/res/bootTvTex.png
+export APP_ICON       := $(PWD)/res/iconTex.png
+
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	src
@@ -99,10 +107,10 @@ DEPENDS		:=	$(OFILES:.o=.d)
 #-------------------------------------------------------------------------------
 # main targets
 #-------------------------------------------------------------------------------
-all		:	$(OUTPUT).rpx
+all		:	$(OUTPUT).wuhb
 
+$(OUTPUT).wuhb	:	$(OUTPUT).rpx
 $(OUTPUT).rpx	:	$(OUTPUT).elf
-
 $(OUTPUT).elf	:	$(OFILES)
 
 -include $(DEPENDS)

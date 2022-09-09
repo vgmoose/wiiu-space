@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+void* screenBuffer;
+
 char log_buf[0x400];
 
 bool isAppRunning = true;

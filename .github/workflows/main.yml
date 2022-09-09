@@ -1,0 +1,29 @@
+name: Build app
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  all:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/fortheusers/sealeo:latest
+    steps:
+    - uses: actions/checkout@main
+      with:
+        submodules: recursive
+    - name: Build ${{ matrix.platform }}
+      run: make
+    - uses: actions/upload-artifact@v3
+      with:
+        name: vgedit.${{ matrix.ext }}
+        path: /__w/wiiu-space/wiiu-space/wiiu-space.rpx
+    - uses: actions/upload-artifact@v3
+      with:
+        name: vgedit.${{ matrix.ext }}
+        path: /__w/wiiu-space/wiiu-space/wiiu-space.wuhb
