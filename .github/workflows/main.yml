@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - switch-rewrite
   pull_request:
     branches:
       - main
@@ -19,10 +20,6 @@ jobs:
         submodules: recursive
     - name: Build ${{ matrix.platform }}
       run: make
-    - uses: actions/upload-artifact@v3
-      with:
-        name: wiiu-space.rpx
-        path: /__w/wiiu-space/wiiu-space/wiiu-space.rpx
     - uses: actions/upload-artifact@v3
       with:
         name: wiiu-space.wuhb
