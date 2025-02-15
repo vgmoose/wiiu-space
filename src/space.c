@@ -1,3 +1,4 @@
+#include <math.h>
 #include "space.h"
 #include <math.h>
 #include <stdlib.h>
@@ -52,14 +53,30 @@ void p1Shoot(struct SpaceGlobals * mySpaceGlobals)
 {
 	if (mySpaceGlobals->playerExplodeFrame > 1)
 		return;
-
-	if (mySpaceGlobals->touched)
+		
+	bool shoot = false;
+	float sensitivity = 0.1f;
+				
+	float xdif = 0;
+	float ydif = 0;
+	
+	if ((fabs(mySpaceGlobals->rstick.x) > sensitivity) || (fabs(mySpaceGlobals->rstick.y) > sensitivity))
 	{
-		float xdif = mySpaceGlobals->p1X - mySpaceGlobals->touchX + 18;
-		float ydif = mySpaceGlobals->p1Y - mySpaceGlobals->touchY + 18;
+		shoot = true;
+		if (fabs(mySpaceGlobals->rstick.x) > sensitivity)
+			xdif = mySpaceGlobals->p1X - (mySpaceGlobals->p1X + (mySpaceGlobals->rstick.x * 18));
+		if (fabs(mySpaceGlobals->rstick.y) > sensitivity)
+			ydif = mySpaceGlobals->p1Y - (mySpaceGlobals->p1Y - (mySpaceGlobals->rstick.y * 18));
+	}
+	else if(mySpaceGlobals->selectedController == 0 && mySpaceGlobals->touched) {
+		shoot = true;
+		xdif = mySpaceGlobals->p1X - mySpaceGlobals->touchX + 18;
+		ydif = mySpaceGlobals->p1Y - mySpaceGlobals->touchY + 18;
+	}
+	if(shoot) {
 		mySpaceGlobals->angle = atan2(xdif, ydif);
-
-//		activateBullet(mySpaceGlobals, mySpaceGlobals->angle - 3.14159265, mySpaceGlobals->p1X, mySpaceGlobals->p1Y);
+		
+		//activateBullet(mySpaceGlobals, mySpaceGlobals->angle - 3.14159265, mySpaceGlobals->p1X, mySpaceGlobals->p1Y);
 		// shoot a bullet
 		// find an inactive bullet
 		float theta = mySpaceGlobals->angle - 3.14159265;
@@ -92,20 +109,30 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 		return;
 
 	// Handle analog stick movements
-	VPADVec2D left = mySpaceGlobals->lstick;
-	VPADVec2D right = mySpaceGlobals->rstick;
+	Vec2D left = mySpaceGlobals->lstick;
+	//Vec2D right = mySpaceGlobals->rstick;
 
 	// get the differences
-	float xdif = left.x + right.x;
-	float ydif = left.y + right.y;
-
+	//float xdif = left.x + right.x;
+	//float ydif = left.y + right.y;
+	float xdif = left.x;
+	float ydif = left.y;
+	
 	// Handle D-pad movements as well
 	// max out speed at 1 or -1 in both directions
-	xdif = (xdif >  1 || mySpaceGlobals->button & VPAD_BUTTON_RIGHT)?  1 : xdif;
-	xdif = (xdif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_LEFT)? -1 : xdif;
-	ydif = (ydif >  1 || mySpaceGlobals->button &    VPAD_BUTTON_UP)?  1 : ydif;
-	ydif = (ydif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_DOWN)? -1 : ydif;
-
+	if(mySpaceGlobals->selectedController == 0) {
+		xdif = (xdif >  1 || mySpaceGlobals->button & VPAD_BUTTON_RIGHT)?  1 : xdif;
+		xdif = (xdif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_LEFT)? -1 : xdif;
+		ydif = (ydif >  1 || mySpaceGlobals->button &	 VPAD_BUTTON_UP)?  1 : ydif;
+		ydif = (ydif < -1 || mySpaceGlobals->button &  VPAD_BUTTON_DOWN)? -1 : ydif;
+	}
+	else {
+		xdif = (xdif >  1 || mySpaceGlobals->button & WPAD_PRO_BUTTON_RIGHT)?  1 : xdif;
+		xdif = (xdif < -1 || mySpaceGlobals->button &  WPAD_PRO_BUTTON_LEFT)? -1 : xdif;
+		ydif = (ydif >  1 || mySpaceGlobals->button &	 WPAD_PRO_BUTTON_UP)?  1 : ydif;
+		ydif = (ydif < -1 || mySpaceGlobals->button &  WPAD_PRO_BUTTON_DOWN)? -1 : ydif;
+	}
+	
 	// don't update angle if both are within -.1 < x < .1
 	// (this is an expenesive check... 128 bytes compared to just ==0)
 	if (xdif < 0.1 && xdif > -0.1 && ydif < 0.1 && ydif > -0.1) return;
@@ -124,7 +151,7 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 	if (mySpaceGlobals->frame % 60 == 0)
 	{
 		increaseScore(mySpaceGlobals, 10);
-
+		
 		// if the score is at least 50 and a shot hasn't been fired yet, display a message about shooting
 		if (mySpaceGlobals->score >= 50 && !mySpaceGlobals->firstShotFired)
 			mySpaceGlobals->displayHowToPlay = 1;
@@ -134,11 +161,21 @@ void p1Move(struct SpaceGlobals *mySpaceGlobals) {
 
 void checkPause(struct SpaceGlobals * mySpaceGlobals)
 {
-	if (mySpaceGlobals->button & VPAD_BUTTON_PLUS)
-	{
-		// switch to the pause state and mark view as invalid
-		mySpaceGlobals->state = 3;
-		mySpaceGlobals->invalid = 1;
+	if(mySpaceGlobals->selectedController == 0) {
+		if (mySpaceGlobals->button & VPAD_BUTTON_PLUS)
+		{
+			// switch to the pause state and mark view as invalid
+			mySpaceGlobals->state = 3;
+			mySpaceGlobals->invalid = 1;
+		}
+	}
+	else {
+		if (mySpaceGlobals->button & WPAD_PRO_BUTTON_PLUS)
+		{
+			// switch to the pause state and mark view as invalid
+			mySpaceGlobals->state = 3;
+			mySpaceGlobals->invalid = 1;
+		}
 	}
 }
 
@@ -208,8 +245,10 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 
 }
 
-void makeScaleMatrix(int frame, int width, unsigned char original[][width], unsigned char target[][width], int transIndex)
+void makeScaleMatrix(int frame, int width, void *orig, void *targ, int transIndex)
 {
+	unsigned char (*original)[width] = (unsigned char (*)[width])(orig);
+	unsigned char (*target)[width] = (unsigned char (*)[width])(targ);
 	int x;
 	for (x=0; x<width; x++)
 	{
@@ -278,9 +317,11 @@ void handleExplosions(struct SpaceGlobals* mySpaceGlobals)
 	}
 }
 
-void makeRotationMatrix(float angle, int width, unsigned char original[][width], unsigned char target[][width], int transIndex)
+void makeRotationMatrix(float angle, int width, void *orig, void *targ, int transIndex)
 {
-//	if (angle < 0 || angle > 2*3.14159265) return;
+	unsigned char (*original)[width] = (unsigned char (*)[width])(orig);
+	unsigned char (*target)[width] = (unsigned char (*)[width])(targ);
+	
 	int x;
 	for (x=0; x<width; x++)
 	{
@@ -290,19 +331,21 @@ void makeRotationMatrix(float angle, int width, unsigned char original[][width],
 			target[x][y] = transIndex;
 		}
 	}
-
-	float woffset = width/2.0;
-
+	
+	float woffset = width/2.0f;
+	
+	int ix;
 	// go though every pixel in the target bitmap
-	for (x=0; x<width; x++)
+	for (ix=0; ix<width; ix++)
 	{
-		int y;
-		for (y=0; y<width; y++)
+		int iy;
+		for (iy=0; iy<width; iy++)
 		{
+				
 			// rotate the pixel by the angle into a new spot in the rotation matrix
-			int oldx = (int)((x-woffset)*cos(angle) + (y-woffset)*sin(angle) + woffset);
-			int oldy = (int)((x-woffset)*sin(angle) - (y-woffset)*cos(angle) + woffset);
-
+			int oldx = (int)((ix-woffset)*cos(angle) + (iy-woffset)*sin(angle) + woffset);
+			int oldy = (int)((ix-woffset)*sin(angle) - (iy-woffset)*cos(angle) + woffset);
+			
 //			if (oldx < 0) oldx += width;
 //			if (oldy < 0) oldy += width;
 
@@ -310,8 +353,9 @@ void makeRotationMatrix(float angle, int width, unsigned char original[][width],
 
 			if (oldx < 0 || oldx >= width) continue;
 			if (oldy < 0 || oldy >= width) continue;
-
-			target[x][y] = original[oldx][oldy];
+			
+			// TODO: crashes with this below line! When trying to assign to target, but only after doing the above math
+			target[ix][iy] = original[oldx][oldy];
 		}
 	}
 }
@@ -359,14 +403,16 @@ void render(struct SpaceGlobals *mySpaceGlobals)
 		renderEnemies(mySpaceGlobals);
 		renderShip(mySpaceGlobals);
 		renderTexts(mySpaceGlobals);
+
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
 }
 
 // see the notes in images.c for more info on how this works
-void decompress_sprite(int arraysize, int width, int height, const signed char* input, unsigned char target[][width], char transIndex)
+void decompress_sprite(int arraysize, int width, int height, const signed char* input, void *targ, char transIndex)
 {
+	unsigned char (*target)[width] = (unsigned char (*)[width])(targ);
 	int cx = 0, cy = 0;
 	int x;
 	int posinrow = 0;
@@ -451,11 +497,15 @@ void moveBullets(struct SpaceGlobals *mySpaceGlobals)
 				mySpaceGlobals->enemies[x].position.active = 0;
 
 			// rotate the enemy slowly
-			mySpaceGlobals->enemies[x].angle += 0.02;
-			if (mySpaceGlobals->enemies[x].angle > 6.28318530)
-				mySpaceGlobals->enemies[x].angle = 0;
-
+			mySpaceGlobals->enemies[x].angle += 0.02f;
+			if (mySpaceGlobals->enemies[x].angle > 6.28318530f)
+				mySpaceGlobals->enemies[x].angle = 0.0f;
+			
+//			int targetAngle = mySpaceGlobals->enemies[x].angle;
+						
+			// TODO: the below crashes... with angle instead of 0
 			makeRotationMatrix(mySpaceGlobals->enemies[x].angle, 23, mySpaceGlobals->enemy, mySpaceGlobals->enemies[x].rotated_sprite, 9);
+//			makeScaleMatrix(3, 23, mySpaceGlobals->enemy, mySpaceGlobals->enemies[x].rotated_sprite, 9);
 
 			mySpaceGlobals->invalid = 1;
 		}
@@ -473,7 +523,7 @@ void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 		__os_snprintf(score, 255, "Score: %09d", mySpaceGlobals->score);
 	drawString(0, -1, score);
 	drawStringTv(0, -1, score);
-
+	
 	char level[255];
 	__os_snprintf(level, 255, "Lv %d", mySpaceGlobals->level+1);
 	drawString(30, -1, level);
@@ -483,7 +533,7 @@ void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 	__os_snprintf(lives, 255, "Lives: %d", mySpaceGlobals->lives);
 	drawString(55, -1, lives);
 	drawStringTv(90, -1, lives);
-
+	
 	if (mySpaceGlobals->displayHowToPlay)
 	{
 		char nag[255];
@@ -491,7 +541,7 @@ void renderTexts(struct SpaceGlobals *mySpaceGlobals)
 		drawString(20, 17, nag);
 		drawStringTv(56, 27, nag);
 	}
-
+			
 }
 
 void renderShip(struct SpaceGlobals *mySpaceGlobals)
@@ -511,7 +561,7 @@ void renderStars(struct SpaceGlobals *mySpaceGlobals)
 	// don't draw stars if the player is on their last life and died
 	if (mySpaceGlobals->lives == 1 && mySpaceGlobals->playerExplodeFrame > 1)
 		return;
-
+	
 	drawPixels(mySpaceGlobals->stars);
 }
 
@@ -541,6 +591,8 @@ void initGameState(struct SpaceGlobals *mySpaceGlobals)
 	for (x=0; x<100; x++)
 	{
 		mySpaceGlobals->enemies[x].position.active = 0;
+		mySpaceGlobals->enemies[x].angle = 3.14f;
+		makeRotationMatrix(0, 23, mySpaceGlobals->enemy, mySpaceGlobals->enemies[x].rotated_sprite, 9);
 	}
 
 }
@@ -567,7 +619,7 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 	if (mySpaceGlobals->invalid == 1)
 	{
 		blackout();
-
+		
 		// draw some stars
 		renderStars(mySpaceGlobals);
 
@@ -577,6 +629,12 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		char credits[255];
 		__os_snprintf(credits, 255, "by vgmoose");
 
+		char musiccredits[255];
+		__os_snprintf(musiccredits, 255, "~*cruise*~ by (T-T)b");
+		
+		char license[255];
+		__os_snprintf(license, 255, "MIT License");
+		
 		char play[255];
 		__os_snprintf(play, 255, "Start Game");
 		char password[255];
@@ -587,11 +645,16 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 		drawStringTv(62, 14, credits);
 		drawString(25, 12, play);
 		drawStringTv(44, 17, play);
-		drawString(25, 13, password);
+		drawString(26, 13, password);
 		drawStringTv(45, 18, password);
-
+		
+		drawString(45, 17, musiccredits);
+		drawStringTv(80, 27, musiccredits);
+		drawString(-2, 17, license);
+		drawStringTv(-2, 27, license);
+		
 		drawMenuCursor(mySpaceGlobals);
-
+		
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
@@ -601,106 +664,198 @@ void displayTitle(struct SpaceGlobals * mySpaceGlobals)
 void drawMenuCursor(struct SpaceGlobals *mySpaceGlobals)
 {
 	// cover up any old cursors (used to be needed before changing to draw everything mode)
-//	fillRect(mySpaceGlobals->services, 155, 155, 16, 30, 0, 0, 0);
-//	fillRect(mySpaceGlobals->services, 240, 155, 16, 30, 0, 0, 0);
+//	fillRect(155, 155, 16, 30, 0, 0, 0);
+//	fillRect(240, 155, 16, 30, 0, 0, 0);
 
 	// display the cursor on the correct item
 	char cursor[255];
 	__os_snprintf(cursor, 255, ">>            <<");
 	drawString(22, 12 + mySpaceGlobals->menuChoice, cursor);
-	drawStringTv(41, 17 + mySpaceGlobals->menuChoice, cursor);
+	drawStringTv(41, 17 + mySpaceGlobals->menuChoice, cursor);	
 }
 
 void doMenuAction(struct SpaceGlobals *mySpaceGlobals)
 {
 	// if we've seen the A button not being pressed
-	if (!(mySpaceGlobals->button & VPAD_BUTTON_A))
-	{
-		mySpaceGlobals->allowInput = 1;
-	}
-
-	if (mySpaceGlobals->button & VPAD_BUTTON_A && mySpaceGlobals->allowInput)
-	{
-		// if we're on the title menu
-		if (mySpaceGlobals->state == 1)
+	if(mySpaceGlobals->selectedController == 0) {
+		if (!(mySpaceGlobals->button & VPAD_BUTTON_A))
 		{
-			if (mySpaceGlobals->menuChoice == 0)
+			mySpaceGlobals->allowInput = 1;
+		}
+		
+		if (mySpaceGlobals->button & VPAD_BUTTON_A && mySpaceGlobals->allowInput)
+		{
+			// if we're on the title menu
+			if (mySpaceGlobals->state == 1)
+			{
+				if (mySpaceGlobals->menuChoice == 0)
+				{
+					totallyRefreshState(mySpaceGlobals);
+					
+					// start game chosen
+					mySpaceGlobals->state = 7; // switch to game state
+					mySpaceGlobals->renderResetFlag = 1; // redraw screen
+				}
+				else if (mySpaceGlobals->menuChoice == 1)
+				{
+					// password screen chosen
+					mySpaceGlobals->state = 2;
+				}
+			}
+			// password screen
+	//		else if (mySpaceGlobals->state == 2)
+	//		{
+	//			// this is handled by the password menu action function
+	//		}
+			// pause screen 
+			else if (mySpaceGlobals->state == 3)
+			{
+				if (mySpaceGlobals->menuChoice == 0)
+				{
+					// resume chosen
+					mySpaceGlobals->state = 7; // switch to game state
+					
+				}
+				else if (mySpaceGlobals->menuChoice == 1)
+				{
+					// quit chosen
+					totallyRefreshState(mySpaceGlobals);
+					mySpaceGlobals->state = 1;
+				}
+			}
+			// game over screen 
+			else if (mySpaceGlobals->state == 4)
 			{
 				totallyRefreshState(mySpaceGlobals);
-
-				// start game chosen
-				mySpaceGlobals->state = 7; // switch to game state
-				mySpaceGlobals->renderResetFlag = 1; // redraw screen
+				
+				if (mySpaceGlobals->menuChoice == 0)
+				{
+					// try again chosen
+					
+					//player stays on the same level 
+					mySpaceGlobals->state = 7; // switch to game state
+					
+				}
+				else if (mySpaceGlobals->menuChoice == 1)
+				{
+					// quit chosen
+					mySpaceGlobals->state = 1;
+				}
 			}
-			else if (mySpaceGlobals->menuChoice == 1)
-			{
-				// password screen chosen
-				mySpaceGlobals->state = 2;
-			}
+			
+			// reset the choice
+			mySpaceGlobals->menuChoice = 0;
+			
+			// disable menu input after selecting to prevent double selects
+			mySpaceGlobals->allowInput = 0;
+	
+			// mark view invalid to redraw
+			mySpaceGlobals->invalid = 1;
 		}
-		// password screen
-//		else if (mySpaceGlobals->state == 2)
-//		{
-//			// this is handled by the password menu action function
-//		}
-		// pause screen
-		else if (mySpaceGlobals->state == 3)
+		
+		float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
+		
+		if (mySpaceGlobals->button & VPAD_BUTTON_DOWN || stickY < -0.3)
 		{
-			if (mySpaceGlobals->menuChoice == 0)
+			mySpaceGlobals->menuChoice = 1;
+			mySpaceGlobals->invalid = 1;
+		}
+		
+		if (mySpaceGlobals->button & VPAD_BUTTON_UP || stickY > 0.3)
+		{
+			mySpaceGlobals->menuChoice = 0;
+			mySpaceGlobals->invalid = 1;
+		}
+	}
+	else {
+		if (!(mySpaceGlobals->button & WPAD_PRO_BUTTON_A))
+		{
+			mySpaceGlobals->allowInput = 1;
+		}
+		
+		if (mySpaceGlobals->button & WPAD_PRO_BUTTON_A && mySpaceGlobals->allowInput)
+		{
+			// if we're on the title menu
+			if (mySpaceGlobals->state == 1)
 			{
-				// resume chosen
-				mySpaceGlobals->state = 7; // switch to game state
-
+				if (mySpaceGlobals->menuChoice == 0)
+				{
+					totallyRefreshState(mySpaceGlobals);
+					
+					// start game chosen
+					mySpaceGlobals->state = 7; // switch to game state
+					mySpaceGlobals->renderResetFlag = 1; // redraw screen
+				}
+				else if (mySpaceGlobals->menuChoice == 1)
+				{
+					// password screen chosen
+					mySpaceGlobals->state = 2;
+				}
 			}
-			else if (mySpaceGlobals->menuChoice == 1)
+			// password screen
+	//		else if (mySpaceGlobals->state == 2)
+	//		{
+	//			// this is handled by the password menu action function
+	//		}
+			// pause screen 
+			else if (mySpaceGlobals->state == 3)
 			{
-				// quit chosen
+				if (mySpaceGlobals->menuChoice == 0)
+				{
+					// resume chosen
+					mySpaceGlobals->state = 7; // switch to game state
+					
+				}
+				else if (mySpaceGlobals->menuChoice == 1)
+				{
+					// quit chosen
+					totallyRefreshState(mySpaceGlobals);
+					mySpaceGlobals->state = 1;
+				}
+			}
+			// game over screen 
+			else if (mySpaceGlobals->state == 4)
+			{
 				totallyRefreshState(mySpaceGlobals);
-				mySpaceGlobals->state = 1;
+				
+				if (mySpaceGlobals->menuChoice == 0)
+				{
+					// try again chosen
+					
+					//player stays on the same level 
+					mySpaceGlobals->state = 7; // switch to game state
+					
+				}
+				else if (mySpaceGlobals->menuChoice == 1)
+				{
+					// quit chosen
+					mySpaceGlobals->state = 1;
+				}
 			}
+			
+			// reset the choice
+			mySpaceGlobals->menuChoice = 0;
+			
+			// disable menu input after selecting to prevent double selects
+			mySpaceGlobals->allowInput = 0;
+	
+			// mark view invalid to redraw
+			mySpaceGlobals->invalid = 1;
 		}
-		// game over screen
-		else if (mySpaceGlobals->state == 4)
+		
+		float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
+		
+		if (mySpaceGlobals->button & WPAD_PRO_BUTTON_DOWN || stickY < -0.3)
 		{
-			totallyRefreshState(mySpaceGlobals);
-
-			if (mySpaceGlobals->menuChoice == 0)
-			{
-				// try again chosen
-
-				//player stays on the same level
-				mySpaceGlobals->state = 7; // switch to game state
-
-			}
-			else if (mySpaceGlobals->menuChoice == 1)
-			{
-				// quit chosen
-				mySpaceGlobals->state = 1;
-			}
+			mySpaceGlobals->menuChoice = 1;
+			mySpaceGlobals->invalid = 1;
 		}
-
-		// reset the choice
-		mySpaceGlobals->menuChoice = 0;
-
-		// disable menu input after selecting to prevent double selects
-		mySpaceGlobals->allowInput = 0;
-
-		// mark view invalid to redraw
-		mySpaceGlobals->invalid = 1;
-	}
-
-	float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
-
-	if (mySpaceGlobals->button & VPAD_BUTTON_DOWN || stickY < -0.3)
-	{
-		mySpaceGlobals->menuChoice = 1;
-		mySpaceGlobals->invalid = 1;
-	}
-
-	if (mySpaceGlobals->button & VPAD_BUTTON_UP || stickY > 0.3)
-	{
-		mySpaceGlobals->menuChoice = 0;
-		mySpaceGlobals->invalid = 1;
+		
+		if (mySpaceGlobals->button & WPAD_PRO_BUTTON_UP || stickY > 0.3)
+		{
+			mySpaceGlobals->menuChoice = 0;
+			mySpaceGlobals->invalid = 1;
+		}
 	}
 }
 
@@ -715,14 +870,14 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 		__os_snprintf(resume, 255, "Resume");
 		char quit[255];
 		__os_snprintf(quit, 255, "Quit");
-
+		
 		drawString(27, 12, resume);
 		drawStringTv(46, 17, resume);
 		drawString(28, 13, quit);
 		drawStringTv(47, 18, quit);
-
+		
 		drawMenuCursor(mySpaceGlobals);
-
+		
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
@@ -731,92 +886,182 @@ void displayPause(struct SpaceGlobals * mySpaceGlobals)
 void doPasswordMenuAction(struct SpaceGlobals * mySpaceGlobals)
 {
 	// if we've seen up, down, left, right, and a buttons not being pressed
-	if (!(mySpaceGlobals->button & VPAD_BUTTON_A     ||
-		  mySpaceGlobals->button & VPAD_BUTTON_UP    ||
-		  mySpaceGlobals->button & VPAD_BUTTON_DOWN  ||
-		  mySpaceGlobals->button & VPAD_BUTTON_LEFT  ||
-		  mySpaceGlobals->button & VPAD_BUTTON_RIGHT   ))
-	{
-		mySpaceGlobals->allowInput = 1;
+	if(mySpaceGlobals->selectedController == 0) {
+		if (!(mySpaceGlobals->button & VPAD_BUTTON_A	 || 
+		  	mySpaceGlobals->button & VPAD_BUTTON_UP	||
+		  	mySpaceGlobals->button & VPAD_BUTTON_DOWN  ||
+		  	mySpaceGlobals->button & VPAD_BUTTON_LEFT  ||
+		  	mySpaceGlobals->button & VPAD_BUTTON_RIGHT   ))
+			{
+				mySpaceGlobals->allowInput = 1;
+			}
+			if (mySpaceGlobals->allowInput)
+			{
+				if (mySpaceGlobals->button & VPAD_BUTTON_B)
+				{
+					// go back to title screen
+					mySpaceGlobals->state = 1;
+					
+					// update the menu choice
+					mySpaceGlobals->menuChoice = 0;
+					
+					// disable menu input after selecting to prevent double selects
+					mySpaceGlobals->allowInput = 0;
+		
+					// mark view invalid to redraw
+					mySpaceGlobals->invalid = 1;
+				}
+				if (mySpaceGlobals->button & VPAD_BUTTON_A)
+				{
+					// try the password
+					tryPassword(mySpaceGlobals);
+		
+					// disable menu input after selecting to prevent double selects
+					mySpaceGlobals->allowInput = 0;
+					
+					// update the menu choice
+					mySpaceGlobals->menuChoice = 0;
+		
+					// mark view invalid to redraw
+					mySpaceGlobals->invalid = 1;
+				}
+				
+				float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
+				float stickX = mySpaceGlobals->lstick.x + mySpaceGlobals->rstick.x;
+				int down  = (mySpaceGlobals->button & VPAD_BUTTON_DOWN  || stickY < -0.3);
+				int up	= (mySpaceGlobals->button & VPAD_BUTTON_UP	|| stickY >  0.3);
+				int left  = (mySpaceGlobals->button & VPAD_BUTTON_LEFT  || stickX < -0.3);
+				int right = (mySpaceGlobals->button & VPAD_BUTTON_RIGHT || stickX >  0.3);
+				
+				if (up || down)
+				{
+					int offset = 1, x;
+					// keep going up in the 10s place to match current choice
+					for (x=0; x<(4 - mySpaceGlobals->menuChoice); x++)
+						offset *= 10;
+						
+					if (up)
+						mySpaceGlobals->passwordEntered += offset;
+					if (down)
+						mySpaceGlobals->passwordEntered -= offset;
+						
+					mySpaceGlobals->invalid = 1;
+					mySpaceGlobals->allowInput = 0;
+				}
+		
+				if (left || right)
+				{
+					if (right)
+						mySpaceGlobals->menuChoice ++;
+					if (left)
+						mySpaceGlobals->menuChoice --;;
+					
+					// bound the menu choices
+					if (mySpaceGlobals->menuChoice < 0)
+						mySpaceGlobals->menuChoice = 0;
+					if (mySpaceGlobals->menuChoice > 4)
+						mySpaceGlobals->menuChoice = 4;
+					
+					mySpaceGlobals->invalid = 1;
+					mySpaceGlobals->allowInput = 0;
+				}
+				
+				// bound the password
+				if (mySpaceGlobals->passwordEntered < 0)
+					mySpaceGlobals->passwordEntered = 0;
+				if (mySpaceGlobals->passwordEntered > 99999)
+					mySpaceGlobals->passwordEntered = 99999;
+			}
 	}
-
-	if (mySpaceGlobals->allowInput)
-	{
-		if (mySpaceGlobals->button & VPAD_BUTTON_B)
-		{
-			// go back to title screen
-			mySpaceGlobals->state = 1;
-
-			// update the menu choice
-			mySpaceGlobals->menuChoice = 0;
-
-			// disable menu input after selecting to prevent double selects
-			mySpaceGlobals->allowInput = 0;
-
-			// mark view invalid to redraw
-			mySpaceGlobals->invalid = 1;
-		}
-		if (mySpaceGlobals->button & VPAD_BUTTON_A)
-		{
-			// try the password
-			tryPassword(mySpaceGlobals);
-
-			// disable menu input after selecting to prevent double selects
-			mySpaceGlobals->allowInput = 0;
-
-			// update the menu choice
-			mySpaceGlobals->menuChoice = 0;
-
-			// mark view invalid to redraw
-			mySpaceGlobals->invalid = 1;
-		}
-
-		float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
-		float stickX = mySpaceGlobals->lstick.x + mySpaceGlobals->rstick.x;
-		int down  = (mySpaceGlobals->button & VPAD_BUTTON_DOWN  || stickY < -0.3);
-		int up    = (mySpaceGlobals->button & VPAD_BUTTON_UP    || stickY >  0.3);
-		int left  = (mySpaceGlobals->button & VPAD_BUTTON_LEFT  || stickX < -0.3);
-		int right = (mySpaceGlobals->button & VPAD_BUTTON_RIGHT || stickX >  0.3);
-
-		if (up || down)
-		{
-			int offset = 1, x;
-			// keep going up in the 10s place to match current choice
-			for (x=0; x<(4 - mySpaceGlobals->menuChoice); x++)
-				offset *= 10;
-
-			if (up)
-				mySpaceGlobals->passwordEntered += offset;
-			if (down)
-				mySpaceGlobals->passwordEntered -= offset;
-
-			mySpaceGlobals->invalid = 1;
-			mySpaceGlobals->allowInput = 0;
-		}
-
-		if (left || right)
-		{
-			if (right)
-				mySpaceGlobals->menuChoice ++;
-			if (left)
-				mySpaceGlobals->menuChoice --;;
-
-			// bound the menu choices
-			if (mySpaceGlobals->menuChoice < 0)
-				mySpaceGlobals->menuChoice = 0;
-			if (mySpaceGlobals->menuChoice > 4)
-				mySpaceGlobals->menuChoice = 4;
-
-			mySpaceGlobals->invalid = 1;
-			mySpaceGlobals->allowInput = 0;
-		}
-
-		// bound the password
-		if (mySpaceGlobals->passwordEntered < 0)
-			mySpaceGlobals->passwordEntered = 0;
-		if (mySpaceGlobals->passwordEntered > 99999)
-			mySpaceGlobals->passwordEntered = 99999;
+	else {
+		if (!(mySpaceGlobals->button & WPAD_PRO_BUTTON_A	 || 
+		  	mySpaceGlobals->button & WPAD_PRO_BUTTON_UP	||
+		  	mySpaceGlobals->button & WPAD_PRO_BUTTON_DOWN  ||
+		  	mySpaceGlobals->button & WPAD_PRO_BUTTON_LEFT  ||
+		  	mySpaceGlobals->button & WPAD_PRO_BUTTON_RIGHT   ))
+			{
+				mySpaceGlobals->allowInput = 1;
+			}
+			if (mySpaceGlobals->allowInput)
+			{
+				if (mySpaceGlobals->button & WPAD_PRO_BUTTON_B)
+				{
+					// go back to title screen
+					mySpaceGlobals->state = 1;
+					
+					// update the menu choice
+					mySpaceGlobals->menuChoice = 0;
+					
+					// disable menu input after selecting to prevent double selects
+					mySpaceGlobals->allowInput = 0;
+		
+					// mark view invalid to redraw
+					mySpaceGlobals->invalid = 1;
+				}
+				if (mySpaceGlobals->button & WPAD_PRO_BUTTON_A)
+				{
+					// try the password
+					tryPassword(mySpaceGlobals);
+		
+					// disable menu input after selecting to prevent double selects
+					mySpaceGlobals->allowInput = 0;
+					
+					// update the menu choice
+					mySpaceGlobals->menuChoice = 0;
+		
+					// mark view invalid to redraw
+					mySpaceGlobals->invalid = 1;
+				}
+				
+				float stickY = mySpaceGlobals->lstick.y + mySpaceGlobals->rstick.y;
+				float stickX = mySpaceGlobals->lstick.x + mySpaceGlobals->rstick.x;
+				int down  = (mySpaceGlobals->button & WPAD_PRO_BUTTON_DOWN  || stickY < -0.3);
+				int up	= (mySpaceGlobals->button & WPAD_PRO_BUTTON_UP	|| stickY >  0.3);
+				int left  = (mySpaceGlobals->button & WPAD_PRO_BUTTON_LEFT  || stickX < -0.3);
+				int right = (mySpaceGlobals->button & WPAD_PRO_BUTTON_RIGHT || stickX >  0.3);
+				
+				if (up || down)
+				{
+					int offset = 1, x;
+					// keep going up in the 10s place to match current choice
+					for (x=0; x<(4 - mySpaceGlobals->menuChoice); x++)
+						offset *= 10;
+						
+					if (up)
+						mySpaceGlobals->passwordEntered += offset;
+					if (down)
+						mySpaceGlobals->passwordEntered -= offset;
+						
+					mySpaceGlobals->invalid = 1;
+					mySpaceGlobals->allowInput = 0;
+				}
+		
+				if (left || right)
+				{
+					if (right)
+						mySpaceGlobals->menuChoice ++;
+					if (left)
+						mySpaceGlobals->menuChoice --;;
+					
+					// bound the menu choices
+					if (mySpaceGlobals->menuChoice < 0)
+						mySpaceGlobals->menuChoice = 0;
+					if (mySpaceGlobals->menuChoice > 4)
+						mySpaceGlobals->menuChoice = 4;
+					
+					mySpaceGlobals->invalid = 1;
+					mySpaceGlobals->allowInput = 0;
+				}
+				
+				// bound the password
+				if (mySpaceGlobals->passwordEntered < 0)
+					mySpaceGlobals->passwordEntered = 0;
+				if (mySpaceGlobals->passwordEntered > 99999)
+					mySpaceGlobals->passwordEntered = 99999;
+			}
 	}
+	
+	
 }
 
 void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
@@ -824,7 +1069,7 @@ void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 	if (mySpaceGlobals->invalid == 1)
 	{
 		blackout();
-
+		
 //		drawPasswordMenuCursor(mySpaceGlobals);
 		char password[255];
 		__os_snprintf(password, 255, "Password:");
@@ -834,17 +1079,17 @@ void displayPasswordScreen(struct SpaceGlobals * mySpaceGlobals)
 		__os_snprintf(cur_pw, 255, "%05d", mySpaceGlobals->passwordEntered);
 		char down_cur[255];
 		__os_snprintf(down_cur, 255, "^");
-
+		
 		drawString(22, 8, password);
 		drawStringTv(41, 14, password);
-
+		
 		drawString(32 + mySpaceGlobals->menuChoice, 7, up_cur);
 		drawStringTv(51 + mySpaceGlobals->menuChoice, 13, up_cur);
- 		drawString(32, 8, cur_pw);
+		drawString(32, 8, cur_pw);
 		drawStringTv(51, 14, cur_pw);
- 		drawString(32 + mySpaceGlobals->menuChoice, 9, down_cur);
+		drawString(32 + mySpaceGlobals->menuChoice, 9, down_cur);
 		drawStringTv(51 + mySpaceGlobals->menuChoice, 15, down_cur);
-
+		
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
@@ -901,14 +1146,14 @@ void addNewEnemies(struct SpaceGlobals *mySpaceGlobals)
 	}
 
 	// seek directly to the player
-//	if (mySpaceGlobals->enemiesSeekPlayer == 1)
-//	{
-//		float xdif = startx + 11 - (mySpaceGlobals->p1X + 18);
-//		float ydif = starty + 11 - (mySpaceGlobals->p1Y + 18);
-//
-//		theta = atan2(xdif, ydif) - 3.14159265;
-//	}
-
+	if (mySpaceGlobals->enemiesSeekPlayer == 1)
+	{
+		float xdif = startx + 11 - (mySpaceGlobals->p1X + 18);
+		float ydif = starty + 11 - (mySpaceGlobals->p1Y + 18);
+		
+		theta = atan2(xdif, ydif) - 3.14159265;
+	}
+		
 	int xx;
 	for (xx=0; xx<enemyCount; xx++)
 	{
@@ -943,7 +1188,7 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
 	if (mySpaceGlobals->invalid == 1)
 	{
 		blackout();
-
+				
 		char gameover[255];
 		__os_snprintf(gameover, 255, "Game Over!");
 		drawString(25, 5, gameover);
@@ -959,7 +1204,7 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
 
 			drawString(23, 7, finalscore);
 			drawStringTv(42, 12, finalscore);
- 			drawString(21, 8, pass);
+			drawString(21, 8, pass);
 			drawStringTv(40, 13, pass);
 		}
 
@@ -968,21 +1213,21 @@ void displayGameOver(struct SpaceGlobals *mySpaceGlobals)
 		__os_snprintf(resume, 255, "Try  Again");
 		char quit[255];
 		__os_snprintf(quit, 255, "Quit");
-
+		
 		drawString(25, 12, resume);
 		drawStringTv(44, 17, resume);
 		drawString(28, 13, quit);
 		drawStringTv(47, 18, quit);
-
+		
 		drawMenuCursor(mySpaceGlobals);
-
+		
 		flipBuffers();
 		mySpaceGlobals->invalid = 0;
 	}
 	blackout();
-
-
-
+	
+	
+	
 }
 
 void tryPassword(struct SpaceGlobals *mySpaceGlobals)
@@ -1021,53 +1266,53 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 	}
 
 	// Play as original spaceship (only if changed)
-//	if (mySpaceGlobals->passwordEntered == 00000 && mySpaceGlobals->playerChoice != 0)
-//	{
-//		mySpaceGlobals->playerChoice = 0;
-//		decompress_sprite(511, 36, 36, compressed_ship, mySpaceGlobals->orig_ship, 14);
-//		mySpaceGlobals->curPalette = ship_palette;
-//		mySpaceGlobals->transIndex = 14;
-//		mySpaceGlobals->state = 7;
-//	}
-
+	if (mySpaceGlobals->passwordEntered == 00000 && mySpaceGlobals->playerChoice != 0)
+	{
+		mySpaceGlobals->playerChoice = 0;
+		decompress_sprite(511, 36, 36, compressed_ship, mySpaceGlobals->orig_ship, 14);
+		mySpaceGlobals->curPalette = ship_palette;
+		mySpaceGlobals->transIndex = 14;
+		mySpaceGlobals->state = 7;
+	}
+	
 	// Play as galaga ship
-//	if (mySpaceGlobals->passwordEntered == 12345)
-//	{
-//		mySpaceGlobals->playerChoice = 3;
-//		decompress_sprite(452, 36, 36, compressed_ship2, mySpaceGlobals->orig_ship, 5);
-//		mySpaceGlobals->curPalette = ship2_palette;
-//		mySpaceGlobals->transIndex = 5;
-//		mySpaceGlobals->state = 7;
-//	}
-
+	if (mySpaceGlobals->passwordEntered == 12345)
+	{
+		mySpaceGlobals->playerChoice = 3;
+		decompress_sprite(452, 36, 36, compressed_ship2, mySpaceGlobals->orig_ship, 5);
+		mySpaceGlobals->curPalette = ship2_palette;
+		mySpaceGlobals->transIndex = 5;
+		mySpaceGlobals->state = 7;
+	}
+	
 	// Play as JWittz
-//	if (mySpaceGlobals->passwordEntered == 24177)
-//	{
-//		mySpaceGlobals->playerChoice = 1;
-//		decompress_sprite(662, 36, 36, compressed_boss2, mySpaceGlobals->orig_ship, 39);
-//		mySpaceGlobals->curPalette = boss2_palette;
-//		mySpaceGlobals->transIndex = 39;
-//		mySpaceGlobals->state = 7;
-//	}
+	if (mySpaceGlobals->passwordEntered == 24177)
+	{
+		mySpaceGlobals->playerChoice = 1;
+		decompress_sprite(662, 36, 36, compressed_boss2, mySpaceGlobals->orig_ship, 39);
+		mySpaceGlobals->curPalette = boss2_palette;
+		mySpaceGlobals->transIndex = 39;
+		mySpaceGlobals->state = 7;
+	}
 
 	// Play as Etika
-//	if (mySpaceGlobals->passwordEntered == 37124)
-//	{
-//		mySpaceGlobals->playerChoice = 2;
-//		decompress_sprite(740, 36, 36, compressed_boss, mySpaceGlobals->orig_ship, 39);
-//		mySpaceGlobals->curPalette = boss_palette;
-//		mySpaceGlobals->transIndex = 39;
-//		mySpaceGlobals->state = 7;
-//	}
-
+	if (mySpaceGlobals->passwordEntered == 37124)
+	{
+		mySpaceGlobals->playerChoice = 2;
+		decompress_sprite(740, 36, 36, compressed_boss, mySpaceGlobals->orig_ship, 39);
+		mySpaceGlobals->curPalette = boss_palette;
+		mySpaceGlobals->transIndex = 39;
+		mySpaceGlobals->state = 7;
+	}
+	
 	// Enemies come right for you (kamikaze mode)
-//	if (mySpaceGlobals->passwordEntered == 30236)
-//	{
-//		mySpaceGlobals->enemiesSeekPlayer = 1;
-//		mySpaceGlobals->dontKeepTrackOfScore = 1;
-//		mySpaceGlobals->state = 7;
-//	}
-
+	if (mySpaceGlobals->passwordEntered == 30236)
+	{
+		mySpaceGlobals->enemiesSeekPlayer = 1;
+		mySpaceGlobals->dontKeepTrackOfScore = 1;
+		mySpaceGlobals->state = 7;
+	}
+	
 	// start installer for Hykem's IOSU Exploit
 	// Commented out due to a lack of OSFatal in WUT
 	/*if (mySpaceGlobals->passwordEntered == 41666)
@@ -1103,4 +1348,16 @@ void renderReset(struct SpaceGlobals *mySpaceGlobals)
 	mySpaceGlobals->p1Y = 100;
 	mySpaceGlobals->renderResetFlag = 0;
 	mySpaceGlobals->invalid = 1;
+}
+
+void drawControllerSelectScreen(struct SpaceGlobals *mySpaceGlobals) {
+	fillScreen(0, 0, 0, 255);
+	renderStars(mySpaceGlobals);
+	drawString(5, 7, "Press the A button on the controller you want to use");
+	drawString(8, 10, "You can use the Wii U GamePad or any connected");
+	drawString(21, 11, "Wii U Pro Controller");
+	drawStringTv(23, 11, "Press the A button on the controller you want to use");
+	drawStringTv(26, 14, "You can use the Wii U GamePad or any connected");
+	drawStringTv(39, 15, "Wii U Pro Controller");
+	flipBuffers();
 }

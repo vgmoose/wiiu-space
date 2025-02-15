@@ -1,6 +1,7 @@
 #include "draw.h"
 #include "space.h"
 #include "program.h"
+#include "dynamic_libs/os_functions.h"
 
 #include <coreinit/cache.h>
 #include <coreinit/screen.h>
@@ -36,10 +37,10 @@ void putAPixel(int x, int y, int r, int g, int b)
 	for (ax=0; ax<2; ax++)
 		for (ay=0; ay<2; ay++)
 			for (az=0; az<2; az++)
-				if (ax) {  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+				 if (ax) {  // uncomment for fullscreen on TV, text on the TV will have to be moved though
 					OSScreenPutPixelEx(ax, x + ay, y + az, num);
-				}    // uncomment for fullscreen on TV, text on the TV will have to be moved though
-				else {    // uncomment for fullscreen on TV, text on the TV will have to be moved though
+				 }    // uncomment for fullscreen on TV, text on the TV will have to be moved though
+				 else {    // uncomment for fullscreen on TV, text on the TV will have to be moved though
 					 int a;  // uncomment for fullscreen on TV, text on the TV will have to be moved though
 					 for (a = 0; a < 2; a++) {  // uncomment for fullscreen on TV, text on the TV will have to be moved though
 						 int x1 = ( ( (x + ay) * 3 ) / 2 ) + a;  // uncomment for fullscreen on TV, text on the TV will have to be moved though
@@ -100,6 +101,8 @@ more important. A potential speedup may be to integrate the three pixel colors i
 **/
 void drawBitmap(int ox, int oy, int width, int height, unsigned char input[][width], unsigned const char palette[][3])
 {	
+	unsigned char (*input)[width] = (unsigned char (*)[width])(inp);
+	unsigned const char (*palette)[3] = (unsigned const char (*)[3])(pal);
 	int rx;
 	for (rx=0; rx<width; rx++)
 	{
