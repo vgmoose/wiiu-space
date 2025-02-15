@@ -90,25 +90,9 @@ struct SpaceGlobals{
 	
 	int displayHowToPlay;
 	int firstShotFired;
-	
-	int displayHowToPlay;
-	int firstShotFired;
-	
-	int selectedController;
 
 };
 
 extern void* screenBuffer;
-/* Main */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-//! C wrapper for our C++ functions
-int _entryPoint();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* PROGRAM_H */

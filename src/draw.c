@@ -1,7 +1,6 @@
 #include "draw.h"
 #include "space.h"
 #include "program.h"
-#include "dynamic_libs/os_functions.h"
 
 #include <coreinit/cache.h>
 #include <coreinit/screen.h>
@@ -101,8 +100,6 @@ more important. A potential speedup may be to integrate the three pixel colors i
 **/
 void drawBitmap(int ox, int oy, int width, int height, unsigned char input[][width], unsigned const char palette[][3])
 {	
-	unsigned char (*input)[width] = (unsigned char (*)[width])(inp);
-	unsigned const char (*palette)[3] = (unsigned const char (*)[3])(pal);
 	int rx;
 	for (rx=0; rx<width; rx++)
 	{
