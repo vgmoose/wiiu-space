@@ -1,3 +1,4 @@
+#ifdef __WIIU__
 #include <coreinit/core.h>
 #include <coreinit/debug.h>
 #include <coreinit/dynload.h>
@@ -10,9 +11,10 @@
 #include <whb/log_cafe.h>
 #include <whb/log_udp.h>
 #include <whb/log.h>
+#endif
 
 #include "program.h"
-//#include "trigmath.h"
+#include "platform.h"
 #include "draw.h"
 #include "images.h"
 #include "space.h"
@@ -25,100 +27,7 @@ void* screenBuffer;
 
 char log_buf[0x400];
 
-bool isAppRunning = true;
-bool initialized = false;
 struct SpaceGlobals mySpaceGlobals;
-
-void screenInit()
-{
-	//Grab the buffer size for each screen (TV and gamepad)
-	int buf0_size = OSScreenGetBufferSizeEx(0);
-	int buf1_size = OSScreenGetBufferSizeEx(1);
-	/*__os_snprintf(log_buf, 0x400, "Screen sizes %x, %x\n", buf0_size, buf1_size);
-	OSReport(log_buf);*/
-
-	//Set the buffer area.
-	screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x100);
-	/*__os_snprintf(log_buf, 0x400, "Allocated screen buffers at %x\n", screenBuffer);
-	OSReport(log_buf);*/
-
-    OSScreenSetBufferEx(0, screenBuffer);
-    OSScreenSetBufferEx(1, (screenBuffer + buf0_size));
-    //OSReport("Set screen buffers\n");
-
-    OSScreenEnableEx(0, 1);
-    OSScreenEnableEx(1, 1);
-
-    //Clear both framebuffers.
-	for (int ii = 0; ii < 2; ii++)
-	{
-		fillScreen(0,0,0,0);
-		flipBuffers();
-	}
-}
-
-void screenDeinit()
-{
-    for(int ii = 0; ii < 2; ii++)
-	{
-		fillScreen(0,0,0,0);
-		flipBuffers();
-	}
-
-    MEM1_free(screenBuffer);
-}
-
-void SaveCallback()
-{
-   OSSavesDone_ReadyToRelease(); // Required
-}
-
-bool AppRunning()
-{
-   if(!OSIsMainCore())
-   {
-      ProcUISubProcessMessages(true);
-   }
-   else
-   {
-      ProcUIStatus status = ProcUIProcessMessages(true);
-
-      if(status == PROCUI_STATUS_EXITING)
-      {
-          // Being closed, deinit things and prepare to exit
-          isAppRunning = false;
-
-          if(initialized)
-          {
-              initialized = false;
-              screenDeinit();
-          }
-          ProcUIShutdown();
-      }
-      else if(status == PROCUI_STATUS_RELEASE_FOREGROUND)
-      {
-          // Free up MEM1 to next foreground app, etc.
-          initialized = false;
-
-          screenDeinit();
-          ProcUIDrawDoneRelease();
-      }
-      else if(status == PROCUI_STATUS_IN_FOREGROUND)
-      {
-         // Reallocate MEM1, reinit screen, etc.
-         if(!initialized)
-         {
-            initialized = true;
-            screenInit();
-
-            // redraw the screen upon resume
-            mySpaceGlobals.invalid = 1;
-         }
-      }
-   }
-
-   return isAppRunning;
-}
 
 void cleanSlate()
 {
@@ -133,17 +42,7 @@ void cleanSlate()
 
 int main(int argc, char **argv)
 {
-	WHBLogCafeInit();
-	WHBLogUdpInit();
-
-	OSDynLoad_Module avm_handle = 0;
-	OSDynLoad_Acquire("avm.rpl", &avm_handle);
-	bool(*AVMSetTVScale)(int width, int height);
-	OSDynLoad_FindExport(avm_handle, 0, "AVMSetTVScale", (void **)&AVMSetTVScale);
-	AVMSetTVScale(854, 480);  // Not working, hope to find a solution
-
-	OSScreenInit();
-	ProcUIInit(&SaveCallback);
+	platformInit();
 
 	/****************************>             Globals             <****************************/
 	//struct SpaceGlobals mySpaceGlobals;
@@ -185,17 +84,19 @@ int main(int argc, char **argv)
 
 	initMusicPlayer("fs:/vol/content/sounds/cruise.mp3");
 	playMusic();
-	while (AppRunning())
+	while (AppRunning(&mySpaceGlobals))
 	{
 		updateMusic(); // TODO: use return value
 		
 		VPADRead(0, &vpad_data, 1, &error);
 
-		//Get the status of the gamepad
-		mySpaceGlobals.button = vpad_data.hold;
-
 		mySpaceGlobals.rstick = vpad_data.rightStick;
 		mySpaceGlobals.lstick = vpad_data.leftStick;
+
+		//Get the status of the gamepad
+#if defined(__WIIU__)
+		// TODO: move out to a wiiu_paddata.c file, and use PAD instead of VPAD
+		mySpaceGlobals.button = vpad_data.hold;
 
 		mySpaceGlobals.touched = vpad_data.tpNormal.touched;
 		if (mySpaceGlobals.touched == 1)
@@ -203,6 +104,16 @@ int main(int argc, char **argv)
 			mySpaceGlobals.touchX = ((vpad_data.tpNormal.x / 9) - 11);
 			mySpaceGlobals.touchY = ((3930 - vpad_data.tpNormal.y) / 16);
 		}
+#else
+		mySpaceGlobals.button = vpad_data.btns_h;
+
+		mySpaceGlobals.touched = vpad_data.isTouched;
+		if (mySpaceGlobals.touched == 1)
+		{
+			mySpaceGlobals.touchX = vpad_data.touchData.x;
+			mySpaceGlobals.touchY = vpad_data.touchData.y;
+		}
+#endif
 
 		if (mySpaceGlobals.restart == 1)
 		{

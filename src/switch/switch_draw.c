@@ -1,4 +1,5 @@
-#include "switch_draw.h"
+#include "font.h"
+#include "../draw.h"
 #include <switch.h>
 
 #define FB_WIDTH  1920
@@ -66,17 +67,17 @@ void putAPixel(int x, int y, int r, int g, int b)
 		for (ax=0; ax<2; ax++) {
 			u32 pos = (y+ay) * stride / sizeof(u32) + (x+ax);
 			// if (pos < FB_WIDTH * FB_HEIGHT)
-			((u32*)fb.framebuffer)[pos] = num;
+			((u32*)fb.buf)[pos] = num;
 		}
 }
 
-void drawString(struct Graphics* g, int xi, int yi, char * string)
+void drawString(int xi, int yi, char * string)
 {
     // on Switch, we only use the TV screen
-    drawStringTv(g, xi, yi, string);
+    drawStringTv(xi, yi, string);
 }
 
-void drawStringTv(struct Graphics* g, int xi, int yi, char * string)
+void drawStringTv(int xi, int yi, char * string)
 {
 	// for every character in the string, if it's within range, render it at the current position
 	// and move over 8 characters
@@ -98,7 +99,7 @@ void drawStringTv(struct Graphics* g, int xi, int yi, char * string)
 			for (x=0; x < 8; x++) {
 				for (y=0; y < 8; y++) {
 					if (bitmap[x] & 1 << y)
-						putAPixel(g, xi+y+i*8, yi+x, 0xff, 0xff, 0xff);
+						putAPixel(xi+y+i*8, yi+x, 0xff, 0xff, 0xff);
 				}
 //				printf("\n");
 			}

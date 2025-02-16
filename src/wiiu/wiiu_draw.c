@@ -1,8 +1,42 @@
-
-#include "draw.h"
+#include "../draw.h"
+#include "memory.h"
 
 #include <coreinit/cache.h>
 #include <coreinit/screen.h>
+
+void screenInit()
+{
+	//Grab the buffer size for each screen (TV and gamepad)
+	int buf0_size = OSScreenGetBufferSizeEx(0);
+	int buf1_size = OSScreenGetBufferSizeEx(1);
+
+	//Set the buffer area.
+	screenBuffer = MEM1_alloc(buf0_size + buf1_size, 0x100);
+
+    OSScreenSetBufferEx(0, screenBuffer);
+    OSScreenSetBufferEx(1, (screenBuffer + buf0_size));
+
+    OSScreenEnableEx(0, 1);
+    OSScreenEnableEx(1, 1);
+
+    //Clear both framebuffers.
+	for (int ii = 0; ii < 2; ii++)
+	{
+		fillScreen(0,0,0,0);
+		flipBuffers();
+	}
+}
+
+void screenDeinit()
+{
+    for(int ii = 0; ii < 2; ii++)
+	{
+		fillScreen(0,0,0,0);
+		flipBuffers();
+	}
+
+    MEM1_free(screenBuffer);
+}
 
 void flipBuffers()
 {
@@ -35,10 +69,10 @@ void putAPixel(int x, int y, int r, int g, int b)
 	for (ax=0; ax<2; ax++)
 		for (ay=0; ay<2; ay++)
 			for (az=0; az<2; az++)
-				if (ax) {  // uncomment for fullscreen on TV, text on the TV will have to be moved though
+				 if (ax) {  // uncomment for fullscreen on TV, text on the TV will have to be moved though
 					OSScreenPutPixelEx(ax, x + ay, y + az, num);
-				}    // uncomment for fullscreen on TV, text on the TV will have to be moved though
-				else {    // uncomment for fullscreen on TV, text on the TV will have to be moved though
+				 }    // uncomment for fullscreen on TV, text on the TV will have to be moved though
+				 else {    // uncomment for fullscreen on TV, text on the TV will have to be moved though
 					 int a;  // uncomment for fullscreen on TV, text on the TV will have to be moved though
 					 for (a = 0; a < 2; a++) {  // uncomment for fullscreen on TV, text on the TV will have to be moved though
 						 int x1 = ( ( (x + ay) * 3 ) / 2 ) + a;  // uncomment for fullscreen on TV, text on the TV will have to be moved though
@@ -51,6 +85,7 @@ void putAPixel(int x, int y, int r, int g, int b)
 					 OSScreenPutPixelEx( 1, x, y, num );  // uncomment for fullscreen on TV, text on the TV will have to be moved though
 				 }  // uncomment for fullscreen on TV, text on the TV will have to be moved though
 }
+
 
 void drawString(int x, int y, char * string)
 {

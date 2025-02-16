@@ -1,6 +1,6 @@
 #include <switch.h>
 
-#include "switch_input.h"
+#include "paddata.h"
 
 PadState pad;
 
@@ -20,32 +20,32 @@ void PADDestroy()
 
 }
 
+void VPADRead(int chan, struct PADData *data, int num, int *error) {
+	PADRead(data);
+}
+
 void PADRead(struct PADData* data)
 {
 	// reset buttons
 	data->btns_h = 0b00000000;
 
-	data->lstick_x = 0;
-	data->lstick_y = 0;
-	data->rstick_x = 0;
-	data->rstick_y = 0;
+	data->leftStick = (Vec2D){0, 0};
+    data->rightStick = (Vec2D){0, 0};
 
     padUpdate(&pad);
 
     // update pushed buttons
-    data->btns_d = padGetButtonsDown(&pad);
+    // data->btns_d = padGetButtonsDown(&pad);
     data->btns_h = padGetButtons(&pad);
 
     // update sticks
     HidAnalogStickState analog_stick_l = padGetStickPos(&pad, 0);
     HidAnalogStickState analog_stick_r = padGetStickPos(&pad, 1);
-    data->lstick_x = analog_stick_l.x;
-    data->lstick_y = analog_stick_l.y;
-    data->rstick_x = analog_stick_r.x;
-    data->rstick_y = analog_stick_r.y;
+    data->leftStick = (Vec2D){analog_stick_l.x, analog_stick_l.y};
+    data->rightStick = (Vec2D){analog_stick_r.x, analog_stick_r.y};
 
     // reset touched flag
-    data->touched = 0;
+    data->isTouched = 0;
 
     HidTouchScreenState state={0};
     int largest_touch = 0;
@@ -57,9 +57,9 @@ void PADRead(struct PADData* data)
             if (curTouch > largest_touch)
             {
                 largest_touch = curTouch;
-                data->touched = 1; // mark as touched
-                data->touched_y = state.touches[i].y;
-                data->touched_x = state.touches[i].x;
+                data->isTouched = 1; // mark as touched
+                data->touchData.x = state.touches[i].x;
+                data->touchData.y = state.touches[i].y;
             }
         }
     }

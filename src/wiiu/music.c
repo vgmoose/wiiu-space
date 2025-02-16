@@ -1,6 +1,5 @@
-#include "music.h"
+#include "../music.h"
 
-#ifdef MUSIC
 #include <mpg123.h>
 #include <coreinit/cache.h>
 #include <coreinit/memdefaultheap.h>
@@ -37,10 +36,8 @@ typedef struct {
 } MusicPlayer;
 
 MusicPlayer player;
-#endif
 
 void initMusicPlayer(char* filePath) {
-#ifdef MUSIC
     int err;
 
     WHBLogPrint("Initializing music player...");
@@ -139,17 +136,14 @@ void initMusicPlayer(char* filePath) {
     AXSetVoiceDeviceMix(player.voiceRight, AX_DEVICE_TYPE_DRC, 0, deviceVolumeData);
 
     WHBLogPrint("Music player initialized");
-#endif
 }
 
 void playMusic() {
-#ifdef MUSIC
     // start our two channels, each of which has been connected to the song and tv/gamepad
     AXSetVoiceCurrentOffset(player.voiceLeft, 0);
     AXSetVoiceState(player.voiceLeft, AX_VOICE_STATE_PLAYING);
     AXSetVoiceCurrentOffset(player.voiceRight, 0);
     AXSetVoiceState(player.voiceRight, AX_VOICE_STATE_PLAYING);
-#endif
 }
 
 void updateMusic() {
@@ -157,7 +151,6 @@ void updateMusic() {
 }
 
 void stopMusic() {
-#ifdef MUSIC
     AXSetVoiceState(player.voiceLeft, AX_VOICE_STATE_STOPPED);
     AXSetVoiceState(player.voiceRight, AX_VOICE_STATE_STOPPED);
 
@@ -171,5 +164,4 @@ void stopMusic() {
     mpg123_delete(player.mh);
     mpg123_exit();
     AXQuit();
-#endif
 }

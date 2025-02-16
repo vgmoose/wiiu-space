@@ -1,8 +1,13 @@
 #ifndef PROGRAM_H
 #define PROGRAM_H
 
+#ifdef __WIIU__
 #include <coreinit/core.h>
 #include <vpad/input.h>
+#else
+#include "switch/paddata.h"
+#include <stdint.h>
+#endif
 
 struct Bullet {
 	int x;

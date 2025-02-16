@@ -20,7 +20,7 @@ export APP_CONTENT	  := $(PWD)/data
 
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	src
+SOURCES		:=	src src/wiiu
 INCLUDES	:=	include
 
 #-------------------------------------------------------------------------------

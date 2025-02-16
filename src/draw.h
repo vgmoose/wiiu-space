@@ -2,7 +2,6 @@
 #define DRAW_H
 #include "program.h"
 
-// //! C wrapper for out C++ functions
 //Function declarations for my graphics library
 void flipBuffers();
 void fillScreen(char r, char g, char b, char a);
@@ -14,5 +13,9 @@ void drawPixel(int x, int y, char r, char g, char b);
 void drawPixels(struct Pixel pixels[200]);
 void drawBitmap(int ox, int oy, int width, int height, unsigned char input[][width], unsigned const char palette[][3]);
 void fillRect(int ox, int oy, int width, int height, int r, int g, int b);
+
+void putAPixel(int x, int y, int r, int g, int b);
+void screenInit();
+void screenDeinit();
 
 #endif /* DRAW_H */

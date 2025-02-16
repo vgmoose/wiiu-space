@@ -2,8 +2,16 @@
 #include "space.h"
 #include <math.h>
 #include <stdlib.h>
+
+#if __WIIU__
+// for __os_snprintf and OSFatal
 #include <coreinit/internal.h>
 #include <coreinit/debug.h>
+#else
+#include <stdbool.h>
+#include <stdio.h>
+#include "switch/platform.h"
+#endif
 
 /**
 This class is a bit of a mess, but it basically does "everything else" in the game.
