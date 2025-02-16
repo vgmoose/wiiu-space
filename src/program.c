@@ -6,7 +6,6 @@
 #include <coreinit/foreground.h>
 #include <proc_ui/procui.h>
 #include <vpad/input.h>
-#include "memory.h"
 
 #include <whb/log_cafe.h>
 #include <whb/log_udp.h>
@@ -93,7 +92,6 @@ bool AppRunning()
           {
               initialized = false;
               screenDeinit();
-              memoryRelease();
           }
           ProcUIShutdown();
       }
@@ -103,7 +101,6 @@ bool AppRunning()
           initialized = false;
 
           screenDeinit();
-          memoryRelease();
           ProcUIDrawDoneRelease();
       }
       else if(status == PROCUI_STATUS_IN_FOREGROUND)
@@ -112,7 +109,6 @@ bool AppRunning()
          if(!initialized)
          {
             initialized = true;
-            memoryInitialize();
             screenInit();
 
             // redraw the screen upon resume

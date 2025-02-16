@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - switch-rewrite
   pull_request:
     branches:
       - main
