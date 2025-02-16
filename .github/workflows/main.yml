@@ -1,4 +1,4 @@
-name: Build app
+name: Build wiiu/switch apps
 
 on:
   push:
@@ -11,19 +11,26 @@ on:
 jobs:
   all:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - platform: wiiu
+            ext: wuhb
+          - platform: switch
+            ext: nro
     container:
       image: ghcr.io/fortheusers/sealeo:latest
     steps:
     - uses: actions/checkout@main
       with:
         submodules: recursive
-    - name: Build ${{ matrix.platform }}
+    - if: matrix.platform == 'wiiu'
+      name: Build wiiu app
       run: make
+    - if: matrix.platform == 'switch'
+      name: Build switch app
+      run: make -f Makefile.switch
     - uses: actions/upload-artifact@v4
       with:
-        name: wiiu-space.rpx
-        path: /__w/wiiu-space/wiiu-space/wiiu-space.rpx
-    - uses: actions/upload-artifact@v4
-      with:
-        name: wiiu-space.wuhb
-        path: /__w/wiiu-space/wiiu-space/wiiu-space.wuhb
+        name: wiiu-space.${{ matrix.ext }}
+        path: /__w/wiiu-space/wiiu-space/wiiu-space.${{ matrix.ext }}
