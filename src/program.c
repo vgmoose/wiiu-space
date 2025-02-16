@@ -8,6 +8,10 @@
 #include <vpad/input.h>
 #include "memory.h"
 
+#include <whb/log_cafe.h>
+#include <whb/log_udp.h>
+#include <whb/log.h>
+
 #include "program.h"
 //#include "trigmath.h"
 #include "draw.h"
@@ -16,6 +20,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>
+#include "music.h"
 
 void* screenBuffer;
 
@@ -132,6 +137,9 @@ void cleanSlate()
 
 int main(int argc, char **argv)
 {
+	WHBLogCafeInit();
+	WHBLogUdpInit();
+
 	OSDynLoad_Module avm_handle = 0;
 	OSDynLoad_Acquire("avm.rpl", &avm_handle);
 	bool(*AVMSetTVScale)(int width, int height);
@@ -179,8 +187,12 @@ int main(int argc, char **argv)
 
 	mySpaceGlobals.invalid = 1;
 
+	initMusicPlayer("fs:/vol/content/sounds/cruise.mp3");
+	playMusic();
 	while (AppRunning())
 	{
+		updateMusic(); // TODO: use return value
+		
 		VPADRead(0, &vpad_data, 1, &error);
 
 		//Get the status of the gamepad
@@ -252,5 +264,6 @@ int main(int argc, char **argv)
 
 	}
 
+	stopMusic();
 	return 0;
 }

@@ -16,6 +16,7 @@ export APP_VERSION ?= 2.0
 export APP_TV_SPLASH  := $(PWD)/res/bootTvTex.png
 export APP_DRC_SPLASH := $(PWD)/res/bootTvTex.png
 export APP_ICON       := $(PWD)/res/iconTex.png
+export APP_CONTENT	  := $(PWD)/data
 
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
@@ -29,14 +30,14 @@ CFLAGS		:=	-Wall -O2 -std=c11 \
 			-ffast-math \
 			$(MACHDEP)
 
-CFLAGS		+=	$(INCLUDE) -D__WIIU__ -D__WUT__
+CFLAGS		+=	$(INCLUDE) -D__WIIU__ -D__WUT__ -DMUSIC
 
 CXXFLAGS	:=	$(CFLAGS)
 
 ASFLAGS		:=	-g $(MACHDEP)
 LDFLAGS		:=	-g $(MACHDEP) $(RPXSPECS) -Wl,-Map,$(notdir $*.map)
 
-LIBS		:=	-lwut -lm
+LIBS		:=	-lwut -lmpg123 -lm
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level

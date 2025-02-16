@@ -17,10 +17,6 @@
 #ifndef __MEMORY_H_
 #define __MEMORY_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <malloc.h>
 
 void memoryInitialize(void);
@@ -34,9 +30,5 @@ void MEM1_free(void *ptr);
 
 void * MEMBucket_alloc(unsigned int size, unsigned int align);
 void MEMBucket_free(void *ptr);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // __MEMORY_H_

@@ -179,52 +179,52 @@ void handleCollisions(struct SpaceGlobals * mySpaceGlobals)
 	if (playerDown > yMaxBoundry)
 		mySpaceGlobals->p1Y = yMaxBoundry - 36;
 
-		// check enemies if they collide with the player or any of the 20 active bullets
-		int x;
-		for (x=0; x<100; x++)
+	// check enemies if they collide with the player or any of the 20 active bullets
+	int x;
+	for (x=0; x<100; x++)
+	{
+		if (mySpaceGlobals->enemies[x].position.active == 1)
 		{
-			if (mySpaceGlobals->enemies[x].position.active == 1)
+			// collision checkin from here: http://stackoverflow.com/a/1736741/1137828
+			// check player
+
+			int sqMe1 = ((mySpaceGlobals->enemies[x].position.x+7)-(mySpaceGlobals->p1X+9));
+			int sqMe2 = ((mySpaceGlobals->enemies[x].position.y+7)-(mySpaceGlobals->p1Y+9));
+
+			if (sqMe1*sqMe1 + sqMe2*sqMe2 <= (7+9)*(7+9))
 			{
-				// collision checkin from here: http://stackoverflow.com/a/1736741/1137828
-				// check player
-
-				int sqMe1 = ((mySpaceGlobals->enemies[x].position.x+7)-(mySpaceGlobals->p1X+9));
-				int sqMe2 = ((mySpaceGlobals->enemies[x].position.y+7)-(mySpaceGlobals->p1Y+9));
-
-				if (sqMe1*sqMe1 + sqMe2*sqMe2 <= (7+9)*(7+9))
+				if (mySpaceGlobals->playerExplodeFrame < 1)
 				{
-					if (mySpaceGlobals->playerExplodeFrame < 1)
-					{
-						// player was hit
-						mySpaceGlobals->playerExplodeFrame = 2;
-						initGameState(mySpaceGlobals);
-					}
+					// player was hit
+					mySpaceGlobals->playerExplodeFrame = 2;
+					initGameState(mySpaceGlobals);
 				}
+			}
 
-				int y;
-				for (y=0; y<20; y++)
+			int y;
+			for (y=0; y<20; y++)
+			{
+				if (mySpaceGlobals->bullets[y].active == 1)
 				{
-					if (mySpaceGlobals->bullets[y].active == 1)
+					// check player's bullets
+					sqMe1 = ((mySpaceGlobals->enemies[x].position.x+7)-(mySpaceGlobals->bullets[y].x+1));
+					sqMe2 = ((mySpaceGlobals->enemies[x].position.y+7)-(mySpaceGlobals->bullets[y].y+1));
+
+					if (sqMe1*sqMe1 + sqMe2*sqMe2 <= (7+1)*(7+1))
 					{
-						// check player's bullets
-						sqMe1 = ((mySpaceGlobals->enemies[x].position.x+7)-(mySpaceGlobals->bullets[y].x+1));
-						sqMe2 = ((mySpaceGlobals->enemies[x].position.y+7)-(mySpaceGlobals->bullets[y].y+1));
+						// enemy was hit, active = 2 is explode
+						increaseScore(mySpaceGlobals, 100); // 100 points for killing enemy
+						mySpaceGlobals->enemies[x].position.active = 2;
 
-						if (sqMe1*sqMe1 + sqMe2*sqMe2 <= (7+1)*(7+1))
-						{
-							// enemy was hit, active = 2 is explode
-							increaseScore(mySpaceGlobals, 100); // 100 points for killing enemy
-							mySpaceGlobals->enemies[x].position.active = 2;
+						// bullet is destroyed with enemy
+						mySpaceGlobals->bullets[y].active = 0;
 
-							// bullet is destroyed with enemy
-							mySpaceGlobals->bullets[y].active = 0;
-
-							break;
-						}
+						break;
 					}
 				}
 			}
 		}
+	}
 
 }
 
@@ -1117,11 +1117,11 @@ void tryPassword(struct SpaceGlobals *mySpaceGlobals)
 	
 	// start installer for Hykem's IOSU Exploit
 	// Commented out due to a lack of OSFatal in WUT
-	/*if (mySpaceGlobals->passwordEntered == 41666)
+	if (mySpaceGlobals->passwordEntered == 41666)
 	{
 		blackout();
 		OSFatal("Installing IOSU Exploit... This may take a while.");
-	}*/
+	}
 
 	// 100 passwords, one for each level
 	int x;

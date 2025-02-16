@@ -5,11 +5,6 @@
 #include "images.h"
 #include "draw.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// //! C wrapper for out C++ functions
 //Function declarations for space functions.
 void renderShip(struct SpaceGlobals *mySpaceGlobals);
 void renderInitialPlayers(struct SpaceGlobals *mySpaceGlobals);
@@ -44,9 +39,5 @@ void displayGameOver(struct SpaceGlobals * mySpaceGlobals);
 void handleExplosions(struct SpaceGlobals * mySpaceGlobals);
 void makeScaleMatrix(int frame, int width, void *orig, void *targ, int transIndex);
 void drawControllerSelectScreen(struct SpaceGlobals *mySpaceGlobals);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* SPACE_H */
