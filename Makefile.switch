@@ -1,6 +1,6 @@
 # default this environment variable
 DEVKITPRO ?= /opt/devkitpro
-DEVKITA64?= $(DEVKITPRO)/devkitA64
+DEVKITA64 ?= $(DEVKITPRO)/devkitA64
 
 export DEVKITPRO
 export DEVKITA64
@@ -9,8 +9,8 @@ TOPDIR ?= $(CURDIR)
 include $(DEVKITPRO)/libnx/switch_rules
 
 export APP_TITLE    ?= Space Game
-export APP_AUTHOR  ?= vgmoose
-export APP_VERSION ?= 2.0
+export APP_AUTHOR   ?= vgmoose
+export APP_VERSION  ?= 2.0
 
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
@@ -35,7 +35,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:=  `freetype-config --libs` -lturbojpeg -lpng
+LIBS	:=  -lm -lnx
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
